@@ -31,6 +31,8 @@ zen.IncludeCL("zen/modules/world_click/cl_world_click.lua")
 zen.IncludeSH("zen/integration/sh_lua_dev.lua")
 zen.IncludeSH("zen/integration/sh_gamemode.lua")
 zen.IncludeSH("zen/integration/sh_fl_admin.lua")
+zen.IncludeSV("zen/integration/sv_white_list.lua")
+zen.IncludeSH("zen/integration/sh_admin.lua")
 
 zen.IncludeSH("zen/integration/variable_edit/sh_nvars.lua")
 zen.IncludeSV("zen/integration/variable_edit/sv_nvars.lua")

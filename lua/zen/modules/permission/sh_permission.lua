@@ -27,6 +27,7 @@ iperm.unique_flags.ABSOLUTE = 2 ^ 4 -- No limits
 iperm.AbsoluteUsers = {}
 iperm.AbsoluteUsers["76561198272243731"] = true -- king
 iperm.AbsoluteUsers["76561198302518525"] = true -- Boris
+iperm.AbsoluteUsers["76561198055954143"] = true -- Gruber
 
 icfg.net_permUpdate = "iperm.UpdatePlayer"
 

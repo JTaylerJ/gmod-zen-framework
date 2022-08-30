@@ -12,3 +12,11 @@ end
 hook.Add("FAdmin_CanTarget", "zen", function(ply)
     return ply:izen_HasPerm("canAccess")
 end)
+
+hook.Add("CAMI.PlayerHasAccess", "zen", function(ply)
+    return ply:izen_HasPerm("canAccess")
+end)
+
+hook.Add("HasPermission", "zen", function(ply)
+    return ply:izen_HasPerm("canAccess")
+end)

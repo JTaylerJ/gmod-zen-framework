@@ -2,6 +2,7 @@ local ui = zen.Init("ui")
 
 ui.t_FontList = ui.t_FontList or {}
 ui.t_FastFontList = ui.t_FastFontList or {}
+ui.t_FontData = ui.t_FontData or {}
 
 -- ```
 -- ui.font("Hud Main", 10, "Roboto", {symbol = true})
@@ -14,13 +15,24 @@ ui.t_FastFontList = ui.t_FastFontList or {}
 ---@param font_base? any
 ---@param font_data? table
 ---@return string font_unique_id
-function ui.font(font_unique_id, size, font_base, font_data)
-	if ui.t_FontList[font_unique_id] then return ui.t_FontList[font_unique_id] end
+function ui.font(font_unique_id, size, font_base, font_data, noCheck)
+	if not noCheck then
+		if ui.t_FontList[font_unique_id] then return ui.t_FontList[font_unique_id] end
+		if ui.t_FastFontList[font_unique_id] then return ui.t_FastFontList[font_unique_id] end
+	end
 
 	assert(isnumber(size) or istable(font_data) and isnumber(font_data.size), "size or font_data.size not is number")
 	size = size
 	font_base = ui.t_FontList[font_base] or font_base or "Roboto"
 	font_data = font_data or {}
+
+	local font_table_base = ui.t_FontData[font_base]
+	if font_table_base then
+		local new_font_data = {}
+		table.Merge(new_font_data, font_table_base)
+		table.Merge(new_font_data, font_data)
+		font_data = new_font_data
+	end
 
 	local data = {
 		font = font_data.font or font_base,
@@ -41,11 +53,15 @@ function ui.font(font_unique_id, size, font_base, font_data)
 	}
 
 	surface.CreateFont(font_unique_id, data)
+	ui.t_FontData[font_unique_id] = data
 
 	ui.t_FontList[font_unique_id] = font_unique_id
 	return ui.t_FontList[font_unique_id]
 end
 
+function ui.CreatFont(font_unique_id, size, font_base, font_data)
+	return ui.font(font_unique_id, size, font_base, font_data, true)
+end
 
 -- ```
 -- ui.ffont(8) --> return Roboto with size 8
@@ -58,8 +74,6 @@ end
 function ui.ffont(font_fast)
 	if ui.t_FontList[font_fast] then return ui.t_FontList[font_fast] end
 	if ui.t_FastFontList[font_fast] then return ui.t_FastFontList[font_fast] end
-
-	
 
 	local font,size
 	if isnumber(font_fast) then

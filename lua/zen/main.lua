@@ -13,6 +13,7 @@ iclr.console_default = Color(200, 200, 200)
 
 icfg.console_space = " "
 
+local string_Split = string.Split
 
 local i
 function izen.print(...)
@@ -32,14 +33,47 @@ function izen.print(...)
 end
 zen.print = izen.print
 
+
 function izen.Init(module_name)
     if izen[module_name] then return izen[module_name] end
-    izen[module_name] = izen[module_name] or {}
-    zen[module_name] = izen[module_name]
+    izen[module_name] = {}
+    local module_table = izen[module_name]
+    zen[module_name] = module_table
 
-    return zen[module_name]
+    module_table.Init = function(sub_module_name)
+        if module_table[sub_module_name] then return module_table[sub_module_name] end
+        module_table[sub_module_name] = {}
+        return module_table[sub_module_name]
+    end
+    
+    return module_table
 end
 zen.Init = izen.Init
+
+
+function izen.Import(...)
+    local to_import = {...}
+    local tResult = {}
+    for _, module_name in ipairs(to_import) do
+        local last_module = "izen"
+        local module_table = izen
+        local modules_arg = string_Split(module_name, ".")
+        for i, sub_module_name in ipairs(modules_arg) do
+            last_module = last_module .. "." .. sub_module_name
+            module_table = module_table[sub_module_name]
+            assert(module_table != nil, "\"" .. sub_module_name .. "\" not exists in \"" .. (last_module) .. "\"")
+        end
+
+        if not module_table or module_table == izen then
+            error("Module not exists")
+        end
+
+        table.insert(tResult, module_table)
+    end
+
+    return unpack(tResult)
+end
+zen.Import = izen.Import
 
 function izen.Include(fl_path)
     return include(fl_path)

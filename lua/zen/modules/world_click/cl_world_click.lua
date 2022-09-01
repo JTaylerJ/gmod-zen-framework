@@ -56,9 +56,10 @@ hook.Add( "PreDrawEffects", "zen.variable_edit", function()
     local ent = worldclick.objLastEntity
     if ( !IsValid( ent ) ) then return end
 
+    local origin = util.GetPlayerTraceSource(nil, true)
 
     local pos = ent:WorldSpaceCenter()
-    local ang = ((pos) - LocalPlayer():EyePos()):Angle()
+    local ang = ((pos) - origin):Angle()
     ang.p = 0
     ang.r = 90
     ang.y = ang.y - 90

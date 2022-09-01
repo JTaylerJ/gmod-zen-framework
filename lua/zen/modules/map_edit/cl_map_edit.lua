@@ -76,7 +76,7 @@ function map_edit.Toggle()
 	map_edit.pnlContext:SetSize(ScrW(), ScrH())
 	map_edit.pnlContext:SetPos(0, 0)
 	map_edit.pnlContext:SetWorldClicker(true)
-	map_edit.pnlContext:SetMouseInputEnabled(true)
+	map_edit.pnlContext:SetMouseInputEnabled(false)
 
 	map_edit.GenerateGUI(map_edit.pnlContext)
 	

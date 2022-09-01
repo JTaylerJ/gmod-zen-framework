@@ -1130,3 +1130,33 @@ function util.GetFlagsTable(flags_table, flags)
     end
     return tResult
 end
+
+function util.GetPlayerTraceSource(ply, noCursor)
+    if CLIENT and (ply == nil or ply == LocalPlayer()) then
+        local view_data = render.GetViewSetup()
+        local origin = view_data.origin
+        local normal
+
+        if not noCursor then
+            local mx, my = gui.MouseX(), gui.MouseY()
+            normal = util.AimVector(view_data.angles, view_data.fov, mx, my, view_data.width, view_data.height)
+        else
+            normal = view_data.angles:Forward()
+        end
+
+        return origin, normal
+    else
+        assertPlayer(ply, "ply")
+
+        local origin = ply:EyePos()
+        local normal
+
+        if not noCursor then
+            normal = ply:AimVector()
+        else
+            normal = ply:EyeAngles():Forward()
+        end
+
+        return ply:EyePos(), ply:GetAimVector()
+    end
+end

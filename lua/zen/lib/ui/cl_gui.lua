@@ -340,8 +340,8 @@ function gui.SuperCreate(data, uniqueName)
     return nav_panels, nav_result
 end
 
-
-local nav_result = gui.SuperCreate(
+--[[
+local nav = gui.SuperCreate(
 {
     {
         {"main", "frame"};
@@ -371,3 +371,8 @@ local nav_result = gui.SuperCreate(
         }
     }
 }, "Name")
+
+nav.add_point.DoClick = function(self)
+    print("Add Point")
+end
+]]--

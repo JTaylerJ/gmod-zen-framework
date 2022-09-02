@@ -10,13 +10,18 @@ local ui, draw, draw3d, draw3d2d = zen.Import("ui", "ui.draw", "ui.draw3d", "ui.
 
 local mat_user = Material("icon16/user_suit.png")
 
-local lastOrigin
+local lastOrigin, lastAngles, lastTrace
 local nextOriginUpdate = CurTime()
 local hoverEntity, hoverOrigin
 local nearPosition, nearPositionID
 
 local MODE_DEFAULT = 0
 local MODE_EDIT_POINT = 1
+
+local hoverPadPosition_4
+local hoverPadPosition_6
+local hoverPadPosition_8
+local hoverPadPosition_2
 
 viewdata.mode = MODE_DEFAULT
 
@@ -35,12 +40,12 @@ end
 
 function map_edit.Render(mode, priority)
 	local origin, normal = util.GetPlayerTraceSource(nil)
-	local trace = util.TraceLine({start = origin, endpos = origin + normal * 1024})
+	lastTrace = util.TraceLine({start = origin, endpos = origin + normal * 1024})
 
-	hoverEntity = trace.Entity
-	hoverOrigin = trace.HitPos
+	hoverEntity = lastTrace.Entity
+	hoverOrigin = lastTrace.HitPos
 
-	local hitpos = trace.HitPos
+	local hitpos = lastTrace.HitPos
 
 	if mode == RENDER_3D and priority == RENDER_POST then
 		local y = 0
@@ -50,7 +55,7 @@ function map_edit.Render(mode, priority)
 		y = y - 35
 		draw3d2d.Text(hitpos, nil, 0.1, true, getVectorString(hitpos), 10, 0, y, COLOR.WHITE, 1, 1, COLOR.BLACK)
 
-		local ent = trace.Entity
+		local ent = lastTrace.Entity
 
 		if IsValid(ent) then
 
@@ -192,7 +197,60 @@ function map_edit.Render(mode, priority)
 	if viewdata.mode == MODE_EDIT_POINT and viewdata.edit_point == nil then
 		local iPoints = #map_edit.t_Positions
 
+		if input.IsButtonPressedIN(IN_WALK) then
+			local hitNormal = lastTrace.HitNormal
+			local hitAngle = hitNormal:Angle()
+			local up = hitAngle:Up()
+			local down = -up
+			local right = hitAngle:Right()
+			local left = -right
 
+			local trace_up = util.TraceLine({start = hoverOrigin, endpos = hoverOrigin + up*100})
+			local trace_down = util.TraceLine({start = hoverOrigin, endpos = hoverOrigin + down*100})
+			local trace_right = util.TraceLine({start = hoverOrigin, endpos = hoverOrigin + right*100})
+			local trace_left = util.TraceLine({start = hoverOrigin, endpos = hoverOrigin + left*100})
+
+			local trace_up_back = util.TraceLine({start = trace_up.HitPos - hitNormal, endpos = trace_up.StartPos - hitNormal})
+			local trace_down_back = util.TraceLine({start = trace_down.HitPos - hitNormal, endpos = trace_down.StartPos - hitNormal})
+			local trace_right_back = util.TraceLine({start = trace_right.HitPos - hitNormal, endpos = trace_right.StartPos - hitNormal})
+			local trace_left_back = util.TraceLine({start = trace_left.HitPos - hitNormal, endpos = trace_left.StartPos - hitNormal})
+
+			if mode == RENDER_2D then
+				draw3d.Line(hoverOrigin, hoverOrigin + up * 2, clr_white_alpha)
+				draw3d.Line(hoverOrigin, hoverOrigin + down * 2, clr_white_alpha)
+				draw3d.Line(hoverOrigin, hoverOrigin + right * 2, clr_white_alpha)
+				draw3d.Line(hoverOrigin, hoverOrigin + left * 2, clr_white_alpha)
+
+
+				local up_hitpos = (trace_up.Hit) and (trace_up.HitPos) or (trace_up_back.Hit and trace_up_back.HitPos != trace_up_back.StartPos and trace_up_back.HitPos + hitNormal or nil)
+				local down_hitpos = (trace_down.Hit) and (trace_down.HitPos) or (trace_down_back.Hit and trace_down_back.HitPos != trace_down_back.StartPos and trace_down_back.HitPos + hitNormal or nil)
+				local right_hitpos = (trace_right.Hit) and (trace_right.HitPos) or (trace_right_back.Hit and trace_right_back.HitPos != trace_right_back.StartPos and trace_right_back.HitPos + hitNormal or nil)
+				local left_hitpos = (trace_left.Hit) and (trace_left.HitPos) or (trace_left_back.Hit and trace_left_back.HitPos != trace_left_back.StartPos and trace_left_back.HitPos + hitNormal or nil)
+
+
+				if up_hitpos then
+					draw3d.Line(hoverOrigin, up_hitpos, clr_white_alpha)
+				end
+
+				if down_hitpos then
+					draw3d.Line(hoverOrigin, down_hitpos, clr_white_alpha)
+				end
+
+				if right_hitpos then
+					draw3d.Line(hoverOrigin, right_hitpos, clr_white_alpha)
+				end
+
+				if left_hitpos then
+					draw3d.Line(hoverOrigin, left_hitpos, clr_white_alpha)
+				end
+
+
+				hoverPadPosition_8 = up_hitpos
+				hoverPadPosition_2 = down_hitpos
+				hoverPadPosition_6 = left_hitpos
+				hoverPadPosition_4 = right_hitpos
+			end
+		end
 		
 
 		if iPoints == 1 then
@@ -211,8 +269,8 @@ function map_edit.Render(mode, priority)
 			local firstPos = map_edit.t_Positions[1]
 			local lastPos = map_edit.t_Positions[iPoints]
 
-			local add_first = math.min(firstPos:Distance(hoverOrigin) or 10, 10)
-			local add_last = math.min(lastPos:Distance(hoverOrigin) or 10, 10)
+			local add_first = math.min(firstPos:Distance(hoverOrigin) or 10, 20)
+			local add_last = math.min(lastPos:Distance(hoverOrigin) or 10, 20)
 
 
 			local firstAng = (hoverOrigin - firstPos):Angle()
@@ -221,19 +279,42 @@ function map_edit.Render(mode, priority)
 			local firstDir = firstAng:Forward()
 			local lastDir =  lastAng:Forward()
 
+			local firstMinPos = hoverOrigin + firstDir * -add_first
+			local lastMinPos = hoverOrigin + lastDir * -add_last
+
 			if mode == RENDER_2D then
 				draw3d.Line(hoverOrigin, firstPos, clr_white_alpha)
 				draw3d.Line(hoverOrigin, lastPos, clr_white_alpha)
 
-				draw3d.Line(hoverOrigin, hoverOrigin + firstDir * -add_first, COLOR.WHITE)
-				draw3d.Line(hoverOrigin, hoverOrigin + lastDir * -add_last, COLOR.WHITE)
+				draw3d.Line(hoverOrigin, firstMinPos, COLOR.RED)
+				draw3d.Line(hoverOrigin, lastMinPos, COLOR.BLUE)
 
-				draw3d.Line(firstPos, firstPos + firstDir * add_first, COLOR.WHITE)
-				draw3d.Line(lastPos, lastPos + lastDir * add_last, COLOR.WHITE)
+				draw3d.Line(firstPos, firstPos + firstDir * add_first, COLOR.RED)
+				draw3d.Line(lastPos, lastPos + lastDir * add_last, COLOR.BLUE)
 			end
 			if mode == RENDER_3D then
-				draw3d2d.Text((hoverOrigin + firstDir * -add_first + firstAng:Right() * 20), nil, 0.1, true, getAngleString(firstAng), 8, 0, 0, COLOR.WHITE, 1, 1, COLOR.BLACK)
-				draw3d2d.Text((hoverOrigin + lastDir * -add_last + lastAng:Right() * -20), nil, 0.1, true, getAngleString(lastAng), 8, 0, 0, COLOR.WHITE, 1, 1, COLOR.BLACK)
+				local mid = (firstMinPos + lastMinPos)*0.5
+				local new_ang = firstAng - lastAng
+
+				draw3d2d.Text((firstMinPos + Vector(2,2,2)), nil, 0.1, true, getAngleString(firstAng), 8, 0, 0, COLOR.RED, 1, 1, COLOR.BLACK)
+				draw3d2d.Text((lastMinPos + Vector(-2,-2,-2)), nil, 0.1, true, getAngleString(lastAng), 8, 0, 0, COLOR.BLUE, 1, 1, COLOR.BLACK)
+
+				local tbl = {}
+
+				if new_ang.p != 0 then
+					table.insert(tbl, math.Round(math.abs(new_ang.p), 2))
+				end
+
+				if new_ang.y != 0 then
+					table.insert(tbl, math.Round(math.abs(new_ang.y), 2))
+				end
+
+				if new_ang.r != 0 then
+					table.insert(tbl, math.Round(math.abs(new_ang.r), 2))
+				end
+
+				local ang_str = table.concat(tbl, " ")
+				draw3d2d.Text(mid, nil, 0.1, true, ang_str, 8, 0, 0, COLOR.WHITE, 1, 1, COLOR.BLACK)
 			end
 		end
 	end
@@ -354,15 +435,20 @@ function map_edit.StartCommand(ply, cmd)
 	local add_y = -(cmd:GetMouseY() * 0.03)
 
 	if add_x != 0 then
-		viewdata.Angle.y = viewdata.Angle.y + add_x
+		if viewdata.Angle.p < -90 or viewdata.Angle.p > 90 then
+			viewdata.Angle.y = viewdata.Angle.y - add_x
+		else
+			viewdata.Angle.y = viewdata.Angle.y + add_x
+		end
 	end
-	
+
 	if add_y != 0 then
 		viewdata.Angle.p = viewdata.Angle.p - add_y
 	end
 
-	viewdata.Angle.r = 0
 
+	viewdata.Angle:Normalize()
+	viewdata.Angle.r = 0
 
 	local speed = 2
 	if cmd:KeyDown(IN_SPEED) then
@@ -404,6 +490,10 @@ function map_edit.StartCommand(ply, cmd)
 		nt.Send("map_edit.update.pos", {"vector"}, {lastOrigin})
 	end
 
+	if lastAngles != viewdata.Angle then
+		lastAngles = viewdata.Angle
+	end
+
 	cmd:SetImpulse(0)
 	cmd:ClearButtons()
 	cmd:ClearMovement()
@@ -414,11 +504,11 @@ hook.Add("PlayerButtonPress", "zen.map_edit", function(ply, but)
 	if input.IsKeyDown(KEY_LCONTROL) and input.IsKeyDown(KEY_LALT) and but == KEY_APOSTROPHE then
 		map_edit.Toggle()
 	end
-	
+
 	local bind = input.GetButtonIN(but)
 
 	if not map_edit.IsActive then return end
-	
+
 	if bind == IN_ATTACK then
 		if viewdata.mode == MODE_EDIT_POINT then
 			if viewdata.edit_point then
@@ -472,6 +562,21 @@ hook.Add("PlayerButtonPress", "zen.map_edit", function(ply, but)
 	elseif bind == IN_RELOAD then
 		viewdata.mode = MODE_DEFAULT
 		viewdata.edit_point = nil
+	end
+
+
+	if but == KEY_PAD_4 and hoverPadPosition_4 then
+		viewdata.Angle = (hoverPadPosition_4 - lastOrigin):Angle()
+		hoverOrigin = hoverPadPosition_4
+	elseif but == KEY_PAD_6 and hoverPadPosition_6 then
+		viewdata.Angle = (hoverPadPosition_6 - lastOrigin):Angle()
+		hoverOrigin = hoverPadPosition_6
+	elseif but == KEY_PAD_8 and hoverPadPosition_8 then
+		viewdata.Angle = (hoverPadPosition_8 - lastOrigin):Angle()
+		hoverOrigin = hoverPadPosition_8
+	elseif but == KEY_PAD_2 and hoverPadPosition_2 then
+		viewdata.Angle = (hoverPadPosition_2 - lastOrigin):Angle()
+		hoverOrigin = hoverPadPosition_2
 	end
 
 	if IsValid(hoverEntity) then

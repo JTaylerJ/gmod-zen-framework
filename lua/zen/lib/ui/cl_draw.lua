@@ -98,5 +98,5 @@ function draw.Text(text, font, x, y, clr, xalign, yalign, clrbg)
 
 	s_DrawText( text )
 
-	return w, h
+	return w, h, x, y
 end

@@ -7,6 +7,8 @@ gui.t_CommandsAliases = gui.t_CommandsAliases or {}
 gui.t_UniquePanels = gui.t_UniquePanels or {}
 gui.t_Presets = gui.t_Presets or {}
 
+gui.proxyEmpty = newproxy()
+
 function gui.MergeParams(tSource, tDestination)
     local tSourceSingleParams = {}
 
@@ -58,12 +60,8 @@ function gui.ApplyParam(pnl, param, value)
         pnl:Remove()
         error("param not exists: " .. param)
     end
-    
-    if istable(value) then
-        func(pnl, unpack(value))
-    else
-        func(pnl, value)
-    end
+
+    func(pnl, value)
 end
 
 
@@ -83,7 +81,7 @@ function gui.GetClearedParams(data)
                 local param = gui.t_CommandsAliases[v]
                 if not param then return false, "param not exists: " .. v end
 
-                tParams[param] = {}
+                tParams[param] = gui.proxyEmpty
             elseif isfunction(v) then
                 table.insert(tFuncs, v)
             else
@@ -106,6 +104,8 @@ function gui.ApplyParams(pnl, data)
         error(tParams or "unknown error")
     end
 
+    pnl.zen_tmp_Params = data
+
     for _, param in pairs(ParamsPriority) do
         local vParam = tParams[param]
         if vParam then
@@ -117,16 +117,27 @@ function gui.ApplyParams(pnl, data)
     for param, vParam in pairs(tParams) do
         if tCalled[param] then continue end
 
+        if vParam == gui.proxyEmpty then vParam = nil end
+
         gui.ApplyParam(pnl, param, vParam)
     end
 
     for _, tFunc in ipairs(tFuncs) do
         tFunc(pnl)
     end
+
+    if pnl.zen_PostInit and not pnl.zen_bPostInitSucc then
+        pnl.zen_bPostInitSucc = true
+        pnl:zen_PostInit()
+    end
+
+    pnl.zen_tmp_Params = nil
 end
 
 function gui.Create(pnl_name, pnlParent, data, uniqueName, presets, isAdd)
     if uniqueName then
+        assertStringNice(uniqueName, "uniqueName")
+
         local lastPanel = gui.t_UniquePanels[uniqueName]
         if IsValid(lastPanel) then lastPanel:Remove() end
     end
@@ -145,6 +156,19 @@ function gui.Create(pnl_name, pnlParent, data, uniqueName, presets, isAdd)
     if uniqueName then
         gui.t_UniquePanels[uniqueName] = pnl
     end
+
+    pnl.zenCreated = true
+
+    local pnlOwner = pnl:GetParent()
+
+    if pnlOwner.zenCreated then
+        pnl.zen_MotherPanel = pnlOwner.zen_MotherPanel
+    else
+        pnl.zen_MotherPanel = pnl
+        pnl.zen_MotherPanel.zen_UniqueName = uniqueName
+    end
+    
+    pnl.zen_OriginalPanel = pnlOwner.zen_OriginalPanel or pnlOwner
 
     local tData = {}
 
@@ -225,6 +249,11 @@ function gui.CreateStyled(styleName, pnlParent, uniqueName, extraData, extraPres
         for k, v in pairs(tStylePanel.tPanel) do
             pnl[k] = v
         end
+    end
+
+    if pnl.zen_PostInit and not pnl.zen_bPostInitSucc then
+        pnl.zen_bPostInitSucc = true
+        pnl:zen_PostInit()
     end
 
     return pnl
@@ -345,7 +374,7 @@ local nav = gui.SuperCreate(
 {
     {
         {"main", "frame"};
-        {size = {300, 500}, title = "SuperCreate"};
+        {size = {300, 500}, title = "SuperCreate", "pos_save"};
         {};
         {
             {"content", "content"};
@@ -370,7 +399,7 @@ local nav = gui.SuperCreate(
             }
         }
     }
-}, "Name")
+}, "PanelName")
 
 nav.add_point.DoClick = function(self)
     print("Add Point")

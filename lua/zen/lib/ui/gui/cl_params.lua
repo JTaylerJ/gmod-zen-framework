@@ -13,8 +13,8 @@ end, {
     "middle_size",
 })
 
-gui.RegisterParam("set_size", function(pnl, value1, value2)
-    pnl:SetSize(value1, value2)
+gui.RegisterParam("set_size", function(pnl, value)
+    pnl:SetSize(unpack(value))
 end, {
     "set_size",
     "size",
@@ -120,8 +120,8 @@ end, {
     "delete_auto",
 })
 
-gui.RegisterParam("set_bg_color", function(pnl, value1, value2, value3, value4)
-    pnl:SetBGColor(value1, value2, value3, value4)
+gui.RegisterParam("set_bg_color", function(pnl, value)
+    pnl:SetBGColor(unpack(value))
 end, {
     "set_bg_color",
     "bg_color",
@@ -161,8 +161,8 @@ end, {
     "convar",
 })
 
-gui.RegisterParam("set_cookie", function(pnl, value1, value2)
-    pnl:SetCookie(value1, value2)
+gui.RegisterParam("set_cookie", function(pnl, value)
+    pnl:SetCookie(unpack(value))
 end, {
     "cookie",
 })
@@ -214,8 +214,8 @@ end, {
     "top_draw",
 })
 
-gui.RegisterParam("set_drop_target", function(pnl, value1, value2, value3, value4)
-    pnl:SetDrawOnTop(value1, value2, value3, value4)
+gui.RegisterParam("set_drop_target", function(pnl, value)
+    pnl:SetDropTarget(unpack(value))
 end, {
     "drop_target",
     "target_drop",
@@ -237,15 +237,15 @@ end, {
     "disable",
 })
 
-gui.RegisterParam("expensive_shadow", function(pnl, value1, value2)
-    pnl:SetExpensiveShadow(value1, value2)
+gui.RegisterParam("expensive_shadow", function(pnl, value)
+    pnl:SetExpensiveShadow(unpack(value))
 end, {
     "expensive_shadow",
     "shadow_expensive",
 })
 
-gui.RegisterParam("set_fg_color", function(pnl, value1, value2, value3, value4)
-    pnl:SetFGColor(value1, value2, value3, value4)
+gui.RegisterParam("set_fg_color", function(pnl, value)
+    pnl:SetFGColor(unpack(value))
 end, {
     "set_fg_color",
     "fg_color",
@@ -304,8 +304,8 @@ end, {
     "max_chars",
 })
 
-gui.RegisterParam("set_minimal_size", function(pnl, value1, value2)
-    pnl:SetMinimumSize(value1, value2)
+gui.RegisterParam("set_minimal_size", function(pnl, value)
+    pnl:SetMinimumSize(unpack(value))
 end, {
     "set_minimal_size",
     "minimal_size",
@@ -381,8 +381,8 @@ end, {
     "parent",
 })
 
-gui.RegisterParam("set_player", function(pnl, value1, value2)
-    pnl:SetPlayer(value1, value2)
+gui.RegisterParam("set_player", function(pnl, value)
+    pnl:SetPlayer(unpack(value))
 end, {
     "set_player",
     "player",
@@ -398,8 +398,8 @@ end, {
     "popup_back",
 })
 
-gui.RegisterParam("set_pos", function(pnl, value1, value2) -- TODO: Think about it
-    pnl:SetPos(value1, value2)
+gui.RegisterParam("set_pos", function(pnl, value) -- TODO: Think about it
+    pnl:SetPos(unpack(value))
 end, {
     "set_pos",
     "set_position",
@@ -486,8 +486,8 @@ end, {
     "tab_pos",
 })
 
-gui.RegisterParam("set_text_inset", function(pnl, value1, value2)
-    pnl:SetTextInset(value1, value2)
+gui.RegisterParam("set_text_inset", function(pnl, value)
+    pnl:SetTextInset(unpack(value))
 end, {
     "set_text_inset",
     "text_inset",
@@ -689,16 +689,39 @@ end, {
 })
 
 
-gui.RegisterParam("set_data", function(pnl, v1, v2, v3, v4, v5, v6, v7, v8)
-    pnl:SetData(v1, v2, v3, v4, v5, v6, v7, v8)
+gui.RegisterParam("set_data", function(pnl, value)
+    pnl:SetData(value)
 end, {
     "set_data",
     "data",
 })
 
-gui.RegisterParam("set_value", function(pnl, v1, v2, v3, v4, v5, v6, v7, v8)
-    pnl:SetValue(v1, v2, v3, v4, v5, v6, v7, v8)
+gui.RegisterParam("set_value", function(pnl, value)
+    pnl:SetValue(value)
 end, {
     "set_value",
     "value",
+})
+
+gui.RegisterParam("cc", function(pnl, value)
+    assertTable(value, "value")
+
+    for k, v in pairs(value) do
+        pnl[k] = v
+    end
+end, {
+    "cc",
+    "CC",
+})
+
+gui.RegisterParam("save_pos", function(pnl, value)
+    local pnlInh = pnl.zen_MotherPanel or pnl.zen_OriginalPanel
+    local name = value or pnlInh.zen_UniqueName
+
+    assertStringNice(name, "name")
+
+    pnl:zen_AddStyled("func_save_pos", {cc = {zen_pnlSavePos = pnlInh}, cookie_name = name})
+end, {
+    "save_pos",
+    "pos_save",
 })

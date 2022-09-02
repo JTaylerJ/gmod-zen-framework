@@ -3,6 +3,7 @@ zen.IncludeSH("zen/lib/hook.lua")
 zen.IncludeSH("zen/lib/string.lua")
 zen.IncludeSH("zen/lib/sql.lua")
 zen.IncludeCL("zen/lib/cl_input.lua")
+zen.IncludeCL("zen/lib/cvars.lua")
 
 zen.IncludeCL("zen/lib/ui/cl_fonts.lua")
 zen.IncludeCL("zen/lib/ui/cl_draw.lua")

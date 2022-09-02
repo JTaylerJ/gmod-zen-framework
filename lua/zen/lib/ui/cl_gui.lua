@@ -246,3 +246,128 @@ function gui.RegisterStylePanel(styleName, tPanel, vguiBase, data, presets)
     tStylePanel.data = data
     tStylePanel.presets = presets
 end
+
+
+local type = type
+local function isNav(key)
+    return type(key) == "table" and type(key[1]) == "string" and type(key[1]) == "string"
+end
+
+local function isTableOrNil(value)
+    return value == nil or type(value) == "table"
+end
+
+local function isFragmentNav(fragment)
+    return type(fragment) == "table" and isNav(fragment[1]) and isTableOrNil(fragment[2]) and isTableOrNil(fragment[2]) and isTableOrNil(fragment[3]) and isTableOrNil(fragment[4])
+end
+
+function gui.SuperCreate_Content(nav, data, nav_spawn_queue, nav_parent)
+    for id, fragment in pairs(data) do
+        if isFragmentNav(fragment) then
+            local nav_keys = fragment[1]
+
+            local nav_name = nav_keys[1]
+            if nav[nav_name] then error("nav_name already exists: \"" .. nav_name .. "\"") end
+            if nav_name == "v" then error("nav_name can't be \"v\"") end
+
+
+            nav[nav_name] = true
+
+            local style = nav_keys[2]
+            if type(style) != "string" then error("nav style not is string") end
+
+            nav[nav_name] = {}
+
+            local extraData = fragment[2]
+            local extraPresets = fragment[3]
+
+            if extraData != nil and type(extraData) != "table" then error("nav extraData not is table") end
+            if extraPresets != nil and type(extraPresets) != "table"then error("nav extraPresets not is table") end
+
+            nav[nav_name].data = extraData
+            nav[nav_name].presets = extraPresets
+            nav[nav_name].style = style
+            nav[nav_name].nav_parent = nav_parent
+            table.insert(nav_spawn_queue, nav_name)
+
+            local next_nav_data = fragment[4]
+
+            if type(next_nav_data) == "table" then
+                gui.SuperCreate_Content(nav, {next_nav_data}, nav_spawn_queue, nav_name)
+            end
+        elseif type(fragment) == "table" then
+            gui.SuperCreate_Content(nav, fragment, nav_spawn_queue, nav_parent)
+        end
+    end
+
+    return nav, nav_spawn_queue
+end
+
+
+function gui.SuperCreate(data, uniqueName)
+    assertTableNice(data, "data")
+
+    local nav = {}
+    local nav_spawn_queue = {}
+
+    local nav_result = gui.SuperCreate_Content(nav, data, nav_spawn_queue)
+
+    local nav_panels = {}
+
+
+    local isUniqueFree = true
+    for id, nav_name in pairs(nav_spawn_queue) do
+        local dat = nav_result[nav_name]
+
+        local style = dat.style
+        local presets = dat.presets
+        local data = dat.data
+
+        local parent = dat.nav_parent
+
+        local pnlParent = parent and nav_panels[parent] or nil
+
+        local newUniqueName
+        if isUniqueFree then
+            newUniqueName = uniqueName
+            isUniqueFree = false
+        end
+
+        local pnl = gui.CreateStyled(style, pnlParent, newUniqueName, data, presets, true)
+        nav_panels[nav_name] = pnl
+    end
+
+    return nav_panels, nav_result
+end
+
+
+local nav_result = gui.SuperCreate(
+{
+    {
+        {"main", "frame"};
+        {size = {300, 500}, title = "SuperCreate"};
+        {};
+        {
+            {"content", "content"};
+            {};
+            {};
+            {
+                {
+                    {"items", "list"}
+                };
+                {
+                    {"add_point", "button"};
+                    {"dock_bottom", text = "Add Point"};
+                };
+                {
+                    {"remove_all", "button"};
+                    {"dock_bottom", text = "Remove All Points"};
+                };
+                {
+                    {"test_lastpos", "button"};
+                    {"dock_bottom", text = "Test Last"};
+                }
+            }
+        }
+    }
+}, "Name")

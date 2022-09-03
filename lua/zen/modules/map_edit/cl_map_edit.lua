@@ -7,31 +7,42 @@ local gui = zen.Import("gui")
 map_edit.hookName = "zen.map_edit"
 
 map_edit.t_Mods = map_edit.t_Mods or {}
+map_edit.t_ModsNames = map_edit.t_ModsNames or {}
 function map_edit.RegisterMode(mode_name)
 	if map_edit.t_Mods[mode_name] then return map_edit.t_Mods[mode_name] end
-	map_edit.t_Mods[mode_name] = table.Count(map_edit.t_Mods) + 1
-	return map_edit.t_Mods[mode_name]
+	local new_id = table.Count(map_edit.t_Mods) + 1
+	map_edit.t_Mods[mode_name] = new_id
+	map_edit.t_ModsNames[new_id] = mode_name
+	return new_id
 end
 
-local MODE_DEFAULT = map_edit.RegisterMode("default")
+local MODE_DEFAULT = map_edit.RegisterMode("Default")
 
 map_edit.ViewData = map_edit.ViewData or {}
 local vw = map_edit.ViewData
 
+function map_edit.SetMode(mode)
+	local old_mode = vw.mode
+	vw.mode = mode
+	hook.Run("zen.map_edit.OnModeChange", vw, old_mode, mode)
+end
+
 function map_edit.SetupViewData()
-	local ply = LocalPlayer()
 	table.Empty(map_edit.ViewData)
 
 	vw.t_Positions = {}
 	vw.nextOriginUpdate = CurTime()
 
-	vw.angles = ply:EyeAngles()
-	vw.origin = ply:EyePos()
-	vw.StartAngles = ply:EyeAngles()
-end
-map_edit.SetupViewData()
+	local view = render.GetViewSetup()
 
-vw.mode = MODE_DEFAULT
+	vw.angles = view.angles
+	vw.origin = view.origin
+	vw.StartAngles = vw.angles
+
+	map_edit.SetMode(MODE_DEFAULT)
+end
+
+
 ui.CreateFont("map_edit.Button", 6, "Roboto", {underline = true, extended = 300})
 
 function map_edit.GetAngleString(ang)
@@ -72,14 +83,40 @@ function map_edit.GenerateGUI(pnlContext, mark_panels)
 				{};
 				{};
 				{
-					{"items", "list"};
-					{};
-					{};
+					{
+						{"items", "list"};
+						{};
+						{};
+					};
+					{
+						{"mode_status", "text"};
+						{"dock_top", text = "--Mode Status--"};
+					};
+					{
+						{"instructions", "text"};
+						{"dock_bottom", text = "instructions"};
+					};
 				}
 			}
 		}
 	}, "map_edit")
 	table.insert(mark_panels, nav.main)
+
+	function nav.mode_status:SetMode(mode)
+		mode = mode or vw.mode
+		local mode_name = map_edit.t_ModsNames[mode] or "unknown"
+		nav.mode_status:SetText("--- " .. tostring(mode_name) .. " ---")
+	end
+	nav.mode_status:SetMode()
+
+	nav.instructions:SetText([[IN_RELOAD - Default Mode]])
+	nav.instructions:SizeToContents()
+	
+	hook.Add("zen.map_edit.OnModeChange", "zen.map_edit.setmode", function(vw, old, new)
+		if not IsValid(nav.mode_status) then return end
+		nav.mode_status:SetMode(new)
+	end)
+
 
 	hook.Run("zen.map_edit.GenerateGUI", nav, pnlContext, vw)
 end
@@ -103,9 +140,10 @@ function map_edit.Toggle()
 		return
 	end
 
+	map_edit.SetupViewData()
+
 	map_edit.GenerateGUI(g_ContextMenu, map_edit.t_Panels)
 
-	map_edit.SetupViewData()
 
 	hook.Add("CalcView", map_edit.hookName, map_edit.CalcView)
 	hook.Add("StartCommand", map_edit.hookName, map_edit.StartCommand)
@@ -211,8 +249,7 @@ hook.Add("PlayerButtonPress", "zen.map_edit", function(ply, but)
 	if not map_edit.IsActive then return end
 
 	if bind == IN_RELOAD then
-		vw.mode = MODE_DEFAULT
-		hook.Run("zen.map_edit.OnModeChange", ply, but, bind, vw)
+		map_edit.SetMode(MODE_DEFAULT)
 		return
 	end
 

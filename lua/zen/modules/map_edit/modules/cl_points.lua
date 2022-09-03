@@ -3,8 +3,8 @@ local map_edit = zen.Init("map_edit")
 local ui, draw, draw3d, draw3d2d = zen.Import("ui", "ui.draw", "ui.draw3d", "ui.draw3d2d")
 local GetVectorString, GetAngleString = zen.Import("map_edit.GetVectorString", "map_edit.GetVectorString")
 
-local MODE_DEFAULT = map_edit.RegisterMode("default")
-local MODE_EDIT_POINT = map_edit.RegisterMode("edit_points")
+local MODE_DEFAULT = map_edit.RegisterMode("Default")
+local MODE_EDIT_POINT = map_edit.RegisterMode("Edit Points")
 
 local clr_white_alpha = Color(255,255,255,100)
 hook.Add("zen.map_edit.Render", "points", function(rendermode, priority, vw)
@@ -38,10 +38,6 @@ hook.Add("zen.map_edit.Render", "points", function(rendermode, priority, vw)
 			else
 				draw3d2d.Text(vw.lastTrace.HitPos, nil, 0.1, true, "---- MODE: Point Edit ----", 10, 0, y, COLOR.WHITE, 1, 1, COLOR.BLACK)
 			end
-			
-			y = y - 35
-			draw3d2d.Text(vw.lastTrace.HitPos, nil, 0.1, true, "Default Mode", 10, 0, y, COLOR.WHITE, 1, 1, COLOR.BLACK)
-			draw3d2d.Text(vw.lastTrace.HitPos, nil, 0.1, true, "IN_RELOAD", "map_edit.Button", 0, y-15, COLOR.WHITE, 1, 1, COLOR.BLUE)
 
 			if vw.edit_point then
 				y = y - 40
@@ -269,8 +265,8 @@ hook.Add("zen.map_edit.Render", "points", function(rendermode, priority, vw)
 	end
 end)
 
-hook.Add("zen.map_edit.OnModeChange", "points", function(ply, but, bind, vw)
-    if vm.mode != MODE_DEFAULT then
+hook.Add("zen.map_edit.OnModeChange", "points", function(vw, old, new)
+    if old == MODE_EDIT_POINT then
         vw.edit_point = nil
     end
 end)
@@ -345,7 +341,7 @@ end)
 hook.Add("zen.map_edit.GenerateGUI", "points", function(nav, pnlContext, vw)
     nav.items:zen_AddStyled("button", {"dock_top", text = "MODE: Edit", cc = {
         DoClick = function()
-            vw.mode = MODE_EDIT_POINT
+			map_edit.SetMode(MODE_EDIT_POINT)
         end
     }})
 end)

@@ -343,12 +343,9 @@ end)
 
 
 hook.Add("zen.map_edit.GenerateGUI", "points", function(nav, pnlContext, vw)
-
     nav.items:zen_AddStyled("button", {"dock_top", text = "MODE: Edit", cc = {
         DoClick = function()
             vw.mode = MODE_EDIT_POINT
         end
     }})
-    
-
 end)

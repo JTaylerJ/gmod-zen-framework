@@ -15,10 +15,11 @@ end
 
 local MODE_DEFAULT = map_edit.RegisterMode("default")
 
-local vw
+map_edit.ViewData = map_edit.ViewData or {}
+local vw = map_edit.ViewData
+
 function map_edit.SetupViewData()
-	map_edit.ViewData = {}
-	vw = map_edit.ViewData
+	table.Empty(map_edit.ViewData)
 
 	vw.t_Positions = {}
 	vw.nextOriginUpdate = CurTime()

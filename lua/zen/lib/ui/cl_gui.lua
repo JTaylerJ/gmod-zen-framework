@@ -5,7 +5,7 @@ gui.t_StylePanels =gui.t_StylePanels or {}
 gui.t_Commands = gui.t_Commands or {}
 gui.t_CommandsAliases = gui.t_CommandsAliases or {}
 gui.t_UniquePanels = gui.t_UniquePanels or {}
-gui.t_Presets = gui.t_Presets or {}
+gui.t_PresetsParams = gui.t_PresetsParams or {}
 
 gui.proxyEmpty = gui.proxyEmpty or newproxy(true)
 gui.proxySkip = gui.proxySkip or newproxy(true)
@@ -47,6 +47,38 @@ end
 function gui.MergeParams(tSource, tDestination)
     local tActiveParams = {}
 
+    for k, v in pairs(tSource) do
+        if isnumber(k) then
+            local param
+
+            if isstring(v) then
+                param = gui.t_CommandsAliases[v]
+                if param == nil then error("param not exists: " .. tostring(v)) end
+            else
+                error("number-keys can't be not a string")
+            end
+
+            local old_value = tSource[param]
+            if old_value != nil then
+                tSource[param] = gui.SelectDuplicated(old_value, gui.proxyEmpty, param, v)
+            else
+                tSource[param] = gui.proxyEmpty
+            end
+            tActiveParams[param] = true
+        elseif isstring(k) then
+            local param = gui.t_CommandsAliases[k]
+            if param == nil then error("param not exists: " .. tostring(k)) end
+
+            local old_value = tSource[param]
+            if old_value != nil then
+                tSource[param] = gui.SelectDuplicated(old_value, v, param, k)
+            else
+                tSource[param] = v
+            end
+            tActiveParams[param] = true
+        end
+    end
+
     for k, v in pairs(tDestination) do
         if isnumber(k) then
             local param
@@ -84,7 +116,6 @@ function gui.MergeParams(tSource, tDestination)
             tSource[k] = nil
         end
     end
-
 end
 
 local ParamsPriority = {
@@ -210,13 +241,16 @@ function gui.Create(pnl_name, pnlParent, data, uniqueName, presets, isAdd)
     end
 
     if not pnlParent then
-        local pnlOwner = gui.GetParam(data)
+        local pnlOwner = gui.GetParam(data, "parent")
         pnlParent = pnlOwner
     end
 
     local pnl
     if pnlParent and isAdd then
         pnl = pnlParent:Add(pnl_name)
+        if uniqueName then
+            pnl:SetName(uniqueName)
+        end
     else
         pnl = vgui.Create(pnl_name, pnlParent, uniqueName)
     end
@@ -247,12 +281,12 @@ function gui.Create(pnl_name, pnlParent, data, uniqueName, presets, isAdd)
     if presets then
         if not istable(presets) then presets = {presets} end
         for _, presetName in ipairs(presets) do
-            local tPreset = gui.t_Presets[presetName]
+            local tPreset = gui.t_PresetsParams[presetName]
             if tPreset == nil then
                 pnl:Remove()
                 error("preset not exists: " .. presetName)
             end
-            gui.MergeTables(tData, tPreset)
+            gui.MergeParams(tData, tPreset)
         end
     end
 
@@ -266,13 +300,13 @@ function gui.RegisterPreset(preset_name, preset_base, data)
     local tPreset = {}
 
     if preset_base then
-        local tPresetBase = gui.t_Presets[preset_base]
+        local tPresetBase = gui.t_PresetsParams[preset_base]
         assert(tPresetBase != nil, "preset_base not exists")
-        gui.MergeTables(tPreset, tPresetBase)
+        gui.MergeParams(tPreset, tPresetBase)
     end
 
-    gui.MergeTables(tPreset, data)
-    gui.t_Presets[preset_name] = tPreset
+    gui.MergeParams(tPreset, data)
+    gui.t_PresetsParams[preset_name] = tPreset
 end
 
 function gui.RegisterParam(param, func, aliases)
@@ -305,12 +339,12 @@ function gui.CreateStyled(styleName, pnlParent, uniqueName, extraData, extraPres
     if tStylePanel.presets then
         gui.MergeTables(tPresets, tStylePanel.presets)
     end
-    if extraPresets then
-        gui.MergeTables(tPresets, extraPresets)
-    end
-
     if tStylePanel.data then
         gui.MergeParams(tData, tStylePanel.data)
+    end
+
+    if extraPresets then
+        gui.MergeTables(tPresets, extraPresets)
     end
     if extraData then
         gui.MergeParams(tData, extraData)

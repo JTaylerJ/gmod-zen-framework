@@ -1,6 +1,12 @@
 local ui = zen.Init("ui")
 local gui = zen.Init("gui")
 
+gui.RegisterParam("tPanel", function(pnl, value)
+    for k, v in pairs(value) do
+        pnl[k] = v
+    end
+end)
+
 gui.RegisterParam("set_size_middle", function(pnl, value)
     value = value or 0
     local pnlOwner = pnl:GetParent()

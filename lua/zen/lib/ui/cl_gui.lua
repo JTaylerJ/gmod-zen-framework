@@ -119,6 +119,7 @@ function gui.MergeParams(tSource, tDestination)
 end
 
 local ParamsPriority = {
+    "tPanel",
     "set_size",
     "set_wide",
     "set_tall",
@@ -314,9 +315,11 @@ function gui.RegisterParam(param, func, aliases)
     assertFunction(func, "func")
 
     gui.t_Commands[param] = func
-    gui.t_CommandsAliases[param] = func
-    for k, alias in ipairs(aliases) do
-        gui.t_CommandsAliases[alias] = param
+    gui.t_CommandsAliases[param] = param
+    if aliases then
+        for k, alias in ipairs(aliases) do
+            gui.t_CommandsAliases[alias] = param
+        end
     end
 end
 
@@ -350,13 +353,11 @@ function gui.CreateStyled(styleName, pnlParent, uniqueName, extraData, extraPres
         gui.MergeParams(tData, extraData)
     end
 
-    local pnl = gui.Create(tStylePanel.vguiBase, pnlParent, tData, uniqueName, tPresets, isAdd)
-
-    if tStylePanel.tPanel then
-        for k, v in pairs(tStylePanel.tPanel) do
-            pnl[k] = v
-        end
+    if istable(tStylePanel.tPanel) then
+        tData.tPanel = tStylePanel.tPanel
     end
+
+    local pnl = gui.Create(tStylePanel.vguiBase, pnlParent, tData, uniqueName, tPresets, isAdd)
 
     if pnl.zen_PostInit and not pnl.zen_bPostInitSucc then
         pnl.zen_bPostInitSucc = true
@@ -368,10 +369,10 @@ end
 
 function gui.RegisterStylePanel(styleName, tPanel, vguiBase, data, presets)
     assertStringNice(styleName, "styleName")
-    assert(istable(tPanel) or istable == nil, "tPanel presets should be table|nil")
+    assert(istable(tPanel) or tPanel == nil, "tPanel presets should be table|nil")
     assertStringNice(vguiBase, "vguiBase")
     assert(istable(data) or data == nil, "data should be table|nil")
-    assert(istable(presets) or presets == presets, "presets should be table|nil")
+    assert(istable(presets) or presets == nil, "presets should be table|nil")
 
     gui.t_StylePanels[styleName] = {}
     tPanel = tPanel or {}

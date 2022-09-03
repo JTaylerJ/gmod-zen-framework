@@ -42,11 +42,11 @@ zen.IncludeCL("zen/modules/map_edit/modules/cl_quick_menu.lua")
 
 zen.IncludeCL("zen/modules/map_edit/modules/cl_world_click.lua")
 
-zen.IncludeSH("zen/modules/map_edit/var_edit/sh_nvars.lua")
-zen.IncludeSV("zen/modules/map_edit/var_edit/sv_nvars.lua")
-zen.IncludeCL("zen/modules/map_edit/var_edit/cl_nvars.lua")
-zen.IncludeCL("zen/modules/map_edit/var_edit/cl_click.lua")
-zen.IncludeCL("zen/modules/map_edit/var_edit/vgui/iproperties.lua")
+zen.IncludeSH("zen/modules/map_edit/modules/var_edit/sh_nvars.lua")
+zen.IncludeSV("zen/modules/map_edit/modules/var_edit/sv_nvars.lua")
+zen.IncludeCL("zen/modules/map_edit/modules/var_edit/cl_nvars.lua")
+zen.IncludeCL("zen/modules/map_edit/modules/var_edit/cl_click.lua")
+zen.IncludeCL("zen/modules/map_edit/modules/var_edit/vgui/iproperties.lua")
 
 zen.IncludeSH("zen/integration/sh_lua_dev.lua")
 zen.IncludeSH("zen/integration/sh_gamemode.lua")

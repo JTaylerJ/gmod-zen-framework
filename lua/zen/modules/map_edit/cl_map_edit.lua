@@ -19,10 +19,15 @@ map_edit.ViewData = map_edit.ViewData or {}
 local vw = map_edit.ViewData
 
 function map_edit.SetupViewData()
+	local ply = LocalPlayer()
 	table.Empty(map_edit.ViewData)
 
 	vw.t_Positions = {}
 	vw.nextOriginUpdate = CurTime()
+
+	vw.angles = ply:EyeAngles()
+	vw.origin = ply:EyePos()
+	vw.StartAngles = ply:EyeAngles()
 end
 map_edit.SetupViewData()
 
@@ -60,7 +65,7 @@ function map_edit.GenerateGUI(pnlContext, mark_panels)
 	{
 		{
 			{"main", "frame"};
-			{size = {300, 400}, "center", sizable = true, parent = pnlContext, popup = gui.proxySkip, title = "MapEdit"};
+			{size = {300, 400}, "center", sizable = true, parent = pnlContext, popup = gui.proxySkip, title = "MapEdit", "save_pos"};
 			{};
 			{
 				{"content", "content"};
@@ -81,7 +86,6 @@ end
 
 
 function map_edit.Toggle()
-	local ply = LocalPlayer()
 	map_edit.IsActive = not map_edit.IsActive
 
 	if not map_edit.IsActive then
@@ -110,10 +114,6 @@ function map_edit.Toggle()
 	hook.Add("HUDShouldDraw", map_edit.hookName, map_edit.HUDShouldDraw)
 
 	nt.Send("map_edit.status", {"bool"}, {true})
-
-	vw.angles = ply:EyeAngles()
-	vw.origin = ply:EyePos()
-	vw.StartAngles = ply:EyeAngles()
 end
 
 function map_edit.PlayerSwitchWeapon(ply, wep)

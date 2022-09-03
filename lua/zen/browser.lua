@@ -42,6 +42,8 @@ zen.IncludeCL("zen/modules/hud/cl_hud.lua")
 
 zen.IncludeCL("zen/modules/map_edit/cl_map_edit.lua")
 zen.IncludeSV("zen/modules/map_edit/sv_map_edit.lua")
+zen.IncludeCL("zen/modules/map_edit/modules/cl_draw_entities.lua")
+zen.IncludeCL("zen/modules/map_edit/modules/cl_points.lua")
 
 zen.IncludeSH("zen/modules/world_click/sh_world_click.lua")
 zen.IncludeSV("zen/modules/world_click/sv_world_click.lua")

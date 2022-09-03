@@ -1,5 +1,5 @@
 local ui = zen.Init("ui")
-local gui = ui.Init("gui")
+local gui = zen.Init("gui")
 
 gui.RegisterParam("set_size_middle", function(pnl, value)
     value = value or 0
@@ -281,10 +281,11 @@ end, {
     "set_html",
 })
 
-gui.RegisterParam("set_keyboard_input", function(pnl, value)
+gui.RegisterParam("set_keyboard_input_enabled", function(pnl, value)
     value = value != nil and value or true
     pnl:SetKeyboardInputEnabled(value)
 end, {
+    "set_keyboard_input_enabled",
     "set_keyboard_input",
     "keyboard_input_enabled",
     "keyboard_input",

@@ -1,5 +1,5 @@
 local ui = zen.Init("ui")
-local gui = ui.Init("gui")
+local gui = zen.Init("gui")
 
 gui.t_StylePanels =gui.t_StylePanels or {}
 gui.t_Commands = gui.t_Commands or {}
@@ -7,9 +7,17 @@ gui.t_CommandsAliases = gui.t_CommandsAliases or {}
 gui.t_UniquePanels = gui.t_UniquePanels or {}
 gui.t_Presets = gui.t_Presets or {}
 
-gui.proxyEmpty = newproxy()
+gui.proxyEmpty = gui.proxyEmpty or newproxy(true)
+gui.proxySkip = gui.proxySkip or newproxy(true)
 
-function gui.MergeParams(tSource, tDestination)
+debug.setmetatable(gui.proxyEmpty, {__tostring = function() return "<gui.proxyEmpty>" end})
+debug.setmetatable(gui.proxySkip, {__tostring = function() return "<gui.proxySkip>" end})
+
+function gui.SelectDuplicated(val1, val2, param, key)
+    return val2
+end
+
+function gui.MergeTables(tSource, tDestination)
     local tSourceSingleParams = {}
 
     for k, v in pairs(tSource) do
@@ -30,9 +38,53 @@ function gui.MergeParams(tSource, tDestination)
 
     for k, v in pairs(tDestinationSingleParams) do
         if tSourceSingleParams[k] then continue end
+        if tSource[v] then continue end
 
         table.insert(tSource, k)
     end
+end
+
+function gui.MergeParams(tSource, tDestination)
+    local tActiveParams = {}
+
+    for k, v in pairs(tDestination) do
+        if isnumber(k) then
+            local param
+
+            if isstring(v) then
+                param = gui.t_CommandsAliases[v]
+                if param == nil then error("param not exists: " .. tostring(v)) end
+            else
+                error("number-keys can't be not a string")
+            end
+
+            local old_value = tSource[param]
+            if old_value != nil then
+                tSource[param] = gui.SelectDuplicated(old_value, gui.proxyEmpty, param, v)
+            else
+                tSource[param] = gui.proxyEmpty
+            end
+            tActiveParams[param] = true
+        elseif isstring(k) then
+            local param = gui.t_CommandsAliases[k]
+            if param == nil then error("param not exists: " .. tostring(k)) end
+
+            local old_value = tSource[param]
+            if old_value != nil then
+                tSource[param] = gui.SelectDuplicated(old_value, v, param, k)
+            else
+                tSource[param] = v
+            end
+            tActiveParams[param] = true
+        end
+    end
+
+    for k, v in pairs(tSource) do
+        if tActiveParams[k] == nil then
+            tSource[k] = nil
+        end
+    end
+
 end
 
 local ParamsPriority = {
@@ -52,6 +104,9 @@ local ParamsPriority = {
     "set_x",
     "set_y",
     "center",
+    "make_popup",
+    "set_keyboard_input_enabled",
+    "set_mouse_input_enabled",
 }
 
 function gui.ApplyParam(pnl, param, value)
@@ -59,6 +114,11 @@ function gui.ApplyParam(pnl, param, value)
     if not isfunction(func) then
         pnl:Remove()
         error("param not exists: " .. param)
+    end
+
+    if value == gui.proxySkip then return end
+    if value == gui.proxyEmpty then
+        value = nil
     end
 
     func(pnl, value)
@@ -74,7 +134,9 @@ function gui.GetClearedParams(data)
             local param = gui.t_CommandsAliases[k]
             if not param then return false, "param not exists: " .. k end
 
-            tParams[param] = v
+            if v != gui.proxySkip then
+                tParams[param] = v
+            end
         elseif isnumber(k) then
 
             if isstring(v) then
@@ -117,8 +179,6 @@ function gui.ApplyParams(pnl, data)
     for param, vParam in pairs(tParams) do
         if tCalled[param] then continue end
 
-        if vParam == gui.proxyEmpty then vParam = nil end
-
         gui.ApplyParam(pnl, param, vParam)
     end
 
@@ -134,12 +194,22 @@ function gui.ApplyParams(pnl, data)
     pnl.zen_tmp_Params = nil
 end
 
+function gui.GetParam(data, k)
+    local param = gui.t_CommandsAliases[k]
+    return data[param]
+end
+
 function gui.Create(pnl_name, pnlParent, data, uniqueName, presets, isAdd)
     if uniqueName then
         assertStringNice(uniqueName, "uniqueName")
 
         local lastPanel = gui.t_UniquePanels[uniqueName]
         if IsValid(lastPanel) then lastPanel:Remove() end
+    end
+
+    if not pnlParent then
+        local pnlOwner = gui.GetParam(data)
+        pnlParent = pnlOwner
     end
 
     local pnl
@@ -180,7 +250,7 @@ function gui.Create(pnl_name, pnlParent, data, uniqueName, presets, isAdd)
                 pnl:Remove()
                 error("preset not exists: " .. presetName)
             end
-            gui.MergeParams(tData, tPreset)
+            gui.MergeTables(tData, tPreset)
         end
     end
 
@@ -196,10 +266,10 @@ function gui.RegisterPreset(preset_name, preset_base, data)
     if preset_base then
         local tPresetBase = gui.t_Presets[preset_base]
         assert(tPresetBase != nil, "preset_base not exists")
-        gui.MergeParams(tPreset, tPresetBase)
+        gui.MergeTables(tPreset, tPresetBase)
     end
 
-    gui.MergeParams(tPreset, data)
+    gui.MergeTables(tPreset, data)
     gui.t_Presets[preset_name] = tPreset
 end
 
@@ -229,18 +299,18 @@ function gui.CreateStyled(styleName, pnlParent, uniqueName, extraData, extraPres
 
     local tPresets = {}
 
+    if tStylePanel.presets then
+        gui.MergeTables(tPresets, tStylePanel.presets)
+    end
+    if extraPresets then
+        gui.MergeTables(tPresets, extraPresets)
+    end
+
     if tStylePanel.data then
         gui.MergeParams(tData, tStylePanel.data)
     end
     if extraData then
         gui.MergeParams(tData, extraData)
-    end
-
-    if tStylePanel.presets then
-        gui.MergeParams(tPresets, tStylePanel.presets)
-    end
-    if extraPresets then
-        gui.MergeParams(tPresets, extraPresets)
     end
 
     local pnl = gui.Create(tStylePanel.vguiBase, pnlParent, tData, uniqueName, tPresets, isAdd)

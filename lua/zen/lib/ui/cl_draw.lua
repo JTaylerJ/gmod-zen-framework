@@ -56,7 +56,7 @@ end
 
 function draw.Text(text, font, x, y, clr, xalign, yalign, clrbg)
 	text	= tostring( text )
-	font	= ui_fonts[font] or ui.ffont(font)
+	font	= ui.ffont(font)
 	x		= x			        or 0
 	y		= y			        or 0
 	xalign	= xalign	        or 0

@@ -1066,6 +1066,18 @@ local E_DOOR_OPENING = 1
 local E_DOOR_OPENED = 2
 local E_DOOR_CLOSING = 3
 
+local doors_class = {}
+doors_class["func_door"] = true
+doors_class["func_door_rotating"] = true
+doors_class["prop_door_rotating"] = true
+doors_class["func_door"] = true
+doors_class["func_door"] = true
+
+
+function util.IsDoor(ent)
+    return doors_class[ent:GetClass()]
+end
+
 function util.IsDoorOpen(ent)
     local iDoorState = ent:GetInternalVariable("m_toggle_state")
     local iEDoorState = ent:GetInternalVariable("m_eDoorState")

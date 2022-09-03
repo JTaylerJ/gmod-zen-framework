@@ -112,3 +112,14 @@ function ui.ffont(font_fast)
 
 	return font_name
 end
+
+local s_SetFont = surface.SetFont
+local s_GetTextSize = surface.GetTextSize
+function ui.GetTextSize(text, font)
+	text	= tostring( text )
+	font	= ui.ffont(font)
+
+	s_SetFont( font )
+	local w, h = s_GetTextSize( text )
+	return w, h
+end

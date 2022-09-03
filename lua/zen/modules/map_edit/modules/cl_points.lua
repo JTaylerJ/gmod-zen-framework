@@ -277,7 +277,7 @@ end)
 
 
 hook.Add("zen.map_edit.OnButtonPress", "points", function(ply, but, bind, vw)
-    if vw.mode == MODE_EDIT_POINT then return end
+    if vw.mode != MODE_EDIT_POINT then return end
 
 
     if bind == IN_ATTACK then

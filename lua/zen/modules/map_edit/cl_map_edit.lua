@@ -6,8 +6,6 @@ local gui = zen.Import("gui")
 
 map_edit.hookName = "zen.map_edit"
 
-local MODE_EDIT_POINT = 1
-
 map_edit.t_Mods = map_edit.t_Mods or {}
 function map_edit.RegisterMode(mode_name)
 	if map_edit.t_Mods[mode_name] then return map_edit.t_Mods[mode_name] end
@@ -61,7 +59,7 @@ function map_edit.GenerateGUI(pnlContext, mark_panels)
 	{
 		{
 			{"main", "frame"};
-			{size = {300, 400}, pos = {100, 100}, sizable = true, popup = gui.proxySkip, title = "MapEdit"};
+			{size = {300, 400}, "center", sizable = true, parent = pnlContext, popup = gui.proxySkip, title = "MapEdit"};
 			{};
 			{
 				{"content", "content"};
@@ -77,7 +75,7 @@ function map_edit.GenerateGUI(pnlContext, mark_panels)
 	}, "map_edit")
 	table.insert(mark_panels, nav.main)
 
-	hook.Add("zen.map_edit.GenerateGUI", nav, pnlContext, vw)
+	hook.Run("zen.map_edit.GenerateGUI", nav, pnlContext, vw)
 end
 
 

@@ -149,8 +149,10 @@ function gui.GetClearedParams(data)
             else
                 return false, "UnSupported param type: " .. tostring(v) .. " - " .. type(v)
             end
+        elseif isfunction(k) then
+            table.insert(tFuncs, k)
         else
-            return false, "UnSupported type: " .. tostring(k) .. " - " .. type(k)
+            return false, "UnSupported type #2: " .. tostring(k) .. " - " .. type(k)
         end
     end
 
@@ -278,6 +280,7 @@ function gui.RegisterParam(param, func, aliases)
     assertFunction(func, "func")
 
     gui.t_Commands[param] = func
+    gui.t_CommandsAliases[param] = func
     for k, alias in ipairs(aliases) do
         gui.t_CommandsAliases[alias] = param
     end

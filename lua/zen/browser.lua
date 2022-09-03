@@ -14,6 +14,9 @@ zen.IncludeCL("zen/lib/ui/gui/cl_params.lua")
 zen.IncludeCL("zen/lib/ui/gui/cl_presets.lua")
 zen.IncludeCL("zen/lib/ui/gui/cl_panels.lua")
 
+zen.IncludeCL("zen/lib/ui/gui/panels/cl_input.lua")
+zen.IncludeCL("zen/lib/ui/gui/panels/cl_autosave.lua")
+
 zen.IncludeSH("zen/lib/network/sh_nt.lua")
 zen.IncludeSV("zen/lib/network/sv_nt.lua")
 zen.IncludeCL("zen/lib/network/cl_nt.lua")

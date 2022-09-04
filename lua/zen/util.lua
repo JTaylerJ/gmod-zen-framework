@@ -134,11 +134,27 @@ function util.StringToTYPE(value, value_type)
         elseif nType == TYPE.TABLE then
             return util.JSONToTable(value)
         elseif nType == TYPE.VECTOR then
-            return Vector( unpack(string.Explode(" ", value)) )
+            if value == nil or value == "" then return Vector(0, 0, 0) end
+            local dat = string.Explode(" ", value)
+            dat[1] = dat[1] or 0
+            dat[2] = dat[2] or 0
+            dat[3] = dat[3] or 0
+            return Vector( unpack(dat) )
         elseif nType == TYPE.ANGLE then
-            return Angle( unpack(string.Explode(" ", value)) )
+            if value == nil or value == "" then return Angle(0, 0, 0) end
+            local dat = string.Explode(" ", value)
+            dat[1] = dat[1] or 0
+            dat[2] = dat[2] or 0
+            dat[3] = dat[3] or 0
+            return Angle( unpack(dat) )
         elseif nType == TYPE.COLOR then
-            return Color( unpack(string.Explode(" ", value)) )
+            if value == nil or value == "" then return Color(255, 255, 255, 255) end
+            local dat = string.Explode(" ", value)
+            dat[1] = dat[1] or 255
+            dat[2] = dat[2] or 255
+            dat[3] = dat[3] or 255
+            dat[4] = dat[4] or 255
+            return Color( unpack(dat) )
         end
     else
         return nil

@@ -1,5 +1,6 @@
 local ui = zen.Init("ui")
 local gui = zen.Init("gui")
+local sub = string.sub
 
 gui.t_StylePanels =gui.t_StylePanels or {}
 gui.t_Commands = gui.t_Commands or {}
@@ -12,6 +13,44 @@ gui.proxySkip = gui.proxySkip or newproxy(true)
 
 debug.setmetatable(gui.proxyEmpty, {__tostring = function() return "<gui.proxyEmpty>" end})
 debug.setmetatable(gui.proxySkip, {__tostring = function() return "<gui.proxySkip>" end})
+
+
+
+function gui.GetAliasParam(alias)
+    local param = gui.t_CommandsAliases[alias]
+    if param != nil then return param end
+
+    local char1 = sub(alias, 1, 1)
+
+    if char1 == "!" then
+        local alias = sub(alias, 2)
+        local param = gui.t_CommandsAliases[alias]
+        if param != nil then return param, true end
+    end
+end
+
+function gui.GetParam(data, key, bErrOrStrErr)
+    local param, isNot = gui.GetAliasParam(key)
+
+    if param == nil then
+        error("param not exists: " .. tostring(key))
+    end
+
+    local value = data[param]
+
+    if value == nil then
+        if bErrOrStrErr == true then
+            error("param value not exists: " .. tostring(param) .. "|" .. tostring(key))
+        elseif isstring(bErrOrStrErr) then
+            error(bErrOrStrErr)
+        end
+    end
+
+    if isNot == true and (value == true or value == gui.proxyEmpty) then
+        value = false
+    end
+    return value, param
+end
 
 function gui.SelectDuplicated(val1, val2, param, key)
     return val2
@@ -49,16 +88,12 @@ function gui.MergeParams(tSource, tDestination)
 
     for k, v in pairs(tSource) do
         if isnumber(k) then
-            local param
 
-            if isstring(v) then
-                param = gui.t_CommandsAliases[v]
-                if param == nil then error("param not exists: " .. tostring(v)) end
-            else
+            if not isstring(v) then
                 error("number-keys can't be not a string")
             end
 
-            local old_value = tSource[param]
+            local old_value, param = gui.GetParam(tSource, v)
             if old_value != nil then
                 tSource[param] = gui.SelectDuplicated(old_value, gui.proxyEmpty, param, v)
             else
@@ -66,10 +101,8 @@ function gui.MergeParams(tSource, tDestination)
             end
             tActiveParams[param] = true
         elseif isstring(k) then
-            local param = gui.t_CommandsAliases[k]
-            if param == nil then error("param not exists: " .. tostring(k)) end
 
-            local old_value = tSource[param]
+            local old_value, param = gui.GetParam(tSource, k)
             if old_value != nil then
                 tSource[param] = gui.SelectDuplicated(old_value, v, param, k)
             else
@@ -81,16 +114,11 @@ function gui.MergeParams(tSource, tDestination)
 
     for k, v in pairs(tDestination) do
         if isnumber(k) then
-            local param
-
-            if isstring(v) then
-                param = gui.t_CommandsAliases[v]
-                if param == nil then error("param not exists: " .. tostring(v)) end
-            else
+            if not isstring(v) then
                 error("number-keys can't be not a string")
             end
 
-            local old_value = tSource[param]
+            local old_value, param = gui.GetParam(tSource, v)
             if old_value != nil then
                 tSource[param] = gui.SelectDuplicated(old_value, gui.proxyEmpty, param, v)
             else
@@ -98,10 +126,7 @@ function gui.MergeParams(tSource, tDestination)
             end
             tActiveParams[param] = true
         elseif isstring(k) then
-            local param = gui.t_CommandsAliases[k]
-            if param == nil then error("param not exists: " .. tostring(k)) end
-
-            local old_value = tSource[param]
+            local old_value, param = gui.GetParam(tSource, k)
             if old_value != nil then
                 tSource[param] = gui.SelectDuplicated(old_value, v, param, k)
             else
@@ -163,7 +188,7 @@ function gui.GetClearedParams(data)
 
     for k, v in pairs(data) do
         if isstring(k) then
-            local param = gui.t_CommandsAliases[k]
+            local param = gui.GetAliasParam(k)
             if not param then return false, "param not exists: " .. k end
 
             if v != gui.proxySkip then
@@ -172,7 +197,7 @@ function gui.GetClearedParams(data)
         elseif isnumber(k) then
 
             if isstring(v) then
-                local param = gui.t_CommandsAliases[v]
+                local param = gui.GetAliasParam(v)
                 if not param then return false, "param not exists: " .. v end
 
                 tParams[param] = gui.proxyEmpty
@@ -226,11 +251,6 @@ function gui.ApplyParams(pnl, data)
     end
 
     pnl.zen_tmp_Params = nil
-end
-
-function gui.GetParam(data, k)
-    local param = gui.t_CommandsAliases[k]
-    return data[param]
 end
 
 function gui.Create(pnl_name, pnlParent, data, uniqueName, presets, isAdd)

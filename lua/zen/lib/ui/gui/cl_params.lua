@@ -121,7 +121,7 @@ end, {
 })
 
 gui.RegisterParam("set_auto_delete", function(pnl, value)
-    value = value != nil and value or true
+    if value == nil then value = true end
     pnl:SetAutoDelete(value)
 end, {
     "set_auto_delete",
@@ -205,7 +205,7 @@ end, {
 })
 
 gui.RegisterParam("set_draw_language_id_at_left", function(pnl, value)
-    value = value != nil and value or true
+    if value == nil then value = true end
     pnl:SetDrawLanguageIDAtLeft(value)
 end, {
     "draw_language_id_at_left",
@@ -215,7 +215,7 @@ end, {
 })
 
 gui.RegisterParam("set_draw_on_top", function(pnl, value)
-    value = value != nil and value or true
+    if value == nil then value = true end
     pnl:SetDrawOnTop(value)
 end, {
     "draw_on_top",
@@ -231,7 +231,7 @@ end, {
 })
 
 gui.RegisterParam("set_enabled", function(pnl, value)
-    value = value != nil and value or true
+    if value == nil then value = true end
     pnl:SetEnabled(value)
 end, {
     "set_enabled",
@@ -239,7 +239,7 @@ end, {
 })
 
 gui.RegisterParam("set_disable", function(pnl, value)
-    value = value != nil and value or true
+    if value == nil then value = true end
     pnl:SetEnabled(not value)
 end, {
     "set_disable",
@@ -262,7 +262,7 @@ end, {
 })
 
 gui.RegisterParam("set_focus_top_level", function(pnl, value)
-    value = value != nil and value or true
+    if value == nil then value = true end
     pnl:SetFocusTopLevel(value)
 end, {
     "set_focus_top_level",
@@ -291,7 +291,7 @@ end, {
 })
 
 gui.RegisterParam("set_keyboard_input_enabled", function(pnl, value)
-    value = value != nil and value or true
+    if value == nil then value = true end
     pnl:SetKeyboardInputEnabled(value)
 end, {
     "set_keyboard_input_enabled",
@@ -332,7 +332,7 @@ end, {
 })
 
 gui.RegisterParam("set_mouse_input_enabled", function(pnl, value)
-    value = value != nil and value or true
+    if value == nil then value = true end
     pnl:SetKeyboardInputEnabled(value)
 end, {
     "set_mouse_input_enabled",
@@ -349,7 +349,7 @@ end, {
 })
 
 gui.RegisterParam("set_paint_background_enabled", function(pnl, value)
-    value = value != nil and value or true
+    if value == nil then value = true end
     pnl:SetPaintBackgroundEnabled(value)
 end, {
     "set_paint_background_enabled",
@@ -362,7 +362,7 @@ end, {
 })
 
 gui.RegisterParam("set_paint_border_enabled", function(pnl, value)
-    value = value != nil and value or true
+    if value == nil then value = true end
     pnl:SetPaintBorderEnabled(value)
 end, {
     "set_paint_border_enabled",
@@ -372,7 +372,7 @@ end, {
 })
 
 gui.RegisterParam("set_painted_manually", function(pnl, value)
-    value = value != nil and value or true
+    if value == nil then value = true end
     pnl:SetPaintedManually(value)
 end, {
     "set_painted_manually",
@@ -399,7 +399,7 @@ end, {
 })
 
 gui.RegisterParam("set_popup_stay_at_back", function(pnl, value)
-    value = value != nil and value or true
+    if value == nil then value = true end
     pnl:SetPopupStayAtBack(value)
 end, {
     "set_popup_stay_at_back",
@@ -418,7 +418,7 @@ end, {
 })
 
 gui.RegisterParam("set_render_in_screenshots", function(pnl, value)
-    value = value != nil and value or true
+    if value == nil then value = true end
     pnl:SetRenderInScreenshots(value)
 end, {
     "set_render_in_screenshots",
@@ -430,7 +430,7 @@ end, {
 })
 
 gui.RegisterParam("set_selectable", function(pnl, value)
-    value = value != nil and value or true
+    if value == nil then value = true end
     pnl:SetSelectable(value)
 end, {
     "set_selectable",
@@ -438,7 +438,7 @@ end, {
 })
 
 gui.RegisterParam("set_selected", function(pnl, value)
-    value = value != nil and value or true
+    if value == nil then value = true end
     pnl:SetSelected(value)
 end, {
     "set_selected",
@@ -555,7 +555,7 @@ end, {
 })
 
 gui.RegisterParam("set_vertical_scrollbar_enabled", function(pnl, value)
-    value = value != nil and value or true
+    if value == nil then value = true end
     pnl:SetVerticalScrollbarEnabled(value)
 end, {
     "set_vertical_scrollbar_enabled",
@@ -564,7 +564,7 @@ end, {
 })
 
 gui.RegisterParam("set_visible", function(pnl, value)
-    value = value != nil and value or true
+    if value == nil then value = true end
     pnl:SetVisible(value)
 end, {
     "set_visible",
@@ -572,7 +572,7 @@ end, {
 })
 
 gui.RegisterParam("set_world_clicker", function(pnl, value)
-    value = value != nil and value or true
+    if value == nil then value = true end
     pnl:SetWorldClicker(value)
 end, {
     "set_world_clicker",
@@ -583,7 +583,7 @@ end, {
 })
 
 gui.RegisterParam("set_wrap", function(pnl, value)
-    value = value != nil and value or true
+    if value == nil then value = true end
     pnl:SetWrap(value)
 end, {
     "set_wrap",
@@ -641,7 +641,7 @@ end, {
 })
 
 gui.RegisterParam("set_sizable", function(pnl, value)
-    value = value != nil and value or true
+    if value == nil then value = true end
     pnl:SetSizable(value)
 end, {
     "set_sizable",
@@ -663,7 +663,7 @@ end, {
 })
 
 gui.RegisterParam("center_horizontal", function(pnl, value)
-    value = value != nil and value or 0.5
+    if value == nil then value = 0.5 end
     pnl:CenterHorizontal(value)
 end, {
     "center_horizontal",
@@ -681,7 +681,7 @@ end, {
 })
 
 gui.RegisterParam("center_vertical", function(pnl, value)
-    value = value != nil and value or 0.5
+    if value == nil then value = 0.5 end
     pnl:CenterVertical(value)
 end, {
     "center_vertical",

@@ -33,20 +33,31 @@ function izen.print(...)
 end
 zen.print = izen.print
 
+izen.old = izen.old or {}
+zen.old = izen.old
 
-function izen.Init(module_name)
-    if izen[module_name] then return izen[module_name] end
-    izen[module_name] = {}
-    local module_table = izen[module_name]
-    zen[module_name] = module_table
+function izen.Init(...)
+    local to_init = {...}
+    local tResult = {}
+    for _, module_name in ipairs(to_init) do
+        local last_module = "izen"
+        local module_table = izen
+        local modules_arg = string_Split(module_name, ".")
+        for i, sub_module_name in ipairs(modules_arg) do
+            last_module = last_module .. "." .. sub_module_name
+            module_table[sub_module_name] = module_table[sub_module_name] or {}
+            module_table = module_table[sub_module_name]
+            assert(istable(module_table), "\"" .. sub_module_name .. "\" name is taken \"" .. (last_module) .. "\"")
+        end
 
-    module_table.Init = function(sub_module_name)
-        if module_table[sub_module_name] then return module_table[sub_module_name] end
-        module_table[sub_module_name] = {}
-        return module_table[sub_module_name]
+        if not module_table or module_table == izen then
+            error("Module not exists")
+        end
+
+        table.insert(tResult, module_table)
     end
-    
-    return module_table
+
+    return unpack(tResult)
 end
 zen.Init = izen.Init
 

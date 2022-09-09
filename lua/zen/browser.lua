@@ -1,3 +1,4 @@
+zen.IncludeSH("zen/config.lua")
 zen.IncludeSH("zen/util.lua")
 zen.IncludeSH("zen/lib/hook.lua")
 zen.IncludeSH("zen/lib/string.lua")

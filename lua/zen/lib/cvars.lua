@@ -78,3 +78,13 @@ function cvars.SetValue(cvar_name, value)
     cvars.OnChange(cvar_name, value)
 end
 
+
+function cvars.GetValue(cvar_name, typen)
+    local value = CVARS_VALUES[cvar_name]
+    if value != nil then return value end
+
+    local value = GetConVar(cvar_name):GetString()
+    
+    return util.StringToTYPE(value, typen)
+end
+

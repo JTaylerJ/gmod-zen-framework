@@ -97,8 +97,6 @@ end
 
 function iperm.PlayerHasPermission(sid64, perm_name, target, isSilent)
     if icfg.Admins[sid64] then return true end
-    if cvars.GetValue("sv_cheats", TYPE.BOOL) then return true end
-
     local tPlayerPerm = iperm.PlayerGetPermission(sid64, perm_name)
     local sError = "unknown"
     local tPermission = iperm.mt_Permissions[perm_name]

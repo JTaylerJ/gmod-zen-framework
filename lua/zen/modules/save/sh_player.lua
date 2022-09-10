@@ -16,9 +16,10 @@ end
 function save.SetPlayerValue(PID, key, value1, value2, value3, value4, value5)
     local sid64 = getSteamID64(PID)
 
+    save.SetCachedPlayerValue(PID, key, value1, value2, value3, value4, value5)
+
     return save.SetSaveValue(sid64, "PlayerValue", key, nil, nil, value1, value2, value3, value4, value5)
 end
-
 
 function save.GetPlayerValueListAll(PID)
     local sid64 = getSteamID64(PID)
@@ -32,18 +33,63 @@ function save.GetPlayerValueList(PID, key)
     return save.GetSaveValue(sid64, "PlayerValue", key, nil, nil)
 end
 
+function save.GetPlayerCachedValueList(PID)
+    local sid64 = getSteamID64(PID)
+
+    local tCached = save.t_CachedPlayerValues[sid64]
+
+    if tCached == nil then
+        save.CachePlayerValues()
+    end
+
+    save.t_CachedPlayerValues[sid64] = save.t_CachedPlayerValues[sid64] or {}
+
+    return save.t_CachedPlayerValues[sid64]
+end
+
+
+function save.SetCachedPlayerValue(PID, key, value1, value2, value3, value4, value5)
+    local tCached = save.GetPlayerCachedValueList(PID)
+
+    tCached[key] = {value1, value2, value3, value4, value5}
+end
+
+function save.GetCachedPlayerValue(PID, key)
+    local sid64 = getSteamID64(PID)
+
+    local tCached = save.GetPlayerCachedValueList(PID)
+
+    if tCached[key] != nil then
+        return unpack(tCached[key])
+    end
+end
+
 function save.CachePlayerValues(PID)
     local sid64 = getSteamID64(PID)
 
     save.t_CachedPlayerValues[sid64] = {}
     local _, data = save.GetPlayerValueListAll(sid64)
 
-    table.Merge(save.t_CachedPlayerValues, data)
+    local dat = data[sid64] and data[sid64].PlayerValue
+    if dat then
+        for k, v in pairs(dat) do
+            save.t_CachedPlayerValues[sid64][k] = table.Copy(v.v)
+        end
+    end
 end
 
--- save.SetPlayerValue("76561198272243731", "UserGround", true)
--- save.SetPlayerValue("76561198272243731", "UserGround.Hiden", "superadmin", "local")
--- -- save.SetPlayerValue("76561198272243731", "AllPerms", "testing2")
--- -- save.SetPlayerValue("76561198272243731", "TestingVar", 10)
+function META.PLAYER:zen_SetPData(key, value1, value2, value3, value4, value5)
+    save.SetPlayerValue(self, key, value1, value2, value3, value4, value5)
+end
 
--- save.CachePlayerValues("76561198272243731")
+function META.PLAYER:zen_GetPData(key)
+    local sid64 = getSteamID64(self)
+
+    if not save.t_CachedPlayerValues[sid64] then save.CachePlayerValues(sid64) end
+
+    local tCache = save.t_CachedPlayerValues[sid64]
+
+    if tCache[key] then
+        return unpack(tCache[key])
+    end
+end

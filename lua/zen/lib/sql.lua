@@ -20,18 +20,28 @@ local sql_no_quotas = {
 }
 
 local sql_types = {
-    ["to_string"] = function(var) return tostring(var) end,
+    ["default"] = function(var) return tostring(var) end,
+    ["column"] = function(var) return "`" .. sql.SQLStr(var, true) .. "`" end,
     ["sql_string"] = function(var) return sql_no_quotas[var] and var or sql.SQLStr(var) end,
     ["sql_string_noquotas"] = function(var) return sql.SQLStr(var, true) end,
+    ["auto"] = function(var)
+        if isnumber(var) then
+            return var
+        elseif isstring(var) then
+            return sql_no_quotas[var] and var or sql.SQLStr(var)
+        else
+            error("incorrent type: " .. type(var))
+        end
+    end,
 }
 
 local phrase_alias = {
     ["os_time"] = function() return os.time() end,
 }
 
-sql_types["int"] = sql_types["to_string"]
-sql_types["number"] = sql_types["to_string"]
-sql_types["n"] = sql_types["to_string"]
+sql_types["int"] = sql_types["default"]
+sql_types["number"] = sql_types["default"]
+sql_types["n"] = sql_types["default"]
 
 sql_types["string"] = sql_types["sql_string"]
 sql_types["str"] = sql_types["sql_string"]
@@ -44,8 +54,13 @@ sql_types["string_nq"] = sql_types["sql_string_noquotas"]
 sql_types["str_nq"] = sql_types["sql_string_noquotas"]
 sql_types["s_nq"] = sql_types["sql_string_noquotas"]
 
+--- @param self string
 function string.InterpolateSQL(self, tab, onlyText)
     return string.InterpolateConfig(self, sql_types, phrase_alias, tab, onlyText)
+end
+
+function string.InterpolateSQL_Type(type, value)
+    return sql_types[type](value)
 end
 
 --- -  Use `nq_`ArgsKey for disable auto SQLStr
@@ -61,6 +76,6 @@ function sql.QueryErrorLogInterpolate(query, args)
         print(new_qe)
         error("SQL Error: " .. sql.LastError())
     end
-    
+
     return res, new_qe
 end

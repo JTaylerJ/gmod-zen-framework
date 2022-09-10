@@ -26,6 +26,8 @@ zen.IncludeSH("zen/lib/network/channels/sh_channel_lua.lua")
 zen.IncludeSH("zen/lib/network/channels/sh_string_id.lua")
 zen.IncludeSH("zen/lib/network/channels/sh_entity_vars.lua")
 
+zen.IncludeSH("zen/modules/save/sh_base.lua")
+zen.IncludeSH("zen/modules/save/sh_player.lua")
 zen.IncludeSH("zen/modules/permission/sh_permission.lua")
 zen.IncludeSV("zen/modules/permission/sv_permission.lua")
 zen.IncludeCL("zen/modules/permission/cl_permission.lua")

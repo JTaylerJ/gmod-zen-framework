@@ -140,6 +140,8 @@ function map_edit.Toggle()
 		return
 	end
 
+	if not LocalPlayer():izen_HasPerm("map_edit") then return end
+
 	map_edit.SetupViewData()
 
 	map_edit.GenerateGUI(g_ContextMenu, map_edit.t_Panels)

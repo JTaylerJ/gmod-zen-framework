@@ -10,7 +10,7 @@ function draw3d.Line(pos1, pos2, clr)
     local succ2, x2, y2 = draw3d.GetTextPosition(pos2)
 
     if succ1 or succ2 then
-        draw.DrawLine(x1, y1, x2, y2, clr)
+        draw.Line(x1, y1, x2, y2, clr)
     end
 end
 

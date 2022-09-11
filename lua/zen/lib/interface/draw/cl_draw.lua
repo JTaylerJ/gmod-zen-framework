@@ -20,7 +20,7 @@ local cos = math.cos
 local math_ceil = math.ceil
 local tostring = tostring
 
-function draw.DrawLine(x1, y1, x2, y2, clr)
+function draw.Line(x1, y1, x2, y2, clr)
     if clr then
         s_SetDrawColor(clr.r, clr.g, clr.b, clr.a)
     else

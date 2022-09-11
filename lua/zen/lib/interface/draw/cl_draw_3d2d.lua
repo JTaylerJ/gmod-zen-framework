@@ -53,7 +53,7 @@ local v1, v2, v3, v4, v5
 function draw3d2d.Line(pos, ang, scale, ignorez, ...)
     pos, ang, scale, ignorez = getCam3d2dBase(pos, ang, scale, ignorez)
     start3d2d(pos, ang, scale, ignorez)
-        v1, v2, v3, v4, v5 = draw.DrawLine(...)
+        v1, v2, v3, v4, v5 = draw.Line(...)
     end3d2d(ignorez)
     return v1, v2, v3, v4, v5
 end

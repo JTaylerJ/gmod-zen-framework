@@ -11,3 +11,25 @@ icmd.registerCommand("perm.set", {"sid64", "string", "string", "string", "string
 
     return true, sResult
 end)
+
+iperm.RegisterPermission("base", iperm.flags.NO_TARGET, "Permissions for base commands")
+
+icmd.registerCommand("auth", {}, function(ply)
+    if ply:zen_GetVar("auth") then
+        return false, "You already authed"
+    end
+
+    ply:zen_SetVar("auth", true)
+
+    return true, "Sucess Auth"
+end, "base")
+
+icmd.registerCommand("unauth", {}, function(ply)
+    if not ply:zen_GetVar("auth") then
+        return false, "You already authed"
+    end
+
+    ply:zen_SetVar("auth", false)
+
+    return true, "Sucess UnAuth"
+end, "base")

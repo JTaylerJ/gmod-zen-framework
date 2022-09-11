@@ -6,7 +6,7 @@ iperm.RegisterPermission("gm.ultimate_keys", iperm.flags.NO_TARGET, "Allow your 
 
 
 hook.Add("PlayerHasHunger", "zen.integration", function(ply)
-    if ply:izen_HasPerm("gm.no_hunger") then return false end
+    if ply:zen_HasPerm("gm.no_hunger") then return false end
 end)
 
 hook.Add("OnHandcuffed", "zen.integration", function(who, target, cuff)
@@ -44,7 +44,7 @@ end)
 hook.Add("PlayerSwitchWeapon", "zen.integration", function (ply, old, new)
     if not IsValid(new) then return end
 
-    if ply:izen_HasPerm("gm.anti_cuffs") then
+    if ply:zen_HasPerm("gm.anti_cuffs") then
         if SERVER then
             if new:GetClass() == "weapon_handcuffed" then
                 timer.Simple(0, function()
@@ -58,7 +58,7 @@ hook.Add("PlayerSwitchWeapon", "zen.integration", function (ply, old, new)
         end
     end
 
-    if ply:izen_HasPerm("gm.many_ammo") then
+    if ply:zen_HasPerm("gm.many_ammo") then
         if SERVER then
             local ammo1 = new:GetPrimaryAmmoType()
             local clip1 = new:GetMaxClip1()
@@ -74,7 +74,7 @@ hook.Add("PlayerSwitchWeapon", "zen.integration", function (ply, old, new)
         end
     end
 
-    if ply:izen_HasPerm("gm.many_snowballs") then
+    if ply:zen_HasPerm("gm.many_snowballs") then
         if SERVER then
             if new.SetSnowballCount then
                 new:SetSnowballCount(999999)
@@ -82,7 +82,7 @@ hook.Add("PlayerSwitchWeapon", "zen.integration", function (ply, old, new)
         end
     end
 
-    if ply:izen_HasPerm("gm.good_med_kit") then
+    if ply:zen_HasPerm("gm.good_med_kit") then
         if new:GetClass() == "med_kit" then
             new.Heal = 25
             new.Primary.Delay = 0.02
@@ -90,7 +90,7 @@ hook.Add("PlayerSwitchWeapon", "zen.integration", function (ply, old, new)
         end
     end
 
-    if ply:izen_HasPerm("gm.ultimate_keys") and rp and rp.properties and rp.notify then
+    if ply:zen_HasPerm("gm.ultimate_keys") and rp and rp.properties and rp.notify then
         if new:GetClass() == "keys" then
             function new:PrimaryAttack()
                 self:SetNextPrimaryFire( CurTime() + 0.5 )
@@ -157,7 +157,7 @@ hook.Add("PlayerSwitchWeapon", "zen.integration", function (ply, old, new)
 end)
 
 hook.Add("CanKnockoutPlayer", "zen.integration", function(ply)
-    if ply:izen_HasPerm("zen.AntiKnockout") then return false end
+    if ply:zen_HasPerm("zen.AntiKnockout") then return false end
 end)
 
 icmd.registerCommand("respawn", {}, function(ply)
@@ -298,5 +298,5 @@ hook.Add("fl.RestrictTargetSID", "zen.afkBlock", function(ply, sid, command, arg
 end)
 
 hook.Add("fl.Printer.OverUpgrade", "zen.Interpolate", function(ply, printer, upgrade, next_level)
-    if ply:izen_HasPerm("zen.Printer.OverUpgrade") then return true end
+    if ply:zen_HasPerm("zen.Printer.OverUpgrade") then return true end
 end)

@@ -140,7 +140,7 @@ function map_edit.Toggle()
 		return
 	end
 
-	if not LocalPlayer():izen_HasPerm("map_edit") then return end
+	if not LocalPlayer():zen_HasPerm("map_edit") then return end
 
 	map_edit.SetupViewData()
 

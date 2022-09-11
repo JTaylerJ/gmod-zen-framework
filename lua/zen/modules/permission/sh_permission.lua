@@ -241,7 +241,7 @@ function iperm.RegisterPermission(perm_name, flags, description)
     end
 end
 
-function META.PLAYER:izen_HasPerm(perm, target)
+function META.PLAYER:zen_HasPerm(perm, target)
     if SERVER and not self:IsFullyAuthenticated() then return false end
     return iperm.PlayerHasPermission(self:SteamID64(), perm, target)
 end

@@ -6,16 +6,16 @@ iperm.RegisterPermission("fl.IsHidenAdmin", iperm.flags.NO_TARGET, "Hide you fro
 
 
 hook.Add("fl.IsSuperAdmin", "zen.integration", function(ply)
-    if ply:izen_HasPerm("fl.IsSuperAdmin") then 
-        if CLIENT and ply:izen_HasPerm("fl.IsHidenAdmin") and LocalPlayer() != ply then return end
+    if ply:zen_HasPerm("fl.IsSuperAdmin") then 
+        if CLIENT and ply:zen_HasPerm("fl.IsHidenAdmin") and LocalPlayer() != ply then return end
 
         return true
     end
 end)
 
 hook.Add("fl.IsAdmin", "zen.integration", function(ply)
-    if ply:izen_HasPerm("fl.IsAdmin") then 
-        if CLIENT and ply:izen_HasPerm("fl.IsHidenAdmin") and LocalPlayer() != ply then return end
+    if ply:zen_HasPerm("fl.IsAdmin") then 
+        if CLIENT and ply:zen_HasPerm("fl.IsHidenAdmin") and LocalPlayer() != ply then return end
 
         return true
     end
@@ -24,8 +24,8 @@ end)
 hook.Add("fl.HavePerm", "zen.integration", function(ply, perm)
     if not IsValid(ply) then return end
 
-    if ply:izen_HasPerm("fl.Perms." .. perm) then 
-        if CLIENT and ply:izen_HasPerm("fl.IsHidenAdmin") and LocalPlayer() != ply then return end
+    if ply:zen_HasPerm("fl.Perms." .. perm) then 
+        if CLIENT and ply:zen_HasPerm("fl.IsHidenAdmin") and LocalPlayer() != ply then return end
 
         return true
     end
@@ -33,14 +33,14 @@ hook.Add("fl.HavePerm", "zen.integration", function(ply, perm)
 end)
 
 hook.Add("fl.CanTouch", "zen.integration", function(ply, target)
-    if ply:izen_HasPerm("fl.CanTouch", target) then return true end
+    if ply:zen_HasPerm("fl.CanTouch", target) then return true end
     if IsValid(target) then
-        if target:izen_HasPerm("fl.AbsoluteSecure") then return false end
+        if target:zen_HasPerm("fl.AbsoluteSecure") then return false end
     end
 end)
 
 hook.Add("fl.IsHidenAdmin", "zen.integration", function(ply)
-    if ply:izen_HasPerm("fl.IsHidenAdmin") then return true end
+    if ply:zen_HasPerm("fl.IsHidenAdmin") then return true end
 end)
 
 -- hook.Add("fl.GetUserGroup", "zen.integration", function(ply)

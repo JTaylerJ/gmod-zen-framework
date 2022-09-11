@@ -8,7 +8,7 @@ local map_edit = zen.Init("map_edit")
 map_edit.t_Players = map_edit.t_Players or {}
 local t_Players = map_edit.t_Players
 nt.Receive("map_edit.status", {"boolean"}, function(ply, status)
-    if not ply:izen_HasPerm("map_edit") then return end
+    if not ply:zen_HasPerm("map_edit") then return end
 
     if status then
         t_Players[ply] = ply:GetPos()
@@ -20,7 +20,7 @@ nt.Receive("map_edit.status", {"boolean"}, function(ply, status)
 end)
 
 nt.Receive("map_edit.update.pos", {"vector"}, function(ply, pos)
-    if not ply:izen_HasPerm("map_edit") then return end
+    if not ply:zen_HasPerm("map_edit") then return end
 
     t_Players[ply] = pos
 end)
@@ -38,13 +38,13 @@ hook.Add("SetupPlayerVisibility", "zen.map_edit", function(ply)
 end)
 
 nt.Receive("map_edit.use", {"entity"}, function(ply, ent)
-    if not ply:izen_HasPerm("map_edit") then return end
+    if not ply:zen_HasPerm("map_edit") then return end
 
     ent:Fire("Use")
 end)
 
 nt.Receive("map_edit.set.view.entity", {"entity"}, function(ply, ent)
-    if not ply:izen_HasPerm("map_edit") then return end
+    if not ply:zen_HasPerm("map_edit") then return end
 
     ply:SpectateEntity(ent)
 end)

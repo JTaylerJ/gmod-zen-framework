@@ -53,7 +53,7 @@ end
 
 function worldclick.CheckClick(ply, code)
     if code < MOUSE_FIRST or code > MOUSE_LAST then return end
-    if not ply:izen_HasPerm("zen.worldclick") then return end
+    if not ply:zen_HasPerm("zen.worldclick") then return end
     if not vgui.CursorVisible() then return end
 
     local hover_pnl = vgui.GetHoveredPanel()
@@ -74,7 +74,7 @@ hook.Add( "PlayerButtonPress", "zen.worldclick", worldclick.CheckClick)
 
 function worldclick.CheckUnClick(ply, code)
     if code < MOUSE_FIRST or code > MOUSE_LAST then return end
-    if not ply:izen_HasPerm("zen.worldclick") then return end
+    if not ply:zen_HasPerm("zen.worldclick") then return end
     if not vgui.CursorVisible() then return end
 
 

@@ -36,7 +36,7 @@ nt.Receive("zen.console.server_console", {"string"}, function(ply, str)
 end)
 
 nt.Receive("zen.console.console_mode", {"uint8"}, function(ply, mode)
-    if not ply:izen_HasPerm("zen.console.server_log") then ply:zen_console_log("no access") return end
+    if not ply:zen_HasPerm("zen.console.server_log") then ply:zen_console_log("no access") return end
 
     if epoe then
         if mode == 0 then
@@ -63,7 +63,7 @@ end)
 
 hook.Add("zen.console.server_console", "check_rank", function(ply, cmd, args, argStr)
     if not ply:IsFullyAuthenticated() then ply:zen_console_log("no steam auth") return end
-    if not ply:izen_HasPerm("zen.console.server_console") then ply:zen_console_log("no access") return end
+    if not ply:zen_HasPerm("zen.console.server_console") then ply:zen_console_log("no access") return end
 
     ply:EmitSound("buttons/combine_button2.wav")
     RunConsoleCommand(cmd, unpack(args))

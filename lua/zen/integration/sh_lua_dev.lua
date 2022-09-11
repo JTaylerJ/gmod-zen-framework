@@ -10,10 +10,10 @@ local TO_SERVER = 3
 local TO_SHARED = 4
 
 local runs = {}
-runs[TO_CLIENTS] = function(ply) return ply:izen_HasPerm("luadev.run.clients") end
-runs[TO_CLIENT] = function(ply) return ply:izen_HasPerm("luadev.run.client") end
-runs[TO_SERVER] = function(ply) return ply:izen_HasPerm("luadev.run.server") end
-runs[TO_SHARED] = function(ply) return ply:izen_HasPerm("luadev.run.shared") end
+runs[TO_CLIENTS] = function(ply) return ply:zen_HasPerm("luadev.run.clients") end
+runs[TO_CLIENT] = function(ply) return ply:zen_HasPerm("luadev.run.client") end
+runs[TO_SERVER] = function(ply) return ply:zen_HasPerm("luadev.run.server") end
+runs[TO_SHARED] = function(ply) return ply:zen_HasPerm("luadev.run.shared") end
 
 hook.Add("CanLuaDev", "zen.Integration", function(ply, script, command, target, target_ply, extra)
     if IsValid(ply) then
@@ -23,7 +23,7 @@ hook.Add("CanLuaDev", "zen.Integration", function(ply, script, command, target, 
                 return true
             end
         else
-            if ply:izen_HasPerm("luadev.view") then
+            if ply:zen_HasPerm("luadev.view") then
                 return true
             end
         end

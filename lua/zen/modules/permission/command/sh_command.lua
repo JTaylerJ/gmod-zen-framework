@@ -32,7 +32,7 @@ function icmd.Receive(ply, cmd, data)
     local fCallBack = tCommand.func
     local sPerm = tCommand.perm
 
-    if bSuccess and not ply:izen_HasPerm(sPerm) then
+    if bSuccess and not ply:zen_HasPerm(sPerm) then
         bSuccess = false
         sLastError = "You don't have permission to this command!"
     end

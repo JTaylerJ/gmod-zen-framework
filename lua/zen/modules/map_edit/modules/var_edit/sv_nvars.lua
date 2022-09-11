@@ -13,7 +13,7 @@ local nwvars = {
 }
 
 nt.Receive("nvars.edit", {"entity", "uint8", "string", "any", "uint12", "boolean"}, function(ply, ent, iType, key, anyValue, iValueType, bUnpack)
-    if not ply:izen_HasPerm("zen.variable_edit.nvars") then return end
+    if not ply:zen_HasPerm("zen.variable_edit.nvars") then return end
 
     -- print(ply, ent, iType, key, anyValue, iValueType, bUnpack)
 
@@ -115,13 +115,13 @@ function zen.nvars.StartCommand(ent, button_id, mode)
 end
 
 nt.Receive("nvars.run_command", {"entity", "int12", "next", "any"}, function(ply, ent, id, isMode, mode)
-    if not ply:izen_HasPerm("zen.variable_edit.nvars") then return end
+    if not ply:zen_HasPerm("zen.variable_edit.nvars") then return end
 
     zen.nvars.StartCommand(ent, id, mode)
 end)
 
 nt.Receive("nvars.get_buttons", {"entity"}, function(ply, ent)
-    if not ply:izen_HasPerm("zen.variable_edit.nvars") then return end
+    if not ply:zen_HasPerm("zen.variable_edit.nvars") then return end
     if not IsValid(ent) then return end
 
     local tResult = zen.nvars.GetAvailableButtons(ent)

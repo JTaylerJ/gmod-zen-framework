@@ -114,15 +114,50 @@ function draw.Text(text, font, x, y, clr, xalign, yalign, clrbg)
 	return w, h, x, y
 end
 
-function draw.TextArray(x, y, data)
+function draw.TextArray_Size(data, inheritLast)
+    return draw.TextArray(0,0, data, inheritLast, true)
+end
+
+function draw.TextArray(x, y, data, inheritLast, noDraw)
+    local fw, fh = 0, 0
+    local l_font, l_clr, l_ax, l_ay, l_xalign, l_yalign, l_clrbg
     for k, v in ipairs(data) do
         local text, font, ax, ay, clr, xalign, yalign, clrbg = unpack(v)
+
+        if inheritLast then
+            l_font = font or l_font
+            l_clr = clr or l_clr
+            l_ax = ax or l_ax
+            l_ay = l_ay or l_ay
+            l_xalign = xalign or l_xalign
+            l_yalign = yalign or l_yalign
+            l_clrbg = clrbg or l_clrbg
+
+            font = l_font
+            clr = l_clr
+            ax = l_ax
+            ay = l_ay
+            xalign = l_xalign
+            yalign = l_yalign
+            clrbg = l_clrbg
+        end
+
         local w, h = ui.GetTextSize(text, font)
+
+        ax = ax or 0
+        ay = ay or 0
+
+        if text == nil or text == "" or noDraw then continue end
+
+        fw = math.max(fw, w)
+        fh = fh + h
 
         y = (y + h/2)
         draw.TextN(text, font, x+ax, y+ay, clr, xalign, yalign, clrbg)
         y = (y + h/2)
     end
+
+    return fw, fh
 end
 
 function draw.TextN(text, font, x, y, clr, xalign, yalign, clrbg)
@@ -145,21 +180,31 @@ function draw.TextN(text, font, x, y, clr, xalign, yalign, clrbg)
     return w, h, x, y
 end
 
+
 --[[
+local tfTitle = {nil, 10, 0, 0, COLOR.G, TEXT_ALIGN_LEFT, 1, COLOR.BLACK}
+local tfValue = {nil, 6, 20, 0, COLOR.W, TEXT_ALIGN_LEFT, 1, COLOR.BLACK}
+
 hook.Add("HUDPaint", "test", function()
     
     draw.TextArray(100, 100, {
-        {"Sucess", 10, 0, 0, COLOR.G, TEXT_ALIGN_LEFT, 1, COLOR.BLACK},
-        {"testing\n10\n20\n30\n40", 6, 20, 0, COLOR.W, TEXT_ALIGN_LEFT, 1, COLOR.BLACK},
-        {"testing", 6, 20, 0, COLOR.W, TEXT_ALIGN_LEFT, 1, COLOR.BLACK},
-        {"Fail\n1000", 10, 0, 0, COLOR.R, TEXT_ALIGN_LEFT, 1, COLOR.BLACK},
-        {"testing", 6, 20, 0, COLOR.W, TEXT_ALIGN_LEFT, 1, COLOR.BLACK},
-        {"testing", 6, 20, 0, COLOR.W, TEXT_ALIGN_LEFT, 1, COLOR.BLACK},
-    })
+        tfTitle,
+        {"Sucess"},
+        tfValue,
+        {"testing1"},
+        {"testing2"},
+        tfTitle,
+        {"Fail"},
+        tfValue,
+        {"testing3"},
+        {"testing4"},
+        {"testing5"},
+        {"testing6"},
+        {"Ending", 10, 0, 0, COLOR.R, TEXT_ALIGN_LEFT, TEXT_ALIGN_CENTER, COLOR.BLACK}
+    }, true)
 
 end)
 ]]--
-
 
 local mat_vgui_white = Material("vgui/white")
 function draw.NoTexture()

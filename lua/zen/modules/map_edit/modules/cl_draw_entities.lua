@@ -2,7 +2,8 @@ local map_edit = zen.Init("map_edit")
 
 local ui, draw, draw3d, draw3d2d = zen.Import("ui", "ui.draw", "ui.draw3d", "ui.draw3d2d")
 local mat_user = Material("icon16/user_suit.png")
-local mat_wireframe = Material("models/white_outline")
+local mat_wireframe = Material("models/debug/debugwhite")
+local mat_wireframe2 = Material("phoenix_storms/stripes")
 
 hook.Add("zen.map_edit.Render", "draw_entities", function(rendermode, priority, vw)
 	if priority == RENDER_POST then
@@ -18,17 +19,38 @@ hook.Add("zen.map_edit.Render", "draw_entities", function(rendermode, priority, 
 			end
 		end
 
-		local ent_list = ents.FindInSphere(vw.lastTrace.HitPos, 500)
+		local ent_list = ents.FindInSphere(vw.lastOrigin, 500)
 		if ent_list then
 
-			render.SetBlend(0.5)
-			render.ModelMaterialOverride(mat_wireframe)
+
+
+			
 			for k, ent in pairs(ent_list) do
-				draw3d2d.Text(ent:GetPos(), nil, 0.1, true, ent:GetClass(), 20, 0, 0, COLOR.WHITE, 1, 1, COLOR.BLACK)
-				ent:DrawModel()
+				local pos = ent:GetPos()
+				local ang  = ent:GetAngles()
+				
+
+				local model = ent:GetModel()
+				if model and model != "" then
+					render.SetBlend(0.2)
+					render.ModelMaterialOverride(mat_wireframe)
+					render.SetColorModulation(1,0,0)
+					ent:DrawModel()
+
+					local min, max = ent:GetModelBounds()
+					render.DrawWireframeBox(pos, ang, min, max)
+
+
+					render.ModelMaterialOverride()
+					render.SetBlend(1)
+				else
+					render.DrawWireframeSphere(pos, 1, 5, 5)
+				end
+
+				draw3d2d.Text(pos, nil, 0.1, true, ent:GetClass(), 20, 0, 0, COLOR.WHITE, 1, 1, COLOR.BLACK)
 			end
 			
-			render.ModelMaterialOverride()
+
 		end
 	end
 end)

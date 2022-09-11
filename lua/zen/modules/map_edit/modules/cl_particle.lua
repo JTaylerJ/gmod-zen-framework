@@ -62,7 +62,7 @@ function map_edit.CreateParticleViewer(pnlContext, vw)
                 {
                     {
                         {"inputer", "mass_input"};
-                        {};
+                        {"dock_fill"};
                         {};
                     };
                     {{"particle_id", "text"}, {"dock_top"}};
@@ -102,24 +102,24 @@ function map_edit.CreateParticleViewer(pnlContext, vw)
     end
 
 
-    nav.inputer:Setup({
-        {name = "Start", type = TYPE.VECTOR, optional = true, default = Vector(0,0,0)},
-        {name = "Origin", type = TYPE.VECTOR, optional = true},
-        {name = "Normal", type = TYPE.VECTOR, optional = true},
-        {name = "Magnitude", type = TYPE.VECTOR, optional = true, min = 1, max = 9990},
-        {name = "Radius", type = TYPE.VECTOR, min = 1, max = 9999},
-        {name = "Scale", type = TYPE.NUMBER, min = 1, max = 1000},
-        {name = "Entity", type = TYPE.ENTITY, optional = true, noplayer = true},
+    local tValues = nav.inputer:Setup({
+        {name = "Start", type = TYPE.VECTOR, optional = true, default = vector_origin},
+        {name = "Origin", type = TYPE.VECTOR, optional = true, default = vector_origin},
+        {name = "Normal", type = TYPE.VECTOR, optional = true, default = vector_origin},
+        {name = "Magnitude", type = TYPE.NUMBER, optional = true, min = 1, max = 9990, default = 1},
+        {name = "Radius", type = TYPE.NUMBER, default = 1},
+        {name = "Scale", type = TYPE.NUMBER, min = 1, max = 1000, default=1},
+        {name = "Entity", type = TYPE.ENTITY, optional = true, noplayer = true, default=game.GetWorld()},
     })
 
     nav.but_emit.DoClick = function()
-        tViewer.EffectData:SetStart(nav.var_start:GetValue())
-        tViewer.EffectData:SetOrigin(nav.var_origin:GetValue())
-        tViewer.EffectData:SetNormal(nav.var_normal:GetValue())
-        tViewer.EffectData:SetMagnitude(nav.var_magnitude:GetValue())
-        tViewer.EffectData:SetRadius(nav.var_radius:GetValue())
-        tViewer.EffectData:SetScale(nav.var_scale:GetValue())
-        tViewer.EffectData:SetEntity(nav.var_entity:GetValue())
+        if tValues.Start then tViewer.EffectData:SetStart(tValues.Start) end
+        if tValues.Origin then tViewer.EffectData:SetOrigin(tValues.Origin) end
+        if tValues.Normal then tViewer.EffectData:SetNormal(tValues.Normal) end
+        if tValues.Magnitude then tViewer.EffectData:SetMagnitude(tValues.Magnitude) end
+        if tValues.Radius then tViewer.EffectData:SetRadius(tValues.Radius) end
+        if tValues.Scale then tViewer.EffectData:SetScale(tValues.Scale) end
+        if tValues.Entity then tViewer.EffectData:SetEntity(tValues.Entity) end
 
         local effect_name = nav.eff_name:GetValue()
 

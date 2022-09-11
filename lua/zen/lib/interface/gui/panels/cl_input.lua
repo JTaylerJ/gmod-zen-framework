@@ -13,6 +13,100 @@ local color_bg_err = Color(125,80,80, 255)
 
 local color_requirement = Color(255,255,125)
 local color_error = Color(255, 0, 0)
+local color_result = Color(125,255,125)
+
+local function ValueToString(value, iType)
+    if util.mt_convertableType[iType] then
+        return util.TYPEToString(value, iType)
+    end
+
+    if iType == TYPE.ENTITY then
+        return value:EntIndex()
+    end
+
+    if iType == TYPE.PLAYER then
+        return value:UserID()
+    end
+end
+
+
+local function GetNewValue(value, iType)
+    if util.mt_convertableType[iType] then
+        return util.StringToTYPE(value, iType)
+    end
+
+    if iType == TYPE.ENTITY then
+        local ent_id = tonumber(value)
+        if not ent_id then return end
+        return Entity(ent_id)
+    end
+
+    if iType == TYPE.PLAYER then
+        local ply = util.GetPlayerEntity(value)
+        if not ply then
+            ply = util.FindPlayerEntity(value)
+        end
+
+        return ply
+    end
+end
+
+local numeric_itypes = {
+    [TYPE.ENTITY] = true,
+    [TYPE.NUMBER] = true,
+}
+
+local function CheckValue(value, tInfo)
+    local new_value
+    local iType = tInfo.type
+    local tRequirement, tErrors = {}, {}
+
+    local addRequirement = function(text) table.insert(tRequirement, text) end
+    local addError = function(text) table.insert(tErrors, text) end
+
+    local isEmpty = value == nil or value == "" or value == " "
+
+
+    if not tInfo.optional then addRequirement("required") end
+    if tInfo.min then addRequirement("min: " .. tInfo.min) end
+    if tInfo.max then addRequirement("max: " .. tInfo.max) end
+
+
+    if isEmpty then goto result end
+    new_value = GetNewValue(value, iType)
+
+
+    if new_value == nil then addError("can't be converted") end
+
+
+    do
+        local isNeedNumberCheck = tInfo.numeric or numeric_itypes[iType]
+
+        if isNeedNumberCheck then
+            local value_num = tonumber(value)
+
+            if value_num then
+                if tInfo.min and value_num < tInfo.min then addError("number min is: " .. tInfo.min) end
+                if tInfo.max and value_num > tInfo.max then addError("number max is: " .. tInfo.max) end
+            else
+                local others = string.gsub(value, "%d", "")
+
+                local incorrent = "'" .. table.concat(string.Split(others, ""), "', '") .. "'"
+                addError("incorrent symbols: " .. tostring(incorrent))
+            end
+        end
+    end
+
+    ::result::
+
+    if new_value == nil and not tInfo.optional then
+        addError("result should exists")
+    end
+
+    return new_value, tRequirement, tErrors
+end
+
+
 gui.RegisterStylePanel("input_entry", {
     Init = function(self)
         self.clr_bg = color_bg
@@ -23,6 +117,14 @@ gui.RegisterStylePanel("input_entry", {
     Setup = function(self, tInfo)
         self.tInfo = tInfo
         self:SetType(tInfo.type)
+
+        if tInfo.default then
+            local new_value = ValueToString(tInfo.default, tInfo.type)
+            if new_value != nil then
+                self:SetValue(new_value)
+                self:CheckValue()
+            end
+        end
     end,
     SetType = function(self, type)
         self.iType = type
@@ -45,84 +147,37 @@ gui.RegisterStylePanel("input_entry", {
         local iType = self.iType
         local tInfo = self.tInfo or {}
 
-        if iType == TYPE.NUMBER then
-            AddInfo{"number", 10, 0, 0, Color(255, 255, 255)}
+        local new_value, tRequirement, tErrors = CheckValue(value, tInfo)
 
-            if tInfo.min then
-                AddInfo{"-min: " .. tInfo.min, 8, 0, 0, color_requirement}
+        local TYPE_NAME = TYPE[iType]
+        AddInfo{TYPE_NAME, 10}
+
+        local hasRequiremnts = not table.IsEmpty(tRequirement)
+        local hasErrors = not table.IsEmpty(tErrors)
+
+        if hasRequiremnts then
+            AddInfo{"Requirement:", 8, 0, 0, color_requirement, nil, nil, COLOR.BLACK}
+            for k, v in pairs(tRequirement) do
+                AddInfo{"- " .. v, 7, 0, 0, color_requirement, nil, nil, COLOR.BLACK}
             end
-            if tInfo.max then
-                AddInfo{"-max: " .. tInfo.max, 8, 0, 0, color_requirement}
+        end
+
+        if hasErrors then
+            AddInfo{"Errors:", 8, 0, 0, color_error, nil, nil, COLOR.BLACK}
+            for k, v in pairs(tErrors) do
+                AddInfo{"- " .. v, 7, 0, 0, color_error, nil, nil, COLOR.BLACK}
             end
-        end
-        if iType == TYPE.STRING then
-            AddInfo{"string", 10, 0, 0, Color(255, 255, 255)}
-        end
-        if iType == TYPE.VECTOR then
-            AddInfo{"vector", 10, 0, 0, Color(255, 255, 255)}
-        end
-        if iType == TYPE.BOOLEAN then
-            AddInfo{"boolean", 10, 0, 0, Color(255, 255, 255)}
-        end
-        if iType == TYPE.ENTITY then
-            AddInfo{"entityid", 10, 0, 0, Color(255, 255, 255)}
-        end
-        if iType == TYPE.PLAYER then
-            AddInfo{"player", 10, 0, 0, Color(255, 255, 255)}
-        end
-
-        if tInfo.optional then
-            AddInfo{"-optional", 8, 0, 0, color_requirement}
-        elseif value == nil or value == "" or value == " " then
-            AddInfo{"can't be empty", 8, 0, 0, color_error}
-        end
-
-        self.anySucessValue =  nil
-        if value == nil or value == "" or value == " " then
-            self.clr_bg = color_bg
         else
-            if iType == TYPE.ENTITY then
-                local ent_id = tonumber(value)
-                if not ent_id then
-                    AddInfo{"Should be number", 6, 0, 0, COLOR.R}
-                else
-                    new_value = Entity(ent_id)
-                end
-            end
-
-            if iType == TYPE.PLAYER then
-                local ply = util.GetPlayerEntity(value)
-                if not ply then
-                    ply = util.FindPlayerEntity(value)
-                end
-
-                new_value = ply
-            end
+            AddInfo{": " .. tostring(new_value), 8, 0, 0, color_result, nil, nil, COLOR.BLACK}
+        end
 
 
-            if new_value != nil then
-                if iType == TYPE.NUMBER then
-                    if tInfo.min and new_value < tInfo.min then
-                        AddInfo{"min limit: " .. tInfo.min, 8, 0, 0, COLOR.R}
-                    end
-                    if tInfo.max and new_value > tInfo.max then
-                        AddInfo{"max limit: " .. tInfo.max, 8, 0, 0, COLOR.R}
-                    end
-                end
-            end
+        self.clr_bg = hasErrors and color_bg_err or color_bg_succ
 
-            if new_value != nil then
-                self.clr_bg = color_bg_succ
-                AddInfo{": " .. tostring(new_value), 10, 0, 0, COLOR.G, 0}
-                self.anySucessValue = new_value
-            else
-                self.clr_bg = color_bg_err
-                AddInfo{"-error-", 6, 0, 0, COLOR.R}
-                if iType == TYPE.NUMBER or iType == TYPE.ENTITY then
-                    local others = string.gsub(value, "%d", "")
-                    AddInfo{"Incorrent symbols: " .. tostring(others), 6}
-                end
-            end
+        if hasErrors then
+            self.anySucessValue = nil
+        else
+            self.anySucessValue = new_value
         end
 
         self:zen_SetHelpTextArray(tsArray)
@@ -131,6 +186,9 @@ gui.RegisterStylePanel("input_entry", {
         if self.ChangeInputValue then
             self:ChangeInputValue(self.anySucessValue)
         end
+    end,
+    OnLoseFocus = function(self)
+        self:OnEnter()
     end,
     Paint = function(self, w, h)
         if ( self.m_bBackground ) then
@@ -296,9 +354,9 @@ gui.RegisterStylePanel("mass_input", {
     Init = function(self)
         self.pnlList = self:zen_AddStyled("list", {"dock_fill", "input"})
     end,
-    Setup = function(self, data)
-        self.pnlList:Clear()
+    Setup = function(self, data, onChanged)
         local wide = self.pnlList:GetWide()
+        local tValues = {}
         for k, v in pairs(data) do
             local Name = v.name
             local iType = v.type
@@ -308,15 +366,25 @@ gui.RegisterStylePanel("mass_input", {
 
             local pnlHandler = self.pnlList:zen_AddStyled("base", {"dock_top", tall = 30, "input"})
             
-            local pnlKey = pnlHandler:zen_AddStyled("text", {"dock_left", wide = wide/2-5, "input", text = Name})
-            local pnlValue = pnlHandler:zen_AddStyled("base", {"dock_right", wide = wide/2-5, "input"})
+            pnlHandler.pnlKey = pnlHandler:zen_AddStyled("text", {"dock_left", wide = wide/2-5, "input", text = Name})
+            pnlHandler.pnlValue = pnlHandler:zen_AddStyled("base", {"dock_right", wide = wide/2-5, "input"})
 
-            local pnlChange = pnlHandler:zen_AddStyled(sStyleName, {"dock_fill", "input"})
-            pnlChange:Setup(v)
+            pnlHandler.pnlChange = pnlHandler.pnlValue:zen_AddStyled(sStyleName, {"dock_fill", "input"})
+            pnlHandler.pnlChange:Setup(v, function(new_value)
+                tValues[Name] = new_value
+                if onChanged then onChanged(Name, new_value) end
+            end)
         end
+
+        return tValues
     end,
     PerformLayout = function(self, w, h)
-
-
+        if self.pnlList then
+            local children = self.pnlList:GetCanvas():GetChildren()
+            for k, pnl in pairs(children) do
+                pnl.pnlKey:SetWide(w/2-5)
+                pnl.pnlValue:SetWide(w/2-5)
+            end
+        end
     end
-}, "EditablePanel", {"input", "dock_fill"}, {})
+}, "EditablePanel", {"input"}, {})

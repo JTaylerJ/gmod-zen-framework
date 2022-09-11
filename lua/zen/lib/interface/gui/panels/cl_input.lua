@@ -105,13 +105,28 @@ gui.RegisterStylePanel("input_help", {
     end
 }, "EditablePanel", {key_input = false, mouse_input = false, draw_on_top = true}, {})
 
+function META.PANEL:zen_SetHelpTextArray(tsArray)
+    if tsArray == nil then
+        if IsValid(self.pnlHelp) then
+            self.pnlHelp:Remove()
+        end
+
+        return
+    end
+
+    if not IsValid(self.pnlHelp) then
+        self.pnlHelp = gui.CreateStyled("input_help")
+        self.pnlHelp:SetPanel(self)
+    end
+
+    self.pnlHelp:SetHelp(tsArray)
+end
+
 gui.RegisterStylePanel("input_entry", {
     Init = function(self)
         self.clr_bg = color_bg
         self.iType = TYPE.STRING
         self:SetFont(ui.ffont(6))
-        self.pnlHelp = gui.CreateStyled("input_help")
-        self.pnlHelp:SetPanel(self)
         self:CheckValue()
     end,
     SetType = function(self, type)
@@ -185,7 +200,7 @@ gui.RegisterStylePanel("input_entry", {
             end
         end
 
-        self.pnlHelp:SetHelp(tsArray)
+        self:zen_SetHelpTextArray(tsArray)
     end,
     Paint = function(self, w, h)
         if ( self.m_bBackground ) then

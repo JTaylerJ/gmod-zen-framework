@@ -10,45 +10,94 @@ local color_text = Color(255,255,255)
 local color_bg_succ = Color(80,125,80, 255)
 local color_bg_err = Color(125,80,80, 255)
 
+
 gui.RegisterStylePanel("input_help", {
     Init = function(self)
-        self.sText = "zen.input_help1--------------1\nTello------\n310---"
-        self.iFont = 8
-        self.iTextAddW = 10
-        self.iTextAddH = 10
+        self.tsArray = false
+        self.iTextX = 5
+        self.iTextY = 5
+        self:NoClipping(true)
+    end,
+    UpdatePostion = function(self)
+        local x, y, w, h = self:CalcPosSize()
+        self:SetSize(w, h)
+        self:SetPos(x, y)
     end,
     SetPanel = function(self, pnl)
         self.pnlTarget = pnl
     end,
-    Paint = function(self, w, h)
-        if not self.bActive then return end
-        draw.BoxOutlined(1, 0,0,w,h,color_focus)
-        draw.Box(0,0,w,h,color_bg)
-        draw.TextN(self.sText, self.iFont, w/2, h/2, color_text, 1, 1, COLOR_BLACK)
+    CalcPosSize = function(self)
+        if not self.tsArray then return end
+        local tw, th = draw.TextArray_Size(self.tsArray)
+        tw = tw + self.iTextX * 2
+        th = th + self.iTextY * 2
+
+        local nw, nh = tw, th
+        local ow, oh = self.pnlTarget:GetSize()
+        local ox, oy = vgui.GetWorldPanel():GetChildPosition(self.pnlTarget)
+        local scrw, scrh = ScrW(), ScrH()
+
+        local inScreen = function(nx, ny)
+            local end_wide = nx + nw
+            local end_tall = ny + nh
+
+            if end_wide < 0 or end_tall < 0 then return false end
+            if end_wide > scrw or end_tall > scrh then return false end
+
+            if nx < 0 or ny < 0 then return false end
+            if nx > scrw or ny > scrw then return false end
+
+            return true
+        end
+
+        do -- Right
+            local nx, ny = ox + ow, oy
+            if inScreen(nx, ny) then return nx, ny, nw, nh end
+        end
+
+        do -- Left
+            local nx, ny = ox-nw, oy
+            if inScreen(nx, ny) then return nx, ny, nw, nh end
+        end
+
+        do -- Up
+            local nx, ny = ox, oy-oh
+            if inScreen(nx, ny) then return nx, ny, nw, nh end
+        end
+
+        do -- Down
+            local nx, ny = ox, oy+oh
+            if inScreen(nx, ny) then return nx, ny, nw, nh end
+        end
+
+        return ox, oy, nw, nh
     end,
-    CalcSize = function(self)
-        local mw, mh = self.pnlTarget:GetSize()
-        local tw, th = ui.GetTextSize(self.sText, self.iFont)
-        tw = tw + self.iTextAddW
-        th = th + self.iTextAddH
-
-        
-
-        local w, h = math.max(mw, tw), math.max(mh, th)
-        return w, h, mw,  mh
+    SetHelp = function(self, tsArray)
+        self.tsArray = tsArray
+        self:UpdatePostion()
+    end,
+    Paint = function(self, w, h)
+        if not self.bActive or not self.tsArray then return end
+        draw.Box(0,0,w,h,color_bg)
+        draw.BoxOutlined(1,0,0,w,h,color_nofocus)
+        draw.TextArray(self.iTextX, self.iTextY, self.tsArray)
     end,
     Think = function(self)
         if not IsValid(self.pnlTarget) then self:Remove() return end
 
-        if self.pnlTarget:HasFocus() or self.pnlTarget:IsHovered() then
-            local w, h, ow, oh = self:CalcSize()
-            self:SetSize(w, h)
+        if not self.tsArray then return end
 
-            local x, y = vgui.GetWorldPanel():GetChildPosition(self.pnlTarget)
-            
-            local x, y = x-w/2+ow/2, y+oh
+        local cx, cy = self.pnlTarget:LocalCursorPos()
+        local ow, oh = self.pnlTarget:GetSize()
 
-            self:SetPos(x, y)
+        local ox, oy = vgui.GetWorldPanel():GetChildPosition(self.pnlTarget)
+        if ox != self.lastOX or oy != self.lastOY then
+            self.lastOX = ox
+            self.lastOY = oy
+            self:UpdatePostion()
+        end
+
+        if cx > 0 and cy > 0 and cx < ow and cy < oh then
             self.bActive = true
         else
             self.bActive = false
@@ -63,27 +112,80 @@ gui.RegisterStylePanel("input_entry", {
         self:SetFont(ui.ffont(6))
         self.pnlHelp = gui.CreateStyled("input_help")
         self.pnlHelp:SetPanel(self)
+        self:CheckValue()
     end,
     SetType = function(self, type)
         self.iType = type
+        self:CheckValue()
     end,
     OnChange = function(self, value)
         self:CheckValue()
     end,
     CheckValue = function(self)
         local value = self:GetValue()
-        local new_value = util.StringToTYPE(value, self.iType)
+        local new_value
+
+        if util.mt_convertableType[self.iType] then
+            new_value = util.StringToTYPE(value, self.iType)
+        end
+
+        local tsArray = {}
+        local function AddInfo(data) table.insert(tsArray, data) end
+
+        if self.iType == TYPE.NUMBER then
+            AddInfo{"number", 6, 0, 0, Color(255, 255, 255)}
+        end
+        if self.iType == TYPE.STRING then
+            AddInfo{"string", 6, 0, 0, Color(255, 255, 255)}
+        end
+        if self.iType == TYPE.VECTOR then
+            AddInfo{"vector", 6, 0, 0, Color(255, 255, 255)}
+        end
+        if self.iType == TYPE.BOOLEAN then
+            AddInfo{"boolean", 6, 0, 0, Color(255, 255, 255)}
+        end
+        if self.iType == TYPE.ENTITY then
+            AddInfo{"entityid", 6, 0, 0, Color(255, 255, 255)}
+        end
+        if self.iType == TYPE.PLAYER then
+            AddInfo{"player", 6, 0, 0, Color(255, 255, 255)}
+        end
 
         if value == nil or value == "" or value == " " then
             self.clr_bg = color_bg
         else
+            if self.iType == TYPE.ENTITY then
+                local ent_id = tonumber(value)
+                if not ent_id then
+                    AddInfo{"Should be number", 6, 0, 0, COLOR.R}
+                else
+                    new_value = Entity(ent_id)
+                end
+            end
+            if self.iType == TYPE.PLAYER then
+                local ply = util.GetPlayerEntity(value)
+
+                new_value = ply
+            end
+
 
             if new_value != nil then
                 self.clr_bg = color_bg_succ
+                AddInfo{": " .. tostring(new_value), 6, 0, 0, COLOR.G, 0}
             else
                 self.clr_bg = color_bg_err
+                AddInfo{"-error-", 6, 0, 0, COLOR.R}
+                if self.iType == TYPE.NUMBER or self.iType == TYPE.ENTITY then
+                    local others = string.gsub(value, "%d", "")
+                    AddInfo{"Incorrent symbols: " .. tostring(others), 6}
+                end
+
+
+                
             end
         end
+
+        self.pnlHelp:SetHelp(tsArray)
     end,
     Paint = function(self, w, h)
         if ( self.m_bBackground ) then

@@ -144,20 +144,22 @@ function draw.TextArray(x, y, data, inheritLast, noDraw)
 
         local w, h = ui.GetTextSize(text, font)
 
+        if k == 1 then y = y - h/2 end
+
         ax = ax or 0
         ay = ay or 0
 
-        if text == nil or text == "" or noDraw then continue end
-
-        fw = math.max(fw, w)
+        fw = math.max(fw, w+ax)
         fh = fh + h
 
+        if text == nil or text == "" or noDraw then continue end
+
         y = (y + h/2)
-        draw.TextN(text, font, x+ax, y+ay, clr, xalign, yalign, clrbg)
+        draw.Text(text, font, x+ax, y+ay, clr, xalign, yalign, clrbg)
         y = (y + h/2)
     end
 
-    return fw, fh
+    return fw, fh, x, y
 end
 
 function draw.TextN(text, font, x, y, clr, xalign, yalign, clrbg)
@@ -180,7 +182,6 @@ function draw.TextN(text, font, x, y, clr, xalign, yalign, clrbg)
     return w, h, x, y
 end
 
-
 --[[
 local tfTitle = {nil, 10, 0, 0, COLOR.G, TEXT_ALIGN_LEFT, 1, COLOR.BLACK}
 local tfValue = {nil, 6, 20, 0, COLOR.W, TEXT_ALIGN_LEFT, 1, COLOR.BLACK}
@@ -202,6 +203,10 @@ hook.Add("HUDPaint", "test", function()
         {"testing6"},
         {"Ending", 10, 0, 0, COLOR.R, TEXT_ALIGN_LEFT, TEXT_ALIGN_CENTER, COLOR.BLACK}
     }, true)
+
+    draw.TextArray(100, 80, {
+        {"Start", 8, 0, 0, COLOR.G, TEXT_ALIGN_LEFT, TEXT_ALIGN_CENTER, COLOR.BLACK}
+    })
 
 end)
 ]]--

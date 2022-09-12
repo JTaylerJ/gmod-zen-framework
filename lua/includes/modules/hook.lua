@@ -19,7 +19,7 @@ HOOK_LEVEL_DEFAULT_POST = 1
 
 HOOK_LEVEL_LAST = 1000
 
-ihook = hook or {}
+hook = hook or {}
 
 local clr_red = Color(255,0,0)
 local clr_white = Color(255,255,255)

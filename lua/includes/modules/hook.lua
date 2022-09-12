@@ -96,7 +96,7 @@ function hook.Call_Internal(event_name, gm, ...)
 end
 local hook_Call = hook.Call_Internal
 
-function hook.Add_Internal(event_name, hook_id, level, func, IsListener)
+function hook.Add_Internal(event_name, hook_id, func, level, IsListener)
     if ( !isstring( event_name ) ) then ErrorNoHaltWithStack( "bad argument #1 to 'Add' (string expected, got " .. type( event_name ) .. ")" ) return end
 	if ( !isfunction( func ) ) then ErrorNoHaltWithStack( "bad argument #3 to 'Add' (function expected, got " .. type( func ) .. ")" ) return end
 
@@ -140,13 +140,12 @@ function hook.Remove_Internal(event_name, hook_id)
 end
 
 
-function hook.Add( event_name, name, func, level ) hook.Add_Internal(event_name, name, level or HOOK_LEVEL_DEFAULT, func) end
-function hook.Remove( event_name, name ) hook.Remove_Internal(event_name, name) end
+function hook.Add( event_name, identify, func, level ) hook.Add_Internal(event_name, identify, func, level or HOOK_LEVEL_DEFAULT) end
+function hook.Remove( event_name, identify ) hook.Remove_Internal(event_name, identify) end
 
 hook.Call = hook_Call
 function hook.Run( name, ... ) return hook_Call( name, gmod and gmod.GetGamemode() or nil, ... ) end
 
-
 -- New Stuff
-function hook.Listen(name, identify, level, func) hook.Add_Internal(name, identify, level, func, true) end
-function hook.Handler(name, identify, level, func) hook.Add_Internal(name, identify, level, func) end
+function hook.Listen(name, identify, level, func) hook.Add_Internal(name, identify, func, level, true) end
+function hook.Handler(name, identify, level, func) hook.Add_Internal(name, identify, func, level) end

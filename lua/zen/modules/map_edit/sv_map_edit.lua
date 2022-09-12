@@ -25,12 +25,12 @@ nt.Receive("map_edit.update.pos", {"vector"}, function(ply, pos)
     t_Players[ply] = pos
 end)
 
-hook.Add("PlayerDisconnected", "zen.map_edit", function(ply)
+ihook.Listen("PlayerDisconnected", "zen.map_edit", function(ply)
     t_Players[ply] = nil
 end)
 
 local AddOriginToPVS = AddOriginToPVS
-hook.Add("SetupPlayerVisibility", "zen.map_edit", function(ply)
+ihook.Listen("SetupPlayerVisibility", "zen.map_edit", function(ply)
     local pos = t_Players[ply]
     if pos then
         AddOriginToPVS(pos)

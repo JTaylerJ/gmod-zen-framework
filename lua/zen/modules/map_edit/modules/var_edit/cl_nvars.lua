@@ -14,12 +14,12 @@ function zen.nvars.OpenMenu(ent)
 end
 
 
-hook.Add("zen.worldclick.onHoverEntity", "zen.nvars", function(ent, tr)
+ihook.Listen("zen.worldclick.onHoverEntity", "zen.nvars", function(ent, tr)
     zen.nvars.mt_EntityButtons= nil
     nt.Send("nvars.get_buttons", {"entity"}, {ent})
 end)
 
-hook.Add("zen.worldclick.onPressEntity", "zen.nvars", function(ent, code, tr)
+ihook.Listen("zen.worldclick.onPressEntity", "zen.nvars", function(ent, code, tr)
     if code == MOUSE_LEFT then
         local tButton = zen.nvars.HoveredTButton
         if tButton.id then

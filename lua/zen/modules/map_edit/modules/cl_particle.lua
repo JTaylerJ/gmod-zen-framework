@@ -6,14 +6,14 @@ local GetVectorString, GetAngleString = zen.Import("map_edit.GetVectorString", "
 local MODE_DEFAULT = map_edit.RegisterMode("Default")
 
 local clr_white_alpha = Color(255,255,255,100)
-hook.Add("zen.map_edit.Render", "paticle_viewer", function(rendermode, priority, vw)
+ihook.Listen("zen.map_edit.Render", "paticle_viewer", function(rendermode, priority, vw)
 end)
 
-hook.Add("zen.map_edit.OnModeChange", "paticle_viewer", function(vw, old, new)
+ihook.Listen("zen.map_edit.OnModeChange", "paticle_viewer", function(vw, old, new)
 end)
 
 
-hook.Add("zen.map_edit.OnButtonPress", "paticle_viewer", function(ply, but, bind, vw)
+ihook.Listen("zen.map_edit.OnButtonPress", "paticle_viewer", function(ply, but, bind, vw)
 end)
 
 local DispatchEffects = {"ImpactGauss", "EjectBrass_12Gauge", "ImpactJeep", "AR2Tracer", "GunshipImpact", "BloodImpact", "ShotgunShellEject", "PhyscannonImpact", "WheelDust", "VortDispel", "StriderMuzzleFlash", "Impact", "AirboatMuzzleFlash", "RifleShellEject", "AirboatGunTracer", "ParticleEffectStop", "CommandPointer", "GlassImpact", "GunshipTracer", "Explosion", "AR2Impact", "Sparkle", "GunshipMuzzleFlash", "WaterSurfaceExplosion", "AntlionGib", "waterripple", "ThumperDust", "gunshotsplash", "bloodspray", "Tracer", "AirboatGunHeavyTracer", "RPGShotDown", "AirboatGunImpact", "StunstickImpact", "ParticleTracer", "TeslaHitboxes", "AR2Explosion", "cball_bounce", "HudBloodSplat", "HelicopterTracer", "HelicopterImpact", "ShakeRopes", "GaussTracer", "CrossbowLoad", "HunterMuzzleFlash", "BoltImpact", "TracerSound", "StriderTracer", "EjectBrass_9mm", "HunterDamage", "ManhackSparks", "watersplash", "TeslaZap", "MuzzleFlash", "ShellEject", "StriderBlood", "ParticleEffect", "Smoke", "ImpactGunship", "ChopperMuzzleFlash", "cball_explode", "MyEffectName", "HunterTracer", "HelicopterMegaBomb", "RagdollImpact"}
@@ -142,7 +142,7 @@ function map_edit.CreateParticleViewer(pnlContext, vw)
 end
 
 
-hook.Add("zen.map_edit.GenerateGUI", "paticle_viewer", function(nav, pnlContext, vw)
+ihook.Listen("zen.map_edit.GenerateGUI", "paticle_viewer", function(nav, pnlContext, vw)
     nav.items:zen_AddStyled("button", {"dock_top", text = "Create Particle Viewer", cc = {
         DoClick = function()
             map_edit.CreateParticleViewer(pnlContext, vw)

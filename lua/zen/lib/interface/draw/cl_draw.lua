@@ -186,7 +186,7 @@ end
 local tfTitle = {nil, 10, 0, 0, COLOR.G, TEXT_ALIGN_LEFT, 1, COLOR.BLACK}
 local tfValue = {nil, 6, 20, 0, COLOR.W, TEXT_ALIGN_LEFT, 1, COLOR.BLACK}
 
-hook.Add("HUDPaint", "test", function()
+ihook.Listen("HUDPaint", "test", function()
     
     draw.TextArray(100, 100, {
         tfTitle,

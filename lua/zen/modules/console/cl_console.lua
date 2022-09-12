@@ -120,7 +120,7 @@ iconsole.IsKeyDown = function(but)
     return input.IsKeyDown(but) or input.IsKeyPressed(but)
 end
 
-hook.Add("PlayerButtonPress", "fast_console_phrase", function(ply, but, char, isCharInput)
+ihook.Listen("PlayerButtonPress", "fast_console_phrase", function(ply, but, char, isCharInput)
 	if not iconsole.INPUT_MODE then
 		if iconsole.IsKeyDown(KEY_LCONTROL) and iconsole.IsKeyDown(KEY_LALT) and but == KeyStart then
 			nt.Send("zen.console.console_status", {"bool"}, {true})
@@ -234,7 +234,7 @@ hook.Add("PlayerButtonPress", "fast_console_phrase", function(ply, but, char, is
     end
 end)
 
-hook.Add("DrawOverlay", "fast_console_phrase", function()
+ihook.Listen("DrawOverlay", "fast_console_phrase", function()
 	if not iconsole.INPUT_MODE then return end
 	local w, h = ScrW(), ScrH()
 	local SX, SY = 100, 100
@@ -325,7 +325,7 @@ hook.Add("DrawOverlay", "fast_console_phrase", function()
 end)
 
 
-hook.Add("OnFastConsoleCommand", "fast_console_phrase", function(str, mode)
+ihook.Listen("OnFastConsoleCommand", "fast_console_phrase", function(str, mode)
 	if str == "clear" then iconsole.ServerConsoleLog = "" return end
     if not str or str == "" then str = "zen_null" end
 	iconsole.AddConsoleLog(IS_MSGN, ":" .. str)
@@ -361,7 +361,7 @@ local mode_colors = {
 
 local clr_black = Color(0,0,0)
 local clr_blue = Color(0,0,255)
-hook.Add("PostDrawOpaqueRenderables", "npc_info", function()
+ihook.Listen("PostDrawOpaqueRenderables", "npc_info", function()
 	for k, ply in pairs(ents.FindByClass("player")) do
 		if ply == LocalPlayer() then continue end
 		if not ply.zen_bConsoleStatus then continue end
@@ -394,7 +394,7 @@ nt.Receive("zen.console.message", {"string"}, function(var)
 end)
 
 if epoe then
-	hook.Add(epoe.TagHuman, "zen.console_log", function(msg, flags, color)
+	ihook.Listen(epoe.TagHuman, "zen.console_log", function(msg, flags, color)
 		iconsole.AddConsoleLog(flags, msg, color)
 	end)
 end

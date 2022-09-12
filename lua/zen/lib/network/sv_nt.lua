@@ -1,4 +1,4 @@
-hook.Add("ReadyForNetwork", "nt.SendAllNetworkChannels", function(ply)
+ihook.Listen("ReadyForNetwork", "nt.SendAllNetworkChannels", function(ply)
 
     for _, v in ipairs(nt.mt_ChannelsPublicPriority) do
         local channel_name = v.name
@@ -282,7 +282,7 @@ net.Receive(nt.channels.sendMessage, function(len, ply)
     end
 end)
 
-hook.Add("nt.Receive", "zen.nt.logs", function(channel_name, ...)
+ihook.Listen("nt.Receive", "zen.nt.logs", function(channel_name, ...)
     if nt.i_debug_lvl >= 1 then
         zen.print("[nt.received] ", channel_name)
         print(...)

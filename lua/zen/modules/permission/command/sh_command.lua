@@ -58,7 +58,7 @@ function icmd.Receive(ply, cmd, data)
 end
 
 
-hook.Add("zen.console.command", "zen.permission", function(ply, cmd, args, argsStr)
+ihook.Listen("zen.console.command", "zen.permission", function(ply, cmd, args, argsStr)
     return icmd.Receive(ply, cmd, args)
 end)
 

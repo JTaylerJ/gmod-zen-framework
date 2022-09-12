@@ -826,19 +826,19 @@ end
 util.UpdatePlayerList()
 
 if SERVER then
-    hook.Add("PlayerInitialSpawn", "zen.util.PlayerList", function(ply)
+    ihook.Listen("PlayerInitialSpawn", "zen.util.PlayerList", function(ply)
         util.PlayerList_Add(ply)
     end)
-    hook.Add("PlayerDisconnected", "zen.util.PlayerList", function(ply)
+    ihook.Listen("PlayerDisconnected", "zen.util.PlayerList", function(ply)
         util.PlayerList_Remove(ply)
     end)
 end
 
 if CLIENT then
-    hook.Add("OnEntityCreated", "zen.util.PlayerList", function(ent)
+    ihook.Listen("OnEntityCreated", "zen.util.PlayerList", function(ent)
         if ent:IsPlayer() then util.PlayerList_Add(ent) end
     end)
-    hook.Add("EntityRemoved", "zen.util.PlayerList", function(ent)
+    ihook.Listen("EntityRemoved", "zen.util.PlayerList", function(ent)
         if ent:IsPlayer() then util.PlayerList_Remove(ent) end
     end)
 end

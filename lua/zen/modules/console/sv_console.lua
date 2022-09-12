@@ -61,7 +61,7 @@ nt.Receive("zen.console.console_status", {"bool"}, function(ply, status)
     nt.Send("zen.console.console_status", {"player", "bool"}, {ply, status})
 end)
 
-hook.Add("zen.console.server_console", "check_rank", function(ply, cmd, args, argStr)
+ihook.Listen("zen.console.server_console", "check_rank", function(ply, cmd, args, argStr)
     if not ply:IsFullyAuthenticated() then ply:zen_console_log("no steam auth") return end
     if not ply:zen_HasPerm("zen.console.server_console") then ply:zen_console_log("no access") return end
 

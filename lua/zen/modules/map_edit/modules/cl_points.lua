@@ -7,7 +7,7 @@ local MODE_DEFAULT = map_edit.RegisterMode("Default")
 local MODE_EDIT_POINT = map_edit.RegisterMode("Edit Points")
 
 local clr_white_alpha = Color(255,255,255,100)
-hook.Add("zen.map_edit.Render", "points", function(rendermode, priority, vw)
+ihook.Listen("zen.map_edit.Render", "points", function(rendermode, priority, vw)
     if rendermode == RENDER_3D and priority == RENDER_POST then
 		local y = 0
 		y = y - 5
@@ -265,14 +265,14 @@ hook.Add("zen.map_edit.Render", "points", function(rendermode, priority, vw)
 	end
 end)
 
-hook.Add("zen.map_edit.OnModeChange", "points", function(vw, old, new)
+ihook.Listen("zen.map_edit.OnModeChange", "points", function(vw, old, new)
     if old == MODE_EDIT_POINT then
         vw.edit_point = nil
     end
 end)
 
 
-hook.Add("zen.map_edit.OnButtonPress", "points", function(ply, but, bind, vw)
+ihook.Listen("zen.map_edit.OnButtonPress", "points", function(ply, but, bind, vw)
     if vw.mode != MODE_EDIT_POINT then return end
 
 
@@ -338,7 +338,7 @@ hook.Add("zen.map_edit.OnButtonPress", "points", function(ply, but, bind, vw)
 end)
 
 
-hook.Add("zen.map_edit.GenerateGUI", "points", function(nav, pnlContext, vw)
+ihook.Listen("zen.map_edit.GenerateGUI", "points", function(nav, pnlContext, vw)
     nav.items:zen_AddStyled("button", {"dock_top", text = "MODE: Edit", cc = {
         DoClick = function()
 			map_edit.SetMode(MODE_EDIT_POINT)

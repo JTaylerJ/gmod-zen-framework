@@ -5,7 +5,7 @@ local mat_user = Material("icon16/user_suit.png")
 local mat_wireframe = Material("models/debug/debugwhite")
 local mat_wireframe2 = Material("phoenix_storms/stripes")
 
-hook.Add("zen.map_edit.Render", "draw_entities", function(rendermode, priority, vw)
+ihook.Listen("zen.map_edit.Render", "draw_entities", function(rendermode, priority, vw)
 	if priority == RENDER_POST then
 
 		if vw.IsDrawPlayers then
@@ -55,7 +55,7 @@ hook.Add("zen.map_edit.Render", "draw_entities", function(rendermode, priority, 
 	end
 end)
 
-hook.Add("zen.map_edit.GenerateGUI", "points", function(nav, pnlContext, vw)
+ihook.Listen("zen.map_edit.GenerateGUI", "points", function(nav, pnlContext, vw)
 
     nav.items:zen_AddStyled("input_bool", {"dock_top", text = "Draw Players", cc = {
         OnChange = function(self, value)

@@ -112,7 +112,7 @@ function map_edit.GenerateGUI(pnlContext, mark_panels)
 	nav.instructions:SetText([[IN_RELOAD - Default Mode]])
 	nav.instructions:SizeToContents()
 	
-	hook.Add("zen.map_edit.OnModeChange", "zen.map_edit.setmode", function(vw, old, new)
+	ihook.Listen("zen.map_edit.OnModeChange", "zen.map_edit.setmode", function(vw, old, new)
 		if not IsValid(nav.mode_status) then return end
 		nav.mode_status:SetMode(new)
 	end)
@@ -147,11 +147,11 @@ function map_edit.Toggle()
 	map_edit.GenerateGUI(g_ContextMenu, map_edit.t_Panels)
 
 
-	hook.Add("CalcView", map_edit.hookName, map_edit.CalcView)
-	hook.Add("StartCommand", map_edit.hookName, map_edit.StartCommand)
-	hook.Add("PlayerSwitchWeapon", map_edit.hookName, map_edit.PlayerSwitchWeapon)
-	hook.Add("Render", map_edit.hookName, map_edit.Render)
-	hook.Add("HUDShouldDraw", map_edit.hookName, map_edit.HUDShouldDraw)
+	ihook.Listen("CalcView", map_edit.hookName, map_edit.CalcView)
+	ihook.Listen("StartCommand", map_edit.hookName, map_edit.StartCommand)
+	ihook.Listen("PlayerSwitchWeapon", map_edit.hookName, map_edit.PlayerSwitchWeapon)
+	ihook.Listen("Render", map_edit.hookName, map_edit.Render)
+	ihook.Handler("HUDShouldDraw", map_edit.hookName, map_edit.HUDShouldDraw, HOOK_LEVEL_BROWSER)
 
 	nt.Send("map_edit.status", {"bool"}, {true})
 end
@@ -241,7 +241,7 @@ function map_edit.StartCommand(ply, cmd)
 	cmd:SetViewAngles(vw.StartAngles)
 end
 
-hook.Add("PlayerButtonPress", "zen.map_edit", function(ply, but)
+ihook.Listen("PlayerButtonPress", "zen.map_edit", function(ply, but)
 	if input.IsKeyDown(KEY_LCONTROL) and input.IsKeyDown(KEY_LALT) and but == KEY_APOSTROPHE then
 		map_edit.Toggle()
 	end
@@ -258,7 +258,7 @@ hook.Add("PlayerButtonPress", "zen.map_edit", function(ply, but)
 	hook.Run("zen.map_edit.OnButtonPress", ply, but, bind, vw)
 end)
 
-hook.Add("PlayerButtonUnPress", "zen.map_edit", function(ply, but)
+ihook.Listen("PlayerButtonUnPress", "zen.map_edit", function(ply, but)
 	if not map_edit.IsActive then return end
 	local bind = input.GetButtonIN(but)
 

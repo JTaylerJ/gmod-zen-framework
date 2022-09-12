@@ -294,13 +294,13 @@ net.Receive(nt.channels.pullChannels, function()
 end)
 
 
-hook.Add("InitPostEntity", "nt.ReadyForNetwork", function()
+ihook.Listen("InitPostEntity", "nt.ReadyForNetwork", function()
     hook.Run("ReadyForNetwork")
     net.Start(nt.channels.clientReady)
     net.SendToServer()
 end)
 
-hook.Add("nt.Receive", "zen.Channels", function(channel_name, v1, v2)
+ihook.Listen("nt.Receive", "zen.Channels", function(channel_name, v1, v2)
     if channel_name == "channels" then
         zen.print("NetworkChannel Received: ", v1, v2)
     end

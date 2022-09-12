@@ -65,7 +65,7 @@ function input.IsButtonPressedIN(BUTTON_IN)
 	return input.IsKeyPressed(BUTTON_ID) or input.IsKeyDown(BUTTON_ID)
 end
 
-hook.Add("PlayerButtonUp", "fast_console_phrase", function(ply, but)
+ihook.Listen("PlayerButtonUp", "fast_console_phrase", function(ply, but)
 	if KeyPressed[but] then
 		KeyPressed[but] = nil
 		for name, keys in pairs(KeyCombinations) do
@@ -76,7 +76,7 @@ hook.Add("PlayerButtonUp", "fast_console_phrase", function(ply, but)
 		hook.Run("PlayerButtonUnPress", ply, but)
 	end
 end)
-hook.Add("PlayerButtonDown", "fast_console_phrase", function(ply, but)
+ihook.Listen("PlayerButtonDown", "fast_console_phrase", function(ply, but)
 	if KeyPressed[but] then return end
 	KeyPressed[but] = true
 	

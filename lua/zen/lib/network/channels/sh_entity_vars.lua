@@ -54,7 +54,7 @@ local id, tChannel, tContent = nt.RegisterChannel("entity_var", nt.t_ChannelFlag
 nt.RegisterChannel("entity_removed")
 
 if SERVER then
-    hook.Add("EntityRemoved", "zen.nt.entity_vars", function(ent)
+    ihook.Listen("EntityRemoved", "zen.nt.entity_vars", function(ent)
         local ent_id = ent:EntIndex()
         if not tContent[ent_id] then return end
 
@@ -79,7 +79,7 @@ if CLIENT then
         nt.mt_EntityVars[Entity(ent_id)] = nil
     end)
 
-    hook.Add("NetworkEntityCreated", "zen.nt.entity_vars", function(ent)
+    ihook.Listen("NetworkEntityCreated", "zen.nt.entity_vars", function(ent)
         local index = ent:EntIndex()
         if nt.mt_EntityVars[index] then
             nt.mt_EntityVars[ent] = nt.mt_EntityVars[index]

@@ -206,7 +206,7 @@ local function getCircleDrawPolySelected(sx, sy, r, sep, item_id, saveTbl)
 end
 
 
-hook.Add("zen.map_edit.Render", "quickmenu", function(rendermode, priority, vw)
+ihook.Listen("zen.map_edit.Render", "quickmenu", function(rendermode, priority, vw)
     if rendermode != RENDER_2D or priority != RENDER_POST then return end
     if not nvars.radial_menu.is_opened then return end
 
@@ -257,7 +257,7 @@ hook.Add("zen.map_edit.Render", "quickmenu", function(rendermode, priority, vw)
 	end
 end)
 
-hook.Add("zen.worldclick.nopanel.onPress", "zen.map_edit.quickmenu", function(code, tr)
+ihook.Listen("zen.worldclick.nopanel.onPress", "zen.map_edit.quickmenu", function(code, tr)
 	if code != MOUSE_LEFT then return end
 	if not nvars.radial_menu.is_opened then return end
 
@@ -285,7 +285,7 @@ function nvars.radial_menu.Close()
 	gui.EnableScreenClicker(false)
 end
 
-hook.Add("zen.map_edit.OnButtonPress", "quickmenu", function(ply, but, bind, vw)
+ihook.Listen("zen.map_edit.OnButtonPress", "quickmenu", function(ply, but, bind, vw)
 	if bind != IN_USE then return end
 	if not IsValid(vw.hoverEntity) then return end
 
@@ -308,7 +308,7 @@ nt.Receive("nvars.get_buttons", {"entity", "table"}, function(ent, tButtons)
 	end
 end)
 
-hook.Add("zen.map_edit.OnButtonUnPress", "quickmenu", function(ply, but, bind, vw)
+ihook.Listen("zen.map_edit.OnButtonUnPress", "quickmenu", function(ply, but, bind, vw)
     if bind != IN_USE then return end
 
 	if nvars.radial_menu.is_opened then

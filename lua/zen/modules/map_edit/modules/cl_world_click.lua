@@ -70,7 +70,7 @@ function worldclick.CheckClick(ply, code)
         hook.Run("zen.worldclick.nopanel.onPress", code)
     end
 end
-hook.Add( "PlayerButtonPress", "zen.worldclick", worldclick.CheckClick)
+ihook.Listen( "PlayerButtonPress", "zen.worldclick", worldclick.CheckClick)
 
 function worldclick.CheckUnClick(ply, code)
     if code < MOUSE_FIRST or code > MOUSE_LAST then return end
@@ -92,4 +92,4 @@ function worldclick.CheckUnClick(ply, code)
         hook.Run("zen.worldclick.nopanel.onRelease", code)
     end
 end
-hook.Add( "PlayerButtonUnPress", "zen.worldclick", worldclick.CheckUnClick)
+ihook.Listen( "PlayerButtonUnPress", "zen.worldclick", worldclick.CheckUnClick)

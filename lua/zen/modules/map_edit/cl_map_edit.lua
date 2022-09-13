@@ -31,6 +31,7 @@ function map_edit.SetupViewData()
 	table.Empty(map_edit.ViewData)
 
 	vw.t_Positions = {}
+	vw.BindPressed = {}
 	vw.nextOriginUpdate = CurTime()
 
 	local view = render.GetViewSetup()
@@ -61,6 +62,7 @@ function map_edit.Render(rendermode, priority)
 	vw.hoverOrigin = vw.lastTrace.HitPos
 
 	ihook.Run("zen.map_edit.Render", rendermode, priority, vw)
+	return true
 end
 
 
@@ -126,6 +128,8 @@ function map_edit.Toggle()
 	map_edit.IsActive = not map_edit.IsActive
 
 	if not map_edit.IsActive then
+		ihook.Remove("PlayerBindPress", map_edit.hookName)
+		ihook.Remove("CreateMove", map_edit.hookName)
 		ihook.Remove("CalcView", map_edit.hookName)
 		ihook.Remove("StartCommand", map_edit.hookName)
 		ihook.Remove("PlayerSwitchWeapon", map_edit.hookName)
@@ -147,18 +151,21 @@ function map_edit.Toggle()
 	map_edit.GenerateGUI(g_ContextMenu, map_edit.t_Panels)
 
 
-	ihook.Listen("CalcView", map_edit.hookName, map_edit.CalcView)
-	ihook.Listen("StartCommand", map_edit.hookName, map_edit.StartCommand)
-	ihook.Listen("PlayerSwitchWeapon", map_edit.hookName, map_edit.PlayerSwitchWeapon)
-	ihook.Listen("Render", map_edit.hookName, map_edit.Render)
-	ihook.Handler("HUDShouldDraw", map_edit.hookName, map_edit.HUDShouldDraw, HOOK_LEVEL_BROWSER)
+	ihook.Handler("PlayerBindPress", map_edit.hookName, map_edit.PlayerBindPress, HOOK_HIGH)
+	ihook.Handler("CalcView", map_edit.hookName, map_edit.CalcView, HOOK_HIGH)
+	ihook.Handler("CreateMove", map_edit.hookName, map_edit.CreateMove, HOOK_HIGH)
+	ihook.Handler("StartCommand", map_edit.hookName, map_edit.StartCommand, HOOK_HIGH)
+	ihook.Handler("PlayerSwitchWeapon", map_edit.hookName, map_edit.PlayerSwitchWeapon, HOOK_HIGH)
+	ihook.Handler("Render", map_edit.hookName, map_edit.Render, HOOK_HIGH)
+	ihook.Handler("HUDShouldDraw", map_edit.hookName, map_edit.HUDShouldDraw, HOOK_HIGH)
 
 	nt.Send("map_edit.status", {"bool"}, {true})
 end
 
-function map_edit.PlayerSwitchWeapon(ply, wep)
-	return true
-end
+
+function map_edit.PlayerBindPress(ply, bind, pressed, code) return true end
+function map_edit.CreateMove(cmd) return true end
+function map_edit.PlayerSwitchWeapon(ply, wep) return true end
 
 function map_edit.CalcView(ply, origin, angles, fov, znear, zfar)
 	local new_view = {
@@ -171,9 +178,12 @@ function map_edit.CalcView(ply, origin, angles, fov, znear, zfar)
 	return new_view
 end
 
+
 function map_edit.StartCommand(ply, cmd)
 	local add_x = -(cmd:GetMouseX() * 0.03)
 	local add_y = -(cmd:GetMouseY() * 0.03)
+
+	local isMoveActive = !vgui.CursorVisible()
 
 	if add_x != 0 then
 		if vw.angles.p < -90 or vw.angles.p > 90 then
@@ -191,36 +201,39 @@ function map_edit.StartCommand(ply, cmd)
 	vw.angles:Normalize()
 	vw.angles.r = 0
 
-	local speed = 2
-	if cmd:KeyDown(IN_SPEED) then
-		speed = 10
-	elseif cmd:KeyDown(IN_DUCK) then
-		speed = 0.1
+	if isMoveActive then
+
+		local speed = 2
+		if input.IsButtonPressedIN(IN_SPEED) then
+			speed = 10
+		elseif input.IsButtonPressedIN(IN_DUCK) then
+			speed = 0.1
+		end
+
+		local add_origin = Vector()
+
+		if input.IsButtonPressedIN(IN_FORWARD) then
+			add_origin = add_origin + vw.angles:Forward() * speed
+		end
+
+		if input.IsButtonPressedIN(IN_MOVERIGHT) then
+			add_origin = add_origin + vw.angles:Right() * speed
+		end
+
+		if input.IsButtonPressedIN(IN_BACK) then
+			add_origin = add_origin - vw.angles:Forward() * speed
+		end
+
+		if input.IsButtonPressedIN(IN_MOVELEFT) then
+			add_origin = add_origin - vw.angles:Right() * speed
+		end
+
+		if input.IsButtonPressedIN(IN_JUMP) then
+			add_origin = add_origin + Vector(0,0,1) * speed
+		end
+		
+		vw.origin = vw.origin + add_origin
 	end
-
-	local add_origin = Vector()
-
-	if cmd:KeyDown(IN_FORWARD) then
-		add_origin = add_origin + vw.angles:Forward() * speed
-	end
-
-	if cmd:KeyDown(IN_MOVERIGHT) then
-		add_origin = add_origin + vw.angles:Right() * speed
-	end
-
-	if cmd:KeyDown(IN_BACK) then
-		add_origin = add_origin - vw.angles:Forward() * speed
-	end
-
-	if cmd:KeyDown(IN_MOVELEFT) then
-		add_origin = add_origin - vw.angles:Right() * speed
-	end
-
-	if cmd:KeyDown(IN_JUMP) then
-		add_origin = add_origin + Vector(0,0,1) * speed
-	end
-
-	vw.origin = vw.origin + add_origin
 
 	if not vw.lastOrigin then vw.lastOrigin = vw.origin end
 	if not vw.lastAngles then vw.lastAngles = vw.angles end
@@ -235,10 +248,12 @@ function map_edit.StartCommand(ply, cmd)
 		vw.lastAngles = vw.angles
 	end
 
+
 	cmd:SetImpulse(0)
 	cmd:ClearButtons()
 	cmd:ClearMovement()
 	cmd:SetViewAngles(vw.StartAngles)
+	return true
 end
 
 ihook.Listen("PlayerButtonPress", "zen.map_edit", function(ply, but)
@@ -256,6 +271,7 @@ ihook.Listen("PlayerButtonPress", "zen.map_edit", function(ply, but)
 	end
 
 	ihook.Run("zen.map_edit.OnButtonPress", ply, but, bind, vw)
+	return true
 end)
 
 ihook.Listen("PlayerButtonUnPress", "zen.map_edit", function(ply, but)
@@ -265,4 +281,5 @@ ihook.Listen("PlayerButtonUnPress", "zen.map_edit", function(ply, but)
 	if bind == IN_RELOAD then return end
 
 	ihook.Run("zen.map_edit.OnButtonUnPress", ply, but, bind, vw)
+	return true
 end)

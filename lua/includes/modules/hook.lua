@@ -35,9 +35,13 @@ local Hook_Cleared = hook.t_Hooks_Cleared
 
 
 function hook.Sort_Internal(event_name)
+    Hook_Cleared[event_name] = Hook_Cleared[event_name] or {}
     local tHooksList = Hooks[event_name]
-    Hook_Cleared[event_name] = {}
     local tHookClears = Hook_Cleared[event_name]
+
+    for k, v in pairs(tHookClears) do
+        tHookClears[k] = nil
+    end
 
     for hook_id, v in pairs(tHooksList) do
         table.insert(tHookClears, v)
@@ -52,21 +56,20 @@ function hook.Error(err, name, identify)
 end
 local hook_Error = hook.Error
 
-local i = 0
-local sucRun, a1, a2, a3, a4, a5, a6, a7, a8, a9
 function hook.Call_Internal(event_name, gm, ...)
     local tHookClears = Hook_Cleared[event_name]
-
     if tHookClears != nil then
-        i = 0
+        local i = 0
         ::go_next::
         i = i + 1
 
         local tHook = tHookClears[i]
         if tHook != nil then
-            if tHook.IsValidCheck == true then
+            local sucRun, a1, a2, a3, a4, a5, a6, a7, a8, a9
+
+            if ( tHook.IsListener ) then
                 local id = tHook.id
-                if IsValid(id) then
+                if ( IsValid(id) ) then
                     sucRun, a1, a2, a3, a4, a5, a6, a7, a8, a9 = pcall(tHook.func, id, ...)
                     goto check_result
                 else
@@ -94,7 +97,6 @@ function hook.Call_Internal(event_name, gm, ...)
     local gm_func = gm[event_name]
     if gm_func != nil then return gm_func(gm, ...) end
 end
-local hook_Call = hook.Call_Internal
 
 function hook.Add_Internal(event_name, hook_id, func, level, IsListener)
     if ( !isstring( event_name ) ) then ErrorNoHaltWithStack( "bad argument #1 to 'Add' (string expected, got " .. type( event_name ) .. ")" ) return end
@@ -106,16 +108,16 @@ function hook.Add_Internal(event_name, hook_id, func, level, IsListener)
     Hooks[event_name] = Hooks[event_name] or {}
     Hooks_GetTable[event_name] = Hooks_GetTable[event_name] or {}
 
-    local IsValidCheck = isstring(hook_id) and true or false
+    local IsValidCheck = !isstring( hook_id )
 
-    Hooks[event_name][hook_id] = {
-        id = hook_id,
-        func = func,
-        level = level or HOOK_LEVEL_DEFAULT,
-        IsValidCheck = IsValidCheck,
-        ValidFunc = hook_id.IsValid,
-        IsListener = IsListener,
-    }
+    Hooks[event_name][hook_id] = Hooks[event_name][hook_id] or {}
+    local tHook = Hooks[event_name][hook_id]
+
+    tHook.id = hook_id
+    tHook.func = func
+    tHook.level = level or HOOK_LEVEL_DEFAULT
+    tHook.IsValidCheck = IsValidCheck
+    tHook.IsListener = IsListener
     Hooks_GetTable[event_name][hook_id] = func
 
     hook.Sort_Internal(event_name)
@@ -143,8 +145,8 @@ end
 function hook.Add( event_name, identify, func, level ) hook.Add_Internal(event_name, identify, func, level) end
 function hook.Remove( event_name, identify ) hook.Remove_Internal(event_name, identify) end
 
-hook.Call = hook_Call
-function hook.Run( name, ... ) return hook_Call( name, gmod and gmod.GetGamemode() or nil, ... ) end
+function hook.Call( name, identify, func) return hook.Call_Internal(name, identify, func) end
+function hook.Run( name, ... ) return hook.Call( name, gmod and gmod.GetGamemode() or nil, ... ) end
 
 -- New Stuff
 function hook.Listen(name, identify, func, level) hook.Add_Internal(name, identify, func, level, true) end

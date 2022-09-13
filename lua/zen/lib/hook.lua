@@ -16,16 +16,16 @@ function ihook.Listen(hook_name, hook_id, func, level)
     end
 end
 
-function ihook.Run(hook, ...)
-    return hook.Run(hook, ...)
+function ihook.Run(hook_name, ...)
+    return hook.Run(hook_name, ...)
 end
 
-function ihook.Remove(hook, ...)
-    return hook.Remove(hook, ...)
+function ihook.Remove(hook_name, ...)
+    return hook.Remove(hook_name, ...)
 end
 
-function ihook.Call(hook, gm, ...)
-    return hook.Call(hook, gm, ...)
+function ihook.Call(hook_name, gm, ...)
+    return hook.Call(hook_name, gm, ...)
 end
 
 function ihook.GetTable()

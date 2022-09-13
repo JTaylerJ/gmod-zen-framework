@@ -124,12 +124,14 @@ function map_edit.Toggle()
 
 	if not map_edit.IsActive then
 		ihook.Remove("PlayerBindPress", map_edit.hookName)
-		ihook.Remove("CreateMove", map_edit.hookName)
 		ihook.Remove("CalcView", map_edit.hookName)
+		ihook.Remove("CreateMove", map_edit.hookName)
 		ihook.Remove("StartCommand", map_edit.hookName)
 		ihook.Remove("PlayerSwitchWeapon", map_edit.hookName)
 		ihook.Remove("Render", map_edit.hookName)
 		ihook.Remove("HUDShouldDraw", map_edit.hookName)
+		ihook.Remove("PlayerButtonUp.SupperessNext", map_edit.hookName)
+		ihook.Remove("PlayerButtonDown.SupperessNext", map_edit.hookName)
 
 		for k, v in pairs(map_edit.t_Panels) do
 			if IsValid(v) then v:Remove() end

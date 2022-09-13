@@ -19,7 +19,7 @@ nt.Receive("zen.console.command", {"string"}, function(ply, str)
 
     ply:EmitSound("buttons/combine_button5.wav")
 
-    local res, com = hook.Run("zen.console.command", ply, cmd, args, str)
+    local res, com = ihook.Run("zen.console.command", ply, cmd, args, str)
     if res == true or res == nil then
         ply:zen_console_log(com or "Successful ran")
     else
@@ -32,7 +32,7 @@ nt.Receive("zen.console.server_console", {"string"}, function(ply, str)
     local cmd = args[1]
     table.remove(args, 1)
 
-    hook.Run("zen.console.server_console", ply, cmd, args, str)
+    ihook.Run("zen.console.server_console", ply, cmd, args, str)
 end)
 
 nt.Receive("zen.console.console_mode", {"uint8"}, function(ply, mode)

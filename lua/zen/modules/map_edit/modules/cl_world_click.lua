@@ -47,7 +47,7 @@ function worldclick.CheckHover()
 
     if worldclick.objLastEntity != tr.Entity then
         worldclick.objLastEntity = tr.Entity
-        hook.Run("zen.worldclick.onHoverEntity", worldclick.objLastEntity, tr)
+        ihook.Run("zen.worldclick.onHoverEntity", worldclick.objLastEntity, tr)
     end
 end
 
@@ -59,15 +59,15 @@ function worldclick.CheckClick(ply, code)
     local hover_pnl = vgui.GetHoveredPanel()
     if IsValid(hover_pnl) and hover_pnl != vgui.GetWorldPanel() and hover_pnl != g_ContextMenu then
         if hover_pnl:IsWorldClicker() then
-            hook.Run("zen.worldclick.onPress", code, worldclick.tLastTrace)
+            ihook.Run("zen.worldclick.onPress", code, worldclick.tLastTrace)
             if IsValid(worldclick.objLastEntity) then
-                hook.Run("zen.worldclick.onPressEntity", worldclick.objLastEntity, code, worldclick.tLastTrace)
+                ihook.Run("zen.worldclick.onPressEntity", worldclick.objLastEntity, code, worldclick.tLastTrace)
             end
         else
-            hook.Run("zen.worldclick.panel.onPress", code)
+            ihook.Run("zen.worldclick.panel.onPress", code)
         end
     else
-        hook.Run("zen.worldclick.nopanel.onPress", code)
+        ihook.Run("zen.worldclick.nopanel.onPress", code)
     end
 end
 ihook.Listen( "PlayerButtonPress", "zen.worldclick", worldclick.CheckClick)
@@ -81,15 +81,15 @@ function worldclick.CheckUnClick(ply, code)
     local hover_pnl = vgui.GetHoveredPanel()
     if IsValid(hover_pnl) and hover_pnl != vgui.GetWorldPanel() and hover_pnl != g_ContextMenu then
         if hover_pnl:IsWorldClicker() then
-            hook.Run("zen.worldclick.onRelease", code, worldclick.tLastTrace)
+            ihook.Run("zen.worldclick.onRelease", code, worldclick.tLastTrace)
             if IsValid(worldclick.objLastEntity) then
-                hook.Run("zen.worldclick.onReleaseEntity", worldclick.objLastEntity, code, worldclick.tLastTrace)
+                ihook.Run("zen.worldclick.onReleaseEntity", worldclick.objLastEntity, code, worldclick.tLastTrace)
             end
         else
-            hook.Run("zen.worldclick.panel.onRelease", code)
+            ihook.Run("zen.worldclick.panel.onRelease", code)
         end
     else
-        hook.Run("zen.worldclick.nopanel.onRelease", code)
+        ihook.Run("zen.worldclick.nopanel.onRelease", code)
     end
 end
 ihook.Listen( "PlayerButtonUnPress", "zen.worldclick", worldclick.CheckUnClick)

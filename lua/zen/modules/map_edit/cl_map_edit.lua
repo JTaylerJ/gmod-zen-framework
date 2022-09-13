@@ -24,7 +24,7 @@ local vw = map_edit.ViewData
 function map_edit.SetMode(mode)
 	local old_mode = vw.mode
 	vw.mode = mode
-	hook.Run("zen.map_edit.OnModeChange", vw, old_mode, mode)
+	ihook.Run("zen.map_edit.OnModeChange", vw, old_mode, mode)
 end
 
 function map_edit.SetupViewData()
@@ -60,7 +60,7 @@ function map_edit.Render(rendermode, priority)
 	vw.hoverEntity = vw.lastTrace.Entity
 	vw.hoverOrigin = vw.lastTrace.HitPos
 
-	hook.Run("zen.map_edit.Render", rendermode, priority, vw)
+	ihook.Run("zen.map_edit.Render", rendermode, priority, vw)
 end
 
 
@@ -118,7 +118,7 @@ function map_edit.GenerateGUI(pnlContext, mark_panels)
 	end)
 
 
-	hook.Run("zen.map_edit.GenerateGUI", nav, pnlContext, vw)
+	ihook.Run("zen.map_edit.GenerateGUI", nav, pnlContext, vw)
 end
 
 
@@ -126,11 +126,11 @@ function map_edit.Toggle()
 	map_edit.IsActive = not map_edit.IsActive
 
 	if not map_edit.IsActive then
-		hook.Remove("CalcView", map_edit.hookName)
-		hook.Remove("StartCommand", map_edit.hookName)
-		hook.Remove("PlayerSwitchWeapon", map_edit.hookName)
-		hook.Remove("Render", map_edit.hookName)
-		hook.Remove("HUDShouldDraw", map_edit.hookName)
+		ihook.Remove("CalcView", map_edit.hookName)
+		ihook.Remove("StartCommand", map_edit.hookName)
+		ihook.Remove("PlayerSwitchWeapon", map_edit.hookName)
+		ihook.Remove("Render", map_edit.hookName)
+		ihook.Remove("HUDShouldDraw", map_edit.hookName)
 
 		for k, v in pairs(map_edit.t_Panels) do
 			if IsValid(v) then v:Remove() end
@@ -255,7 +255,7 @@ ihook.Listen("PlayerButtonPress", "zen.map_edit", function(ply, but)
 		return
 	end
 
-	hook.Run("zen.map_edit.OnButtonPress", ply, but, bind, vw)
+	ihook.Run("zen.map_edit.OnButtonPress", ply, but, bind, vw)
 end)
 
 ihook.Listen("PlayerButtonUnPress", "zen.map_edit", function(ply, but)
@@ -264,5 +264,5 @@ ihook.Listen("PlayerButtonUnPress", "zen.map_edit", function(ply, but)
 
 	if bind == IN_RELOAD then return end
 
-	hook.Run("zen.map_edit.OnButtonUnPress", ply, but, bind, vw)
+	ihook.Run("zen.map_edit.OnButtonUnPress", ply, but, bind, vw)
 end)

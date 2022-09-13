@@ -73,7 +73,7 @@ ihook.Listen("PlayerButtonUp", "fast_console_phrase", function(ply, but)
 				KeyCombinationsMass[name] = math.max(0, KeyCombinationsMass[name] - 1)
 			end
 		end
-		hook.Run("PlayerButtonUnPress", ply, but)
+		ihook.Run("PlayerButtonUnPress", ply, but)
 	end
 end)
 ihook.Listen("PlayerButtonDown", "fast_console_phrase", function(ply, but)
@@ -86,7 +86,7 @@ ihook.Listen("PlayerButtonDown", "fast_console_phrase", function(ply, but)
 		end
 	end
 
-	hook.Run("PlayerButtonPress", ply, but)
+	ihook.Run("PlayerButtonPress", ply, but)
 end)
 
 input.SetupCombination("Modificator", KEY_LCONTROL, KEY_RCONTROL, KEY_LSHIFT, KEY_RSHIFT)

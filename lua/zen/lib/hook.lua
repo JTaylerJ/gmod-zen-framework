@@ -20,6 +20,10 @@ function ihook.Run(hook, ...)
     return hook.Run(hook, ...)
 end
 
+function ihook.Remove(hook, ...)
+    return hook.Remove(hook, ...)
+end
+
 function ihook.Call(hook, gm, ...)
     return hook.Call(hook, gm, ...)
 end

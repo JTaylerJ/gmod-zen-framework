@@ -185,7 +185,7 @@ net.Receive(nt.channels.sendMessage, function(len)
             tChannel.fPostReader(tChannel, unpack(result))
         end
 
-        hook.Run("nt.Receive", channel_name, unpack(result))
+        ihook.Run("nt.Receive", channel_name, unpack(result))
         bWaitingInspect = false
     end
 
@@ -216,7 +216,7 @@ net.Receive(nt.channels.sendMessage, function(len)
             zen.print("[nt.debug] End Read \"",channel_name,"\"")
         end
 
-        hook.Run("nt.Receive", channel_name, unpack(result))
+        ihook.Run("nt.Receive", channel_name, unpack(result))
 
         if tReceiverData.postFunc then
             tReceiverData.postFunc(unpack(result))
@@ -275,12 +275,12 @@ net.Receive(nt.channels.pullChannels, function()
 
             if tChannel.fPostReader then
                 for k, result in pairs(tResult) do
-                    hook.Run("nt.Receive", channel_name, unpack(result))
+                    ihook.Run("nt.Receive", channel_name, unpack(result))
                     tChannel.fPostReader(tChannel, unpack(result))
                 end
             else
                 for k, result in pairs(tResult) do
-                    hook.Run("nt.Receive", channel_name, unpack(result))
+                    ihook.Run("nt.Receive", channel_name, unpack(result))
                 end
             end
         end
@@ -295,7 +295,7 @@ end)
 
 
 ihook.Listen("InitPostEntity", "nt.ReadyForNetwork", function()
-    hook.Run("ReadyForNetwork")
+    ihook.Run("ReadyForNetwork")
     net.Start(nt.channels.clientReady)
     net.SendToServer()
 end)

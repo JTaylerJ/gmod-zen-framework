@@ -17,13 +17,13 @@ iconsole.InitEntry = function()
 
 	iconsole.dentry.AllowInput = function(self, char)
 		local new_but = input.GetKeyCode(char)
-		hook.Run("PlayerButtonPress", LocalPlayer(), new_but, char, true)
-		hook.Run("PlayerButtonUnPress", LocalPlayer(), new_but, char, true)
+		ihook.Run("PlayerButtonPress", LocalPlayer(), new_but, char, true)
+		ihook.Run("PlayerButtonUnPress", LocalPlayer(), new_but, char, true)
 		return true
 	end
 	iconsole.dentry.OnKeyCode = function(self, new_but)
-		hook.Run("PlayerButtonPress", LocalPlayer(), new_but, "")
-		hook.Run("PlayerButtonUnPress", LocalPlayer(), new_but, "")
+		ihook.Run("PlayerButtonPress", LocalPlayer(), new_but, "")
+		ihook.Run("PlayerButtonUnPress", LocalPlayer(), new_but, "")
 	end
 end
 
@@ -191,7 +191,7 @@ ihook.Listen("PlayerButtonPress", "fast_console_phrase", function(ply, but, char
 	end
 
 	if but == KEY_ENTER then
-		hook.Run("OnFastConsoleCommand", iconsole.phrase, iconsole.mode)
+		ihook.Run("OnFastConsoleCommand", iconsole.phrase, iconsole.mode)
 		iconsole.SetPhrase("")
 		goto next
 	end

@@ -31,7 +31,7 @@ end)
 
 net.Receive(nt.channels.clientReady, function(len, ply)
     ply.mbReadyForNetwork = true
-    hook.Run("ReadyForNetwork", ply)
+    ihook.Run("ReadyForNetwork", ply)
 end)
 
 local clr_red = Color(255, 0, 0)
@@ -116,7 +116,7 @@ function nt.Send(channel_name, types, data, target)
         zen.print("[nt.debug] End \"",channel_name,"\"")
     end
 
-    hook.Run("nt.Send", {channel_name, types, data, target})
+    ihook.Run("nt.Send", {channel_name, types, data, target})
 
     if nt.i_debug_lvl >= 1 then
         if target then
@@ -233,7 +233,7 @@ net.Receive(nt.channels.sendMessage, function(len, ply)
             tChannel.fPostReader(tChannel, ply, unpack(result))
         end
 
-        hook.Run("nt.Receive", channel_name, ply, unpack(result))
+        ihook.Run("nt.Receive", channel_name, ply, unpack(result))
     end
 
     if bSuccess then
@@ -263,7 +263,7 @@ net.Receive(nt.channels.sendMessage, function(len, ply)
             zen.print("[nt.debug] End Read \"",channel_name,"\"")
         end
 
-        hook.Run("nt.Receive", channel_name, ply, unpack(result))
+        ihook.Run("nt.Receive", channel_name, ply, unpack(result))
 
         if tReceiverData.postFunc then
             tReceiverData.postFunc(ply, unpack(result))

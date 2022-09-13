@@ -6,28 +6,28 @@ RENDER_DEFAULT = 2
 RENDER_POST = 3
 
 ihook.Listen("DrawTranslucentRenderables", "zen.hud", function()
-    hook.Run("Render", RENDER_3D, RENDER_PRE)
+    ihook.Run("Render", RENDER_3D, RENDER_PRE)
 end)
 
-hook.Run("PreDrawEffects", "zen.hud", function()
-    hook.Run("Render", RENDER_3D, RENDER_DEFAULT)
+ihook.Run("PreDrawEffects", "zen.hud", function()
+    ihook.Run("Render", RENDER_3D, RENDER_DEFAULT)
 end)
 
 ihook.Listen("PreDrawHUD", "zen.hud", function()
-    hook.Run("Render", RENDER_2D, RENDER_DEFAULT)
+    ihook.Run("Render", RENDER_2D, RENDER_DEFAULT)
 end)
 
 ihook.Listen("PostDrawEffects", "zen.hud", function()
-    hook.Run("Render", RENDER_2D, RENDER_PRE)
+    ihook.Run("Render", RENDER_2D, RENDER_PRE)
 end)
 
 ihook.Listen("PostRender", "zen.hud", function()
     cam.Start3D()
-        hook.Run("Render", RENDER_3D, RENDER_POST)
+        ihook.Run("Render", RENDER_3D, RENDER_POST)
     cam.End3D()
 
     cam.Start2D()
-        hook.Run("Render", RENDER_2D, RENDER_POST)
+        ihook.Run("Render", RENDER_2D, RENDER_POST)
     cam.End2D()
 end)
 

@@ -148,7 +148,7 @@ function map_edit.Toggle()
 
 	map_edit.SetupViewData()
 
-	map_edit.GenerateGUI(g_ContextMenu, map_edit.t_Panels)
+	-- map_edit.GenerateGUI(g_ContextMenu, map_edit.t_Panels)
 
 
 	ihook.Handler("PlayerBindPress", map_edit.hookName, map_edit.PlayerBindPress, HOOK_HIGH)

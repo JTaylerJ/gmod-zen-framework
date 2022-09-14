@@ -752,50 +752,50 @@ util.mt_PlayerList_Entity = {}
 util.mt_PlayerList_SID64 = {}
 util.mt_PlayerList_SID = {}
 util.mt_PlayerList_UserID = {}
+util.mt_PlayerList_Address = {}
+
+local function AddPlayerIDValue(tbl, value, isbot, sid64, sid64_n, sid, userid, userid_str, address)
+    if value == nil then return end
+    if userid then tbl[userid] = value end
+    if userid_str then tbl[userid_str] = value end
+    if not isbot then
+        if address then tbl[address] = value end
+        if sid64 then tbl[sid64] = value end
+        if sid64_n then tbl[sid64_n] = value end
+        if sid then tbl[sid] = value end
+    end
+end
+
+local function RemovePlayerIDValue(tbl, isbot, sid64, sid64_n, sid, userid, userid_str, address)
+    if userid then tbl[userid] = nil end
+    if userid_str then tbl[userid_str] = nil end
+    if not isbot then
+        if address then tbl[address] = nil end
+        if sid64 then tbl[sid64] = nil end
+        if sid64_n then tbl[sid64_n] = nil end
+        if sid then tbl[sid] = nil end
+    end
+end
+
+
 function util.PlayerList_Remove(ply)
     local sid64 = ply.zen_sSteamID64 or ply:SteamID64()
     local sid64_n = tonumber(sid64)
     local sid = ply.zen_sSteamID or ply:SteamID()
     local userid = ply.zen_iUserID or ply:UserID()
     local userid_str = "#" .. userid
+    local address = ply.zen_sAddress or (ply.IPAddress and ply:IPAddress())
 
-    -- Entity
-    util.mt_PlayerList_Entity[ply] = nil
-    util.mt_PlayerList_SID64[ply] = nil
-    util.mt_PlayerList_SID[ply] = nil
-    util.mt_PlayerList_UserID[ply] = nil
+    local isbot = ply.zen_bIsBot or ply:IsBot()
 
-    -- Sids
-    if not ply:IsBot() then
-        util.mt_PlayerList_Entity[sid64] = nil
-        util.mt_PlayerList_Entity[sid64_n] = nil
-        util.mt_PlayerList_Entity[sid] = nil
+    RemovePlayerIDValue(util.mt_PlayerList_Entity, isbot, sid64, sid64_n, sid, userid, userid_str, address)
+    RemovePlayerIDValue(util.mt_PlayerList_UserID, isbot, sid64, sid64_n, sid, userid, userid_str, address)
 
-        util.mt_PlayerList_SID64[sid64] = nil
-        util.mt_PlayerList_SID64[sid64_n] = nil
-        util.mt_PlayerList_SID64[sid] = nil
-
-        util.mt_PlayerList_SID[sid64] = nil
-        util.mt_PlayerList_SID[sid64_n] = nil
-        util.mt_PlayerList_SID[sid] = nil
-
-        util.mt_PlayerList_UserID[sid64] = nil
-        util.mt_PlayerList_UserID[sid64_n] = nil
-        util.mt_PlayerList_UserID[sid] = nil
+    if not isbot then
+        RemovePlayerIDValue(util.mt_PlayerList_SID, isbot, sid64, sid64_n, sid, userid, userid_str, address)
+        RemovePlayerIDValue(util.mt_PlayerList_SID64, isbot, sid64, sid64_n, sid, userid, userid_str, address)
+        RemovePlayerIDValue(util.mt_PlayerList_Address, isbot, sid64, sid64_n, sid, userid, userid_str, address)
     end
-
-    -- UserID
-    util.mt_PlayerList_Entity[userid] = nil
-    util.mt_PlayerList_Entity[userid_str] = nil
-
-    util.mt_PlayerList_SID64[userid] = nil
-    util.mt_PlayerList_SID64[userid_str] = nil
-
-    util.mt_PlayerList_SID[userid] = nil
-    util.mt_PlayerList_SID[userid_str] = nil
-
-    util.mt_PlayerList_UserID[userid] = nil
-    util.mt_PlayerList_UserID[userid_str] = nil
 end
 
 
@@ -805,49 +805,24 @@ function util.PlayerList_Add(ply)
     local sid = ply:SteamID()
     local userid = ply:UserID()
     local userid_str = "#" .. userid
+    local address = ply.IPAddress and ply:IPAddress()
+    local isbot = ply:IsBot()
 
-    -- Entity
-    util.mt_PlayerList_Entity[ply] = ply
-    util.mt_PlayerList_UserID[ply] = userid
-
-    if not ply:IsBot() then
-        util.mt_PlayerList_SID64[ply] = sid64
-        util.mt_PlayerList_SID[ply] = sid
-
-
-        util.mt_PlayerList_Entity[sid64] = ply
-        util.mt_PlayerList_Entity[sid64_n] = ply
-        util.mt_PlayerList_Entity[sid] = ply
-
-        util.mt_PlayerList_SID64[sid64] = sid64
-        util.mt_PlayerList_SID64[sid64_n] = sid64
-        util.mt_PlayerList_SID64[sid] = sid64
-
-        util.mt_PlayerList_SID[sid64] = sid
-        util.mt_PlayerList_SID[sid64_n] = sid
-        util.mt_PlayerList_SID[sid] = sid
-
-        util.mt_PlayerList_UserID[sid64] = userid
-        util.mt_PlayerList_UserID[sid64_n] = userid
-        util.mt_PlayerList_UserID[sid] = userid
-
-        ply.zen_sSteamID64 = sid64
-        ply.zen_sSteamID = sid
-
-        util.mt_PlayerList_SID64[userid] = sid64
-        util.mt_PlayerList_SID64[userid_str] = sid64
-    
-        util.mt_PlayerList_SID[userid] = sid
-        util.mt_PlayerList_SID[userid_str] = sid
-    end
+    ply.zen_sSteamID64 = sid64
+    ply.zen_sSteamID = sid
     ply.zen_iUserID = userid
+    ply.zen_bIsBot = isbot
+    ply.zen_sAddress = address
+    
 
-    -- UserID
-    util.mt_PlayerList_UserID[userid] = userid
-    util.mt_PlayerList_UserID[userid_str] = userid
-
-    util.mt_PlayerList_Entity[userid] = ply
-    util.mt_PlayerList_Entity[userid_str] = ply
+    AddPlayerIDValue(util.mt_PlayerList_Entity, ply, isbot, sid64, sid64_n, sid, userid, userid_str, address)
+    AddPlayerIDValue(util.mt_PlayerList_UserID, userid, isbot, sid64, sid64_n, sid, userid, userid_str, address)
+    
+    if not isbot then
+        AddPlayerIDValue(util.mt_PlayerList_SID, sid, isbot, sid64, sid64_n, sid, userid, userid_str, address)
+        AddPlayerIDValue(util.mt_PlayerList_SID64, sid64, isbot, sid64, sid64_n, sid, userid, userid_str, address)
+        AddPlayerIDValue(util.mt_PlayerList_Address, address, isbot, sid64, sid64_n, sid, userid, userid_str, address)
+    end
 end
 
 function util.UpdatePlayerList()
@@ -865,6 +840,39 @@ if SERVER then
     ihook.Listen("PlayerDisconnected", "zen.util.PlayerList", function(ply)
         util.PlayerList_Remove(ply)
     end)
+
+    gameevent.Listen("player_connect")
+    ihook.Listen("player_connect", "zen.util.PlayerList", function(tbl)
+        local sid = tbl.networkid
+        local sid64 = util.SteamIDTo64(sid)
+        local sid64_n = tonumber(sid64)
+        local userid = tbl.userid
+        local userid_str = "#" .. userid
+        local address = tbl.address
+        local isbot = tbl.bot == 1
+
+        AddPlayerIDValue(util.mt_PlayerList_SID64, sid64, isbot, sid64, sid64_n, sid, userid, userid_str, address)
+        AddPlayerIDValue(util.mt_PlayerList_SID, sid64, isbot, sid64, sid64_n, sid, userid, userid_str, address)
+        AddPlayerIDValue(util.mt_PlayerList_UserID, sid64, isbot, sid64, sid64_n, sid, userid, userid_str, address)
+        AddPlayerIDValue(util.mt_PlayerList_Address, sid64, isbot, sid64, sid64_n, sid, userid, userid_str, address)
+    end, HOOK_HIGH)
+
+    gameevent.Listen("player_disconnect")
+    ihook.Listen("player_disconnect", "zen.util.PlayerList", function(tbl)
+        local userid = tbl.userid
+        local userid_str = "#" .. tbl.userid
+        local sid64 = util.GetPlayerSteamID64(userid)
+        local sid64_n = tonumber(sid64)
+        local sid = util.GetPlayerSteamID(userid)
+        local address = util.mt_PlayerList_Address[userid]
+        local isbot = tbl.bot == 1
+
+
+        RemovePlayerIDValue(util.mt_PlayerList_SID64, isbot, sid64, sid64_n, sid, userid, userid_str, address)
+        RemovePlayerIDValue(util.mt_PlayerList_SID, isbot, sid64, sid64_n, sid, userid, userid_str, address)
+        RemovePlayerIDValue(util.mt_PlayerList_UserID, isbot, sid64, sid64_n, sid, userid, userid_str, address)
+        RemovePlayerIDValue(util.mt_PlayerList_Address, isbot, sid64, sid64_n, sid, userid, userid_str, address)
+    end, HOOK_HIGH)
 end
 
 if CLIENT then

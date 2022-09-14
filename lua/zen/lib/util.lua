@@ -901,6 +901,10 @@ function util.GetPlayerNick(plyOrSid)
     return util.GetPlayerTBrowseKey(plyOrSid, "nick")
 end
 
+function util.GetPlayerHammerName(plyOrSid)
+    return util.GetPlayerTBrowseKey(plyOrSid, "hammer_name")
+end
+
 local self_tags = {
     ["^"] = true,
     ["@me"] = true,

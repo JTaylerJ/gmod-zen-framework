@@ -110,6 +110,7 @@ function map_edit.CreateParticleViewer(pnlContext, vw)
         {name = "Radius", type = TYPE.NUMBER, default = 1},
         {name = "Scale", type = TYPE.NUMBER, min = 1, max = 1000, default=1},
         {name = "Entity", type = TYPE.ENTITY, optional = true, noplayer = true, default=game.GetWorld()},
+        {name = "Active", type = TYPE.BOOL, optional = true, noplayer = true},
     })
 
     nav.but_emit.DoClick = function()

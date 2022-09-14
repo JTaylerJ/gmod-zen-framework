@@ -76,8 +76,9 @@ function map_edit.GenerateGUI(mark_panels)
 
 	map_edit.pnl_Context = vgui.Create("EditablePanel")
 	map_edit.pnl_Context:SetSize(ScrW(), ScrH())
+	map_edit.pnl_Context:MakePopup()
 	map_edit.pnl_Context:SetMouseInputEnabled(true)
-	map_edit.pnl_Context:SetKeyboardInputEnabled(true)
+	map_edit.pnl_Context:SetKeyboardInputEnabled(false)
 	map_edit.pnl_Context:SetVisible(false)
 
 
@@ -126,7 +127,7 @@ function map_edit.GenerateGUI(mark_panels)
 	end)
 
 
-	ihook.Run("zen.map_edit.GenerateGUI", nav, vw)
+	ihook.Run("zen.map_edit.GenerateGUI", nav, map_edit.pnl_Context, vw)
 end
 
 
@@ -269,11 +270,8 @@ ihook.Handler("PlayerButtonPress", "zen.map_edit", function(ply, but, in_key, bi
 
 	if bind_name == "+menu_context" then
 		if IsValid(map_edit.pnl_Context) then
-			map_edit.pnl_Context:MakePopup()
 			map_edit.pnl_Context:SetVisible(true)
 			map_edit.pnl_Context:SetMouseInputEnabled(true)
-			map_edit.pnl_Context:SetKeyboardInputEnabled(false)
-			gui.EnableScreenClicker(true)
 		end
 	end
 
@@ -293,7 +291,7 @@ ihook.Handler("PlayerButtonUnPress", "zen.map_edit", function(ply, but, in_key, 
 	if bind_name == "+menu_context" then
 		if IsValid(map_edit.pnl_Context) then
 			map_edit.pnl_Context:SetVisible(false)
-			gui.EnableScreenClicker(false)
+			-- gui.EnableScreenClicker(false)
 		end
 	end
 

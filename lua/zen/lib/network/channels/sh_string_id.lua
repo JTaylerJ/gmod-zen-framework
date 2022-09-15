@@ -65,17 +65,47 @@ end
 
 
 nt.mt_listReader["string_id"] = function()
-    local word_id = net.ReadUInt(16)
-    local tWord = nt.mt_StringNumbers[word_id]
-    if not tWord then
-        MsgC(clr_red, "[NT-Predicted-Error] READ: Word id not exists: ", word_id, "\n")
-        return
+    local isString = net.ReadBool()
+
+    local word
+    if isString then
+        word = net.ReadString()
+        MsgC(COLOR.WARN, "[NT-Predicted-Warn] Please register string_id: ", word, "\n")
+    else
+        local word_id = net.ReadUInt(16)
+        local tWord = nt.mt_StringNumbers[word_id]
+        if not tWord then
+            MsgC(COLOR.ERROR, "[NT-Predicted-Error] READ: Word id not exists: ", word_id, "\n")
+            return
+        end
+        word = tWord.word
     end
-    return tWord.word
+    return word
 end
 
 nt.mt_listWriter["string_id"] = function(var)
-    net.WriteUInt(nt.RegisterStringNumbers(var), 16)
+    local id, isString
+    if CLIENT then
+        local tWord = nt.mt_StringNumbers_IDS[var]
+        if tWord then
+            id = tWord.id
+            isString = false
+        else
+            isString = true
+        end
+    else
+        isString = false
+        id = nt.RegisterStringNumbers(var)
+    end
+
+
+    net.WriteBool(isString)
+    if isString then
+        MsgC(COLOR.WARN, "[NT-Predicted-Warn] Please register string_id: ", var, "\n")
+        net.WriteString(var)
+    else
+        net.WriteUInt(id, 16)
+    end
 end
 
 util.RegisterTypeConvert("string_id", TYPE.STRING)

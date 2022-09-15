@@ -1,5 +1,4 @@
 local _I = table.concat
-local clr_red = Color(255, 0, 0)
 
 function nt.Send(channel_name, types, data)
     assertString(channel_name, "channel_name")
@@ -36,7 +35,7 @@ function nt.Send(channel_name, types, data)
     end
 
     if not bSuccess then
-        MsgC(clr_red, "[NT-Predicted-Error] ", channel_name, "\n", sLastError, "\n")
+        MsgC(COLOR.ERROR, "[NT-Predicted-Error] ", channel_name, "\n", sLastError, "\n")
         return
     end
 
@@ -104,7 +103,7 @@ function nt.Receive(channel_name, types, postFunction)
     end
 
     if not bSuccess then
-        MsgC(clr_red, "[NT-Predicted-Error] ", channel_name, "\n", sLastError, "\n")
+        MsgC(COLOR.ERROR, "[NT-Predicted-Error] ", channel_name, "\n", sLastError, "\n")
         return
     end
 
@@ -242,7 +241,7 @@ net.Receive(nt.channels.sendMessage, function(len)
     ::result::
 
     if not bSuccess then
-        MsgC(clr_red, "[NT-Predicted-Error] ", channel_name, "\n", sLastError, "\n")
+        MsgC(COLOR.ERROR, "[NT-Predicted-Error] ", channel_name, "\n", sLastError, "\n")
         return
     end
 end)
@@ -293,7 +292,7 @@ net.Receive(nt.channels.pullChannels, function()
     end
 
     if not bSuccess then
-        MsgC(clr_red, "[NT-Predicted-Error] ", channel_name, "\n", sLastError, "\n")
+        MsgC(COLOR.ERROR, "[NT-Predicted-Error] ", channel_name, "\n", sLastError, "\n")
         return
     end
 

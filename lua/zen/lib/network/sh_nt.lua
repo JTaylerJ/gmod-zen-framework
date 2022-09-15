@@ -205,7 +205,7 @@ function nt.SendToChannel(channel_name, target, ...)
                 zen.print("[nt.debug] Sent network \"",channel_name,"\" to server/players")
             end
         else
-            MsgC(clr_red, "[NT-Predicted-Error] Channel not have send option", channel_name, "\n")
+            MsgC(COLOR.ERROR, "[NT-Predicted-Error] Channel not have send option", channel_name, "\n")
             return
         end
     end

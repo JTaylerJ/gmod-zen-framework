@@ -34,8 +34,6 @@ net.Receive(nt.channels.clientReady, function(len, ply)
     ihook.Run("ReadyForNetwork", ply)
 end)
 
-local clr_red = Color(255, 0, 0)
-
 function nt.Send(channel_name, types, data, target)
     assertString(channel_name, "channel_name")
     types = types or {}
@@ -79,7 +77,7 @@ function nt.Send(channel_name, types, data, target)
     end
 
     if not bSuccess then
-        MsgC(clr_red, "[NT-Predicted-Error] ", channel_name, "\n", sLastError, "\n")
+        MsgC(COLOR.ERROR, "[NT-Predicted-Error] ", channel_name, "\n", sLastError, "\n")
         return
     end
 
@@ -157,7 +155,7 @@ function nt.Receive(channel_name, types, postFunction)
     end
 
     if not bSuccess then
-        MsgC(clr_red, "[NT-Predicted-Error] ", channel_name, "\n", sLastError, "\n")
+        MsgC(COLOR.ERROR, "[NT-Predicted-Error] ", channel_name, "\n", sLastError, "\n")
         return
     end
 
@@ -283,7 +281,7 @@ net.Receive(nt.channels.sendMessage, function(len, ply)
     ::result::
 
     if not bSuccess then
-        MsgC(clr_red, "[NT-Predicted-Error] ", channel_name, "\n", sLastError, "\n")
+        MsgC(COLOR.ERROR, "[NT-Predicted-Error] ", channel_name, "\n", sLastError, "\n")
         return
     end
 end)

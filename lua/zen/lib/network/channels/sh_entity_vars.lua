@@ -95,6 +95,7 @@ end
 
 function META.ENTITY:zen_SetVar(key, value, target)
     if CLIENT then
+        nt.mt_EntityVars[self] = nt.mt_EntityVars[self] or {}
         nt.mt_EntityVars[self][key] = value
     end
     if SERVER then

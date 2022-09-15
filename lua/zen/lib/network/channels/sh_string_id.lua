@@ -15,8 +15,6 @@ local _lower = string.lower
 
 function nt.RegisterStringNumbers(word, new_id)
 	if nt.mt_StringNumbers_IDS[word] then return nt.mt_StringNumbers_IDS[word].id end
-    local lower_case = _lower(word)
-    if nt.mt_StringNumbers_IDS[lower_case] then return nt.mt_StringNumbers_IDS[lower_case].id end
 
 
 	local of = {}
@@ -40,7 +38,6 @@ function nt.RegisterStringNumbers(word, new_id)
     local tWord = nt.mt_StringNumbers[word_id]
 
     nt.mt_StringNumbers_IDS[word] = tWord
-    nt.mt_StringNumbers_IDS[lower_case] = tWord
 
 	if of_count == 1 then
         nt.mt_StringNumbersMulti[word_id] = tWord
@@ -56,7 +53,7 @@ function nt.RegisterStringNumbers(word, new_id)
         nt.mt_StringNumbersSingle[word_id] = tWord
         nt.iStringNumbersSingle_Counter = nt.iStringNumbersSingle_Counter + 1
         if SERVER then
-            nt.SendToChannel("string_id.single_word", nil, word_id, lower_case)
+            nt.SendToChannel("string_id.single_word", nil, word_id, word)
         end
     end
 
@@ -181,5 +178,6 @@ nt.RegisterStringNumbers("auth.player.money")
 nt.RegisterStringNumbers("playet.get.money")
 nt.RegisterStringNumbers("playet.set.money")
 nt.RegisterStringNumbers("Player.set.money.Add")
+nt.RegisterStringNumbers("Player.set.money.ADD")
 /*
 */

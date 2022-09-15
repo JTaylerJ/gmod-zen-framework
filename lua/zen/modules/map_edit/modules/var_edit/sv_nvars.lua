@@ -1,6 +1,7 @@
 nt.RegisterChannel("nvars.edit")
 nt.RegisterChannel("nvars.get_buttons")
 nt.RegisterChannel("nvars.run_command")
+nt.RegisterChannel("nvars.run_command.extra")
 
 
 local nwvars = {
@@ -225,3 +226,35 @@ zen.nvars.RegisterButton{
         ent:SetKeyValue("m_iJuice", "999999")
     end
 }
+
+
+
+nt.RegisterStringNumbers("remove")
+nt.RegisterStringNumbers("dissolve")
+nt.RegisterStringNumbers("edit.pos")
+nt.RegisterStringNumbers("edit.angle")
+nt.RegisterStringNumbers("edit.velocity")
+
+nt.RegisterStringNumbers("edit.physics")
+nt.RegisterStringNumbers("edit.bones")
+nt.RegisterStringNumbers("edit.variables")
+
+nt.RegisterStringNumbers("info.this")
+nt.RegisterStringNumbers("info.parent")
+nt.RegisterStringNumbers("info.all")
+
+zen.nvars.commands = {}
+zen.nvars.commands["remove"] = function(ply, ent, mode)
+    ent:Remove()
+end
+
+nt.Receive("nvars.run_command.extra", {"entity", "string_id", "any"}, function(ply, ent, command, mode)
+    if not ply:zen_HasPerm("zen.variable_edit.nvars") then return end
+
+    print(ply, ent, command)
+
+    local fCommand = zen.nvars.commands[command]
+    assertFunction(fCommand, "fCommand")
+
+    fCommand(ply, ent, mode)
+end)

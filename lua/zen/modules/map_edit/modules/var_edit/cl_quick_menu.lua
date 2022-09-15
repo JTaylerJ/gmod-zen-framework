@@ -281,13 +281,10 @@ ihook.Listen("zen.map_edit.OnButtonPress", "quickmenu", function(ply, but, in_ke
 
 		for k, v in pairs(nvars.circles) do
 			local selID = v.SelectID
-			local selValue = v.SelectValue
+			if not selID or selID <= 0 then continue end
 
-			if v.type == "nvars" then
-				local id, mode = selValue, v.value_mode
 
-				nt.Send("nvars.run_command", {"entity", "int12", "next", "any"}, {nvars.hoverEntity, id, mode != nil and true or false, mode})
-			end
+			ihook.Run("zen.map_edit.OnActionApply", v.type, v.SelectValue, v.value_mode)
 		end
 
 		nvars.radial_menu.Close()
@@ -311,5 +308,13 @@ ihook.Listen("zen.map_edit.OnButtonUnPress", "quickmenu", function(ply, but, in_
 
 	if nvars.radial_menu.is_opened then
 		nvars.radial_menu.Close()
+	end
+end)
+
+ihook.Listen("zen.map_edit.OnActionApply", "nvars", function(type, value, mode)
+	if type == "nvars" then
+		nt.Send("nvars.run_command", {"entity", "int12", "next", "any"}, {nvars.hoverEntity, value, mode != nil and true or false, mode})
+	else
+		nt.Send("nvars.run_command.extra", {"entity", "string_id", "any"}, {nvars.hoverEntity, value, mode})
 	end
 end)

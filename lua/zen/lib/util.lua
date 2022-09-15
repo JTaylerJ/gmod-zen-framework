@@ -161,7 +161,7 @@ function util.StringToTYPE(value, value_type)
     end
 end
 
-util.mt_TD_TypeConvert = {}
+util.mt_TD_TypeConvert = util.mt_TD_TypeConvert or {}
 util.mt_TD_TypeConvert["angle"] = TYPE.ANGLE
 util.mt_TD_TypeConvert["bit"] = TYPE.BIT
 util.mt_TD_TypeConvert["boolean"] = TYPE.BOOLEAN
@@ -190,6 +190,10 @@ util.mt_TD_TypeConvert["sid64"] = TYPE.STEAMID64
 util.mt_TD_TypeConvert["next"] = TYPE.BOOLEAN
 util.mt_TD_TypeConvert["any"] = TYPE.ANY
 
+function util.RegisterTypeConvert(human_type, type_id)
+    util.mt_TD_TypeConvert[human_type] = type_id
+end
+
 
 util.mt_TD_TypeList = {}
 util.mt_TD_TypeList[TYPE.ANGLE] = "Angle"
@@ -211,17 +215,19 @@ util.mt_TD_TypeList[TYPE.STEAMID] = "string"
 util.mt_TD_TypeList[TYPE.STEAMID64] = "string"
 util.mt_TD_TypeList[TYPE.ANY] = "any"
 
-util.mt_TD_TypeAlias = {}
-util.mt_TD_TypeAlias["Player"] = "Entity"
-util.mt_TD_TypeAlias["Vehicle"] = "Entity"
-util.mt_TD_TypeAlias["Weapon"] = "Entity"
-util.mt_TD_TypeAlias["NPC"] = "Entity"
-util.mt_TD_TypeAlias["CSEnt"] = "Entity"
-util.mt_TD_TypeAlias["NextBot"] = "Entity"
+util.mt_TD_TypeBase = {}
+util.mt_TD_TypeBase[TYPE.PLAYER] = TYPE.ENTITY
+util.mt_TD_TypeBase[TYPE.VEHICLE] = TYPE.ENTITY
+util.mt_TD_TypeBase[TYPE.WEAPON] = TYPE.ENTITY
+util.mt_TD_TypeBase[TYPE.NPC] = TYPE.ENTITY
+util.mt_TD_TypeBase[TYPE.CSENT] = TYPE.ENTITY
+util.mt_TD_TypeBase[TYPE.NEXTBOT] = TYPE.ENTITY
+util.mt_TD_TypeBase[TYPE.INT] = TYPE.NUMBER
+util.mt_TD_TypeBase[TYPE.UINT] = TYPE.NUMBER
 
 
 
-function util.CheckTypeTableWithDataTable(types, data, funcValidate, tExtraTypeConvert)
+function util.CheckTypeTableWithDataTable(types, data, funcValidate, funcValidCustomType)
     local bSuccess = true
     local sLastError
 
@@ -255,47 +261,53 @@ function util.CheckTypeTableWithDataTable(types, data, funcValidate, tExtraTypeC
             local human_type = types[id]
             local value = data[id]
 
-            local original_type = human_type
-            if tExtraTypeConvert then
-                human_type = tExtraTypeConvert[human_type] or human_type
-            end
 
             local type_id = util.mt_TD_TypeConvert[human_type]
-            if not type_id then
-                bSuccess = false
-                sLastError = "Lua Type-Convert not exists for: " .. human_type
-                break
-            end
-            local sType = util.mt_TD_TypeList[type_id]
-            if not sType then
-                bSuccess = false
-                sLastError = "Lua TYPE not exists for: " .. human_type
-                break
-            end
+            
+            
+            if type_id then
+                if type_id != TYPE.ANY then
+                    local type_id_alias = util.mt_TD_TypeBase[type_id]
+                    local value_type_id = typen(value)
+                    if value_type_id != type_id and type_id_alias != type_id_alias then
+                        local type_id_owner = util.mt_TD_TypeBase[value_type_id]
 
-            if sType != "any" then
-                local sTypeWord = type(value)
-                if sTypeWord != sType then
-                    local sOwnerTypeWord = util.mt_TD_TypeAlias[sTypeWord]
-
-                    if sOwnerTypeWord then
-                        if sOwnerTypeWord and sOwnerTypeWord == sType then
-                            -- Good
+                        if type_id_owner then
+                            if type_id_owner and type_id_owner == type_id then
+                                -- Good
+                            else
+                                bSuccess = false
+                                sLastError = "Type check id owner: " .. id .. " (" .. TYPE[type_id] .. " expected, got " .. TYPE[type_id_owner] .. ") owner_id: "
+                                break
+                            end
                         else
                             bSuccess = false
-                            sLastError = "Type check id owner: " .. id .. " (" .. sType .. " expected, got " .. sOwnerTypeWord .. ") owner_id: "
+                            sLastError = "Type check id: " .. id .. " (" .. TYPE[type_id] .. " expected, got " .. TYPE[value_type_id] .. ")"
                             break
                         end
-                    else
+                    end
+                end
+            else
+                if funcValidCustomType then
+                    local res, com = funcValidCustomType(human_type, value, type_id, id)
+                    if res == false then
                         bSuccess = false
-                        sLastError = "Type check id: " .. id .. " (" .. sType .. " expected, got " .. sTypeWord .. ")"
+                        if com then
+                            sLastError = "Lua funcValidCustomType error: " .. com
+                        else
+                            sLastError = "Lua funcValidCustomType not exists for: " .. human_type
+                        end
                         break
                     end
+                else
+                    bSuccess = false
+                    sLastError = "Lua Type-Convert not exists for: " .. human_type
+                    break
                 end
             end
 
             if funcValidate then
-                local res, err = funcValidate(human_type, value, type_id, id, original_type)
+                local res, err = funcValidate(human_type, value, type_id, id)
                 if res == false then
                     bSuccess = false
                     sLastError = "ValidateErr: " .. err

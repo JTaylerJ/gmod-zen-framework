@@ -9,6 +9,7 @@ end)
 concommand.Add("zen_reload_full", function(ply)
     if SERVER and IsValid(ply) then return end
 
+    nt = nil
     zen = nil
     izen = nil
     include("zen/main/main.lua")

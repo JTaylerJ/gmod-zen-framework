@@ -22,10 +22,11 @@ function nt.Send(channel_name, types, data)
     local iCounter = 0
     if bSuccess then
         local res, iCounterOrError = util.CheckTypeTableWithDataTable(types, data, function(net_type, value, type_id, id)
-            if not nt.mt_listWriter[net_type] then
+            local fWriter = nt.GetTypeWriterFunc(net_type)
+            if not fWriter then
                 return false, "Type-Writer not exists: " .. net_type
             end
-        end, nt.mt_listExtraTypes)
+        end, nt.funcValidCustomType)
         if res then
             iCounter = iCounterOrError
         else
@@ -52,14 +53,14 @@ function nt.Send(channel_name, types, data)
         if iCounter > 0 then
             for id = 1, iCounter do
                 local net_type = types[id]
-                local fWriter = nt.mt_listWriter[net_type]
+                local fWriter, isSpecial, a1, a2, a3, a4, a5 = nt.GetTypeWriterFunc(net_type)
                 local value = data[id]
 
                 if nt.i_debug_lvl >= 2 then
                     zen.print("[nt.debug] Write \"",net_type,"\"", " \"",tostring(value),"\"")
                 end
 
-                fWriter(value)
+                fWriter(value, a1, a2, a3, a4, a5)
             end
         end
 
@@ -75,26 +76,27 @@ function nt.Send(channel_name, types, data)
 end
 
 nt.mt_listReceivers = nt.mt_listReceivers or {}
-function nt.Receive(channel_name, data, postFunction)
-    data = data or {}
-    assertTable(data, "data")
+function nt.Receive(channel_name, types, postFunction)
+    types = types or {}
+    assertTable(types, "types")
 
     local bSuccess = true
     local sLastError
 
     if bSuccess then
-        for id, word in pairs(data) do
-            if not word then
+        for id, human_type in pairs(types) do
+            if not human_type then
                 bSuccess = false
-                sLastError = _I{"GET: Word is nil, id: ", id}
+                sLastError = _I{"GET: human_type is nil, id: ", id}
                 break
             end
 
 
             if bSuccess then
-                if not nt.mt_listReader[word] then
+                local fReader = nt.GetTypeReaderFunc(human_type)
+                if not fReader then
                     bSuccess = false
-                    sLastError = _I{"GET: Reader not exists: ", word}
+                    sLastError = _I{"GET: Reader not exists: ", human_type}
                     break
                 end
             end
@@ -111,8 +113,12 @@ function nt.Receive(channel_name, data, postFunction)
         postFunc = postFunction
     }
 
-    for _, word in pairs(data) do
-        table.insert(nt.mt_listReceivers[channel_name].tFuncs, nt.mt_listReader[word])
+    for _, human_type in pairs(types) do
+        local fReader, isSpecial, a1, a2, a3, a4, a5 = nt.GetTypeReaderFunc(human_type)
+        table.insert(nt.mt_listReceivers[channel_name].tFuncs, {
+            fReader = fReader,
+            args = {a1, a2, a3, a4, a5}
+        })
     end
 end
 
@@ -144,12 +150,12 @@ net.Receive(nt.channels.sendMessage, function(len)
 
             if nt.i_debug_lvl >= 2 then
                 for k, v in pairs(result) do
-                    zen.print("[nt.debug] Read \"",type(v),"\"", " \"",tostring(v),"\"")
+                    zen.print("[nt.debug]   Read \"",type(v),"\"", " \"",tostring(v),"\"")
                 end
             end
         elseif tChannel.types then
             for _, net_type in ipairs(tChannel.types) do
-                local fReader = nt.mt_listReader[net_type]
+                local fReader, isSpecial, a1, a2, a3, a4, a5 = nt.GetTypeReaderFunc(net_type)
 
                 if not fReader then
                     bSuccess = false
@@ -158,11 +164,11 @@ net.Receive(nt.channels.sendMessage, function(len)
                 end
 
 
-                local read_result = fReader()
+                local read_result = fReader(a1, a2, a3, a4, a5)
                 table.insert(result, read_result)
 
                 if nt.i_debug_lvl >= 2 then
-                    zen.print("[nt.debug] Read \"",net_type,"\"", " \"",tostring(read_result),"\"")
+                    zen.print("[nt.debug]   Read \"",net_type,"\"", " \"",tostring(read_result),"\"")
                 end
 
                 if net_type == "next" and read_result == false then break end
@@ -201,8 +207,8 @@ net.Receive(nt.channels.sendMessage, function(len)
         end
 
         local result = {}
-        for net_type, fReader in pairs(tReceiverData.tFuncs) do
-            local read_result = fReader()
+        for net_type, v in pairs(tReceiverData.tFuncs) do
+            local read_result = v.fReader(unpack(v.args))
             table.insert(result, read_result)
 
             if nt.i_debug_lvl >= 2 then

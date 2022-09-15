@@ -34,7 +34,7 @@ function nt.RegisterStringNumbers(word, new_id)
     local word_id = nt.iStringNumbers_Counter
 
 	nt.mt_StringNumbers[word_id] = {
-		word = lower_case,
+		word = word,
         id = word_id,
 	}
     local tWord = nt.mt_StringNumbers[word_id]
@@ -42,23 +42,23 @@ function nt.RegisterStringNumbers(word, new_id)
     nt.mt_StringNumbers_IDS[word] = tWord
     nt.mt_StringNumbers_IDS[lower_case] = tWord
 
-	-- if of_count > 0 then
-    --     nt.mt_StringNumbersMulti[word_id] = tWord
-    --     nt.iStringNumbersMulti_Counter = nt.iStringNumbersMulti_Counter + 1
+	if of_count == 1 then
+        nt.mt_StringNumbersMulti[word_id] = tWord
+        nt.iStringNumbersMulti_Counter = nt.iStringNumbersMulti_Counter + 1
 
-	-- 	tWord.content = of
-	-- 	tWord.sep = true
-	-- 	tWord.count = of_count
-    --     if SERVER then
-    --         nt.SendToChannel("string_id.multi_word", nil, word_id, tWord) -- TODO: Fix and return string_id.multi_word
-    --     end
-    -- else
+		tWord.content = of
+		tWord.sep = true
+		tWord.count = of_count
+        if SERVER then
+            nt.SendToChannel("string_id.multi_word", nil, word_id, tWord.content) -- TODO: Fix and return string_id.multi_word
+        end
+    elseif of_count > 1 then
         nt.mt_StringNumbersSingle[word_id] = tWord
         nt.iStringNumbersSingle_Counter = nt.iStringNumbersSingle_Counter + 1
         if SERVER then
             nt.SendToChannel("string_id.single_word", nil, word_id, lower_case)
         end
-    -- end
+    end
 
 
 	return word_id
@@ -79,7 +79,7 @@ nt.mt_listWriter["string_id"] = function(var)
     net.WriteUInt(nt.RegisterStringNumbers(var), 12)
 end
 
-nt.mt_listExtraTypes["string_id"] = "string"
+util.RegisterTypeConvert("string_id", TYPE.STRING)
 
 nt.RegisterChannel("string_id.single_word", nt.t_ChannelFlags.PUBLIC, {
     id = 3,
@@ -105,49 +105,81 @@ nt.RegisterChannel("string_id.single_word", nt.t_ChannelFlags.PUBLIC, {
     end,
 })
 
-/*
+
 nt.RegisterChannel("string_id.multi_word", nt.t_ChannelFlags.PUBLIC, { -- TODO: Fix multi_word
     id = 4,
     priority = 4,
-    fPostReader = function(tChannel, word_id, word)
+    types = {"uint6", "array:int12"},
+    fPostReader = function(tChannel, word_id, tWordArray)
         if CLIENT then
-            nt.RegisterStringNumbers(word, word_id)
+            local word = table.concat(tWordArray, ".")
+            -- nt.RegisterStringNumbers(word, word_id)
         end
-    end,
-    fWriter = function(tChannel, word_id, tWord)
-        nt.Write({"uint12", "uint6"}, {word_id, tWord.count})
-        for k, word_id in ipairs(tWord.content) do
-            net.WriteUInt(word_id, 12)
-        end
-    end,
-    fReader = function(tChannel)
-        local word_id, iCounter = nt.Read({"uint12", "uint6"})
-        local content = {}
-        for k = 1, iCounter do
-            local k_word_id = net.ReadUInt(12)
-            local s_word = nt.mt_StringNumbersSingle[k_word_id]
-            if not s_word then
-                MsgC(clr_red, "[NT-Predicted-Error] multiword.fReader Single Word not exists: ", k_word_id, "\n")
-                return
-            end
-            table.insert(content,  s_word)
-        end
-
-        local word = table.concat(content, ".")
-        return word_id, word
     end,
     fPullWriter = function(tChannel, _, ply)
-        net.WriteUInt(nt.iStringNumbersMulti_Counter, 16)
+        net.WriteUInt(nt.iStringNumbersSingle_Counter, 16)
         for word_id, tWord in pairs(nt.mt_StringNumbersMulti) do
-            tChannel.fWriter(tWord.id, tWord)
+            nt.Write(tChannel.types, {word_id, tWord.content})
         end
     end,
     fPullReader = function(tChannel, tContent, tResult)
         tChannel.iCounter = net.ReadUInt(16)
         for k = 1, tChannel.iCounter do
-            local k, v = tChannel.fReader()
+            local k, v = nt.Read(tChannel.types)
             table.insert(tResult, { k, v })
         end
     end,
+    -- fWriter = function(tChannel, word_id, tWord)
+    --     print('fWrite', word_id, tWord)
+    --     PrintTable(tWord)
+    --     net.WriteUInt(word_id, 12)
+    --     net.WriteUInt(tWord.count, 6)
+    --     -- nt.Write({"uint12", "uint6"}, {word_id, tWord.count})
+    --     for k, word_id in ipairs(tWord.content) do
+    --         net.WriteUInt(word_id, 12)
+    --     end
+    -- end,
+    -- fReader = function(tChannel)
+    --     local word_id = net.ReadUInt(12)
+    --     local iCounter = net.ReadUInt(6)
+        
+    --     -- local word_id, iCounter = nt.Read({"uint12", "uint6"})
+    --     print("fRead", word_id, iCounter)
+    --     local content = {}
+    --     for k = 1, iCounter do
+    --         local k_word_id = net.ReadUInt(12)
+    --         local s_word = nt.mt_StringNumbersSingle[k_word_id]
+    --         print("fRead", k, k_word_id, s_word)
+    --         if not s_word then
+    --             MsgC(clr_red, "[NT-Predicted-Error] multiword.fReader Single Word not exists: ", k_word_id, "\n")
+    --             return
+    --         end
+    --         table.insert(content,  s_word)
+    --     end
+
+    --     local word = table.concat(content, ".")
+    --     return word_id, word
+    -- end,
+    -- fPullWriter = function(tChannel, _, ply)
+    --     net.WriteUInt(nt.iStringNumbersMulti_Counter, 16)
+    --     for word_id, tWord in pairs(nt.mt_StringNumbersMulti) do
+    --         tChannel.fWriter(tWord.id, tWord)
+    --     end
+    -- end,
+    -- fPullReader = function(tChannel, tContent, tResult)
+    --     tChannel.iCounter = net.ReadUInt(16)
+    --     for k = 1, tChannel.iCounter do
+    --         local k, v = tChannel.fReader()
+    --         table.insert(tResult, { k, v })
+    --     end
+    -- end,
 })
+
+
+nt.RegisterStringNumbers("auth.player.test")
+nt.RegisterStringNumbers("auth.player.money")
+nt.RegisterStringNumbers("playet.get.money")
+nt.RegisterStringNumbers("playet.set.money")
+nt.RegisterStringNumbers("Player.set.money.Add")
+/*
 */

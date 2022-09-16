@@ -1641,3 +1641,57 @@ function util.GetRoomPlayers(pos, filter)
 
     return tResult
 end
+
+local symbols_lower = {
+	{97, 122}, -- en
+	{1072, 1103}, -- ru
+}
+
+local symbols_upper = {
+	{65, 90}, -- en
+	{1040, 1071}, -- ru
+}
+
+
+local utf8_codepoint = utf8.codepoint
+local utf8_char = utf8.char
+local ipairs = ipairs
+
+
+local upper_cache = setmetatable({}, {__mode = "kv"})
+function util.StringUpper(str)
+	if upper_cache[str] then return upper_cache[str] end
+
+	local tResult = {utf8_codepoint(str, 1, -1)}
+	for lang_id, v in ipairs(symbols_lower) do
+		local min, max = v[1], v[2]
+
+		for key_id, id in ipairs(tResult) do
+			if id < min or id > max then continue end	
+			tResult[key_id] = symbols_upper[lang_id][1] + id - min
+		end
+	end
+
+	upper_cache[str] = utf8_char(unpack(tResult))
+
+	return upper_cache[str]
+end
+
+local lower_cache = setmetatable({}, {__mode = "kv"})
+function util.StringLower(str)
+	if lower_cache[str] then return lower_cache[str] end
+
+	local tResult = {utf8_codepoint(str, 1, -1)}
+	for lang_id, v in ipairs(symbols_upper) do
+		local min, max = v[1], v[2]
+		
+		for key_id, id in ipairs(tResult) do
+			if id < min or id > max then continue end	
+			tResult[key_id] = symbols_lower[lang_id][1] + id - min
+		end
+	end
+
+	lower_cache[str] = utf8_char(unpack(tResult))
+
+	return lower_cache[str]
+end

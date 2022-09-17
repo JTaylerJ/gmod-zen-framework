@@ -71,9 +71,9 @@ function iconsole.AddConsoleLog(flags, str, clr)
 	if flags and bit.band(flags, IS_ERROR) == IS_ERROR then
 		clr = COLOR.RED
 	end
-	
+
 	iconsole.ServerConsoleLog = iconsole.ServerConsoleLog .. str
-	
+
 	if not flags or FlagsWithNewLine[flags] then
 		str = string.gsub(str, "%c", "")
 		iconsole.ServerConsoleLog = iconsole.ServerConsoleLog .. "\n"
@@ -121,7 +121,7 @@ ihook.Listen("PlayerButtonPress", "fast_console_phrase", function(ply, but, in_k
 				input.StartKeyTrapping()
 			end
 		end
-		
+
 		return
 	end
 
@@ -129,17 +129,17 @@ ihook.Listen("PlayerButtonPress", "fast_console_phrase", function(ply, but, in_k
 	if but == KEY_ESCAPE then goto stop end
 
     if IsDown(KEY_LALT) then
-		if but == KeyDefault then 
+		if but == KeyDefault then
 			iconsole.mode = MODE_DEFAULT
 			nt.Send("zen.console.console_mode", {"uint8"}, {iconsole.mode})
 			goto next
 		end
-		if but == KeyServer then 
+		if but == KeyServer then
 			iconsole.mode = MODE_SERVER
 			nt.Send("zen.console.console_mode", {"uint8"}, {iconsole.mode})
 			goto next
 		end
-		if but == KeyClient then 
+		if but == KeyClient then
 			iconsole.mode = MODE_CLIENT
 			nt.Send("zen.console.console_mode", {"uint8"}, {iconsole.mode})
 			goto next
@@ -151,7 +151,7 @@ ihook.Listen("PlayerButtonPress", "fast_console_phrase", function(ply, but, in_k
 			local args = string.Split(iconsole.phrase, " ")
 			local lastargs = #args
 			if lastargs > 0 then table.remove(args, lastargs) end
-			
+
             iconsole.SetPhrase(table.concat(args, " "))
 			goto next
 		end
@@ -180,7 +180,7 @@ ihook.Listen("PlayerButtonPress", "fast_console_phrase", function(ply, but, in_k
 		end
 	end
 
-	
+
 	do return end
 	::stop::
 	iconsole.INPUT_MODE = false
@@ -201,9 +201,9 @@ ihook.Listen("DrawOverlay", "fast_console_phrase", function()
 	local w, h = ScrW(), ScrH()
 	local SX, SY = 100, 100
 	local Wide = w - SX*2
-	
+
 	local text = ""
-	
+
 	local IA = function(dat)
 		text = text .. _I{table.concat(dat)}
 	end
@@ -219,8 +219,8 @@ ihook.Listen("DrawOverlay", "fast_console_phrase", function()
 	IAN{"CurTime: " .. math.floor(CurTime())}
 	IAN{"SysTime: " .. math.floor(SysTime())}
 	IAN{}
-	
-	
+
+
 	if iconsole.mode == MODE_DEFAULT then
 		IA{"<colour=125,255,125>"}
 		IAN{"================="}
@@ -240,9 +240,9 @@ ihook.Listen("DrawOverlay", "fast_console_phrase", function()
 		IAN{"================"}
 		IA{"</colour>"}
 	end
-	
+
 	IAN{}
-	
+
 	IAN{"Welcome to debug console"}
 	IAN{"ENTER - To Apply"}
 	IAN{"CTRL + C or ESC - To Exit"}
@@ -265,44 +265,27 @@ ihook.Listen("DrawOverlay", "fast_console_phrase", function()
 	end
 
 	IA{":",iconsole.phrase}
-	
+
 	if alpha > 25 then
 		IA{"<colour=255,255,255," .. alpha .. ">" .. "|" .. "</colour>"}
 	end
-	
+
 	IA{""}
-	
+
 	local object = markup.Parse(text, Wide)
 	local x, y = object:Size()
-	
-	
+
+
 	surface.SetDrawColor(iclr.main.r, iclr.main.g, iclr.main.b, 200)
 	surface.DrawRect(0,0,w,h)
-	
+
 	surface.SetDrawColor(0, 125, 0, 255)
 	surface.DrawRect(SX-10,SY-10,x+20,y+20)
-	
+
 	surface.SetDrawColor(45, 45, 45, 255)
 	surface.DrawRect(SX-5,SY-5,x+10,y+10)
 
 	object:Draw(SX,SY)
-end)
-
-
-ihook.Listen("OnFastConsoleCommand", "fast_console_phrase", function(str, mode)
-	if str == "clear" then iconsole.ServerConsoleLog = "" return end
-    if not str or str == "" then str = "zen_null" end
-	iconsole.AddConsoleLog(IS_MSGN, ":" .. str)
-    if mode == MODE_DEFAULT then
-        nt.Send("zen.console.command", {"string"}, {str})
-    elseif mode == MODE_SERVER then
-        nt.Send("zen.console.server_console", {"string"}, {str})
-    elseif mode == MODE_CLIENT then
-        local args = str:Split(" ")
-        local cmd = args[1]
-        table.remove(args, 1)
-        RunConsoleCommand(args[1], unpack(args))
-	end
 end)
 
 nt.Receive("zen.console.console_status", {"player", "bool"}, function(ply, bool)
@@ -334,16 +317,16 @@ ihook.Listen("PostDrawOpaqueRenderables", "npc_info", function()
 		pos.z = pos.z + max.z * 1.2
 
 		local clr = mode_colors[mode]
-		
+
 		--local ang = Angle(CurTime()%10,CurTime()%10,CurTime()%10)
 		local ang = (ply:GetPos() - LocalPlayer():EyePos()):Angle()
 		ang.p = 0
 		ang.r = 90
 		ang.y = ang.y - 90
-		
+
 		local sc = pos:ToScreen()
 		local x, y = sc.x, sc.y
-		
+
 		cam.Start3D2D(pos, ang, 0.2)
 			--ui.Box(-50,-50,50,50,clr.white)
 			draw.SimpleText("In Console", "DebugOverlay", 0, 0, clr, 1,1)

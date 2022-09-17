@@ -323,8 +323,11 @@ function gui.Create(pnl_name, pnlParent, data, uniqueName, presets, isAdd)
         pnl.zen_MotherPanel = pnl
         pnl.zen_MotherPanel.zen_UniqueName = uniqueName
     end
-    
+
     pnl.zen_OriginalPanel = pnlOwner.zen_OriginalPanel or pnlOwner
+    if pnl.zen_OriginalPanel == vgui.GetWorldPanel() and pnl.zen_OriginalPanel != GetHUDPanel() then
+        pnl.zen_OriginalPanel = pnl
+    end
 
     local tData = {}
 
@@ -564,7 +567,8 @@ end
 ]]--
 
 
-META.PANEL.zen_IsHovered = function(self)
+function META.PANEL:zen_IsHovered(ignoreVisible)
+    if not ignoreVisible and not self:IsVisible() then return end
     local w, h = self:GetSize()
     local cx, cy = self:LocalCursorPos()
     if cx > 0 and cy > 0 and cx < w and cy < h then
@@ -572,4 +576,32 @@ META.PANEL.zen_IsHovered = function(self)
     else
         return false
     end
+end
+
+
+function META.PANEL:zen_ChildrenHasKeyboardFocus()
+    local key_focus = vgui.GetKeyboardFocus()
+    return IsValid(key_focus) and key_focus:IsVisible() and key_focus:HasParent(self)
+end
+
+function META.PANEL:zen_MakePopup()
+    self:MakePopup(true)
+	self:SetKeyboardInputEnabled(false)
+
+    ihook.Listen("OnTextEntryGetFocus", self, function(self, pnl)
+		if pnl:HasParent(self) then
+            timer.Simple(0.01, function()
+                self:SetKeyboardInputEnabled(true)
+                pnl.zen_iFocusLastStart = CurTime()
+                pnl.zen_iLastButton = input.GetLastPressedButton()
+            end)
+		end
+	end)
+
+	ihook.Listen("OnTextEntryLoseFocus", self, function(self, pnl)
+		if pnl:HasParent(self) then
+			self:SetKeyboardInputEnabled(false)
+            pnl.zen_iFocusLastEnd = CurTime()
+		end
+	end)
 end

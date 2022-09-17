@@ -40,6 +40,5 @@ gui.RegisterStylePanel("func_save_pos", {
         end
     end,
 }, "EditablePanel", {
-    key_input = false,
     mouse_input = false
 }, {})

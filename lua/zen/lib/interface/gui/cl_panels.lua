@@ -6,15 +6,15 @@ gui.RegisterStylePanel("text", {}, "DLabel", {text = "zen.text", content_align =
 
 gui.RegisterStylePanel("footer", {}, "EditablePanel", {}, {"footer"})
 gui.RegisterStylePanel("header", {}, "EditablePanel", {}, {"header"})
-gui.RegisterStylePanel("nav_left", {}, "EditablePanel", {"input", "dock_left", wide = 50}, {})
-gui.RegisterStylePanel("nav_right", {}, "EditablePanel", {"input", "dock_right", wide = 50}, {})
+gui.RegisterStylePanel("nav_left", {}, "EditablePanel", {"dock_left", wide = 50}, {})
+gui.RegisterStylePanel("nav_right", {}, "EditablePanel", {"dock_right", wide = 50}, {})
 
-gui.RegisterStylePanel("content", {}, "EditablePanel", {"dock_fill", "input"}, {})
-gui.RegisterStylePanel("list", {}, "DScrollPanel", {"dock_fill", "input"}, {})
+gui.RegisterStylePanel("content", {}, "EditablePanel", {"dock_fill"}, {})
+gui.RegisterStylePanel("list", {}, "DScrollPanel", {"dock_fill"}, {})
 
-gui.RegisterStylePanel("button", {}, "DButton", {"input", text = "zen.button"}, {})
+gui.RegisterStylePanel("button", {}, "DButton", {text = "zen.button"}, {})
 
-gui.RegisterStylePanel("func_panel", {}, "EditablePanel", {key_input = false, mouse_input = false})
+gui.RegisterStylePanel("func_panel", {}, "EditablePanel", {mouse_input = false})
 
 
 gui.RegisterStylePanel("white_fill", {

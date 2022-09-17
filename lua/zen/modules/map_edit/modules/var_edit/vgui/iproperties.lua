@@ -14,8 +14,6 @@ function PANEL:SetupData(ent, vars)
     self.pnlList:Dock(FILL)
     self.pnlList:InvalidateParent(true)
     self.pnlList:SetSize(self:GetSize())
-    self.pnlList:SetMouseInputEnabled(true)
-    self.pnlList:SetKeyboardInputEnabled(true)
 
     self.eEntity = ent
     self.tVars = vars
@@ -29,8 +27,6 @@ function PANEL:SetupData(ent, vars)
             pnlHandler:SetTall(20)
             pnlHandler:Dock(TOP)
             pnlHandler:InvalidateParent(true)
-            pnlHandler:SetMouseInputEnabled(true)
-            pnlHandler:SetKeyboardInputEnabled(true)
 
 
             pnlHandler.pnlName = pnlHandler:Add("DLabel")
@@ -73,8 +69,6 @@ function PANEL:SetupData(ent, vars)
                 local numeric = typen == TYPE.NUMBER or typen == TYPE.COLOR
                 pnlHandler.pnlValue:SetNumeric(numeric)
                 pnlHandler.pnlValue:SetValue(tostring(dat.value))
-                pnlHandler.pnlValue:SetMouseInputEnabled(true)
-                pnlHandler.pnlValue:SetKeyboardInputEnabled(true)
                 pnlHandler.pnlValue.OnEnter = function(self)
                     local value = self:GetValue()
 

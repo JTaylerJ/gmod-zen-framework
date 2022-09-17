@@ -71,13 +71,9 @@ function map_edit.GenerateGUI(mark_panels)
 		map_edit.pnl_Context:Remove()
 	end
 
-
-
 	map_edit.pnl_Context = vgui.Create("EditablePanel")
 	map_edit.pnl_Context:SetSize(ScrW(), ScrH())
-	map_edit.pnl_Context:MakePopup()
-	map_edit.pnl_Context:SetMouseInputEnabled(true)
-	map_edit.pnl_Context:SetKeyboardInputEnabled(true)
+	map_edit.pnl_Context:zen_MakePopup(true)
 	map_edit.pnl_Context:SetVisible(false)
 
 
@@ -85,11 +81,11 @@ function map_edit.GenerateGUI(mark_panels)
 	{
 		{
 			{"main", "frame"};
-			{size = {300, 400}, "center", sizable = true, parent = map_edit.pnl_Context, "popup", "save_pos", "input"};
+			{size = {300, 400}, "center", sizable = true, parent = map_edit.pnl_Context, "focus", "save_pos"};
 			{};
 			{
 				{"content", "content"};
-				{"dock_fill"};
+				{"dock_fill", "focus"};
 				{};
 				{
 					{
@@ -258,7 +254,7 @@ function map_edit.StartCommand(ply, cmd)
 		if input.IsButtonPressedIN(IN_JUMP) then
 			add_origin = add_origin + Vector(0,0,1) * speed
 		end
-		
+
 		vw.origin = vw.origin + add_origin
 	end
 
@@ -290,9 +286,8 @@ ihook.Handler("PlayerButtonPress", "zen.map_edit", function(ply, but, in_key, bi
 	if not map_edit.IsActive then return end
 
 	if bind_name == "+menu_context" then
-		if IsValid(map_edit.pnl_Context) then
+		if IsValid(map_edit.pnl_Context) and not map_edit.pnl_Context:zen_ChildrenHasKeyboardFocus() then
 			map_edit.pnl_Context:SetVisible(true)
-			map_edit.pnl_Context:SetMouseInputEnabled(true)
 		end
 	end
 
@@ -310,9 +305,8 @@ ihook.Handler("PlayerButtonUnPress", "zen.map_edit", function(ply, but, in_key, 
 	if not map_edit.IsActive then return end
 
 	if bind_name == "+menu_context" then
-		if IsValid(map_edit.pnl_Context) then
+		if IsValid(map_edit.pnl_Context) and not map_edit.pnl_Context:zen_ChildrenHasKeyboardFocus() then
 			map_edit.pnl_Context:SetVisible(false)
-			-- gui.EnableScreenClicker(false)
 		end
 	end
 

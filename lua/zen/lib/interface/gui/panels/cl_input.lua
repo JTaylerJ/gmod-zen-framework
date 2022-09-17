@@ -116,6 +116,22 @@ gui.RegisterStylePanel("input_entry", {
         self.iType = TYPE.STRING
         self:SetFont(ui.ffont(6))
         self:CheckValue()
+        self.m_bLoseFocusOnClickAway = false
+        self.m_b_zen_InputEntry = true
+
+        ihook.Listen( "VGUIMousePressed", self, function(self, panel)
+            local pnl = vgui.GetKeyboardFocus()
+            if ( !pnl ) then return end
+            if ! pnl.m_b_zen_InputEntry then return end
+            if ( pnl == panel ) then return end
+
+            if panel and panel:HasParent(self.zen_OriginalPanel) then
+                -- panel:FocusNext()
+                timer.Simple(0.01, function() panel:RequestFocus() end) -- also ../cl_gui.lua zen_MakePopup()
+            else
+                pnl:KillFocus()
+            end
+        end)
     end,
     Setup = function(self, tInfo)
         self.tInfo = tInfo
@@ -190,8 +206,26 @@ gui.RegisterStylePanel("input_entry", {
             self:ChangeInputValue(self.anySucessValue)
         end
     end,
-    OnLoseFocus = function(self)
-        self:OnEnter()
+    OnFocusChanged = function(self, new)
+        if new then
+            self.zen_PressedButtons = input.GetPressedButtons()
+            timer.Simple(1, function()
+                if not IsValid(self) then return end
+                self.zen_PressedButtons = nil
+            end)
+        else
+            self:OnEnter()
+        end
+    end,
+    AllowInput = function(self, char)
+        if self.zen_PressedButtons != nil then
+            local key = input.GetKeyCode(char)
+            if key then
+                if self.zen_PressedButtons[key] then
+                    return true
+                end
+            end
+        end
     end,
     Paint = function(self, w, h)
         if ( self.m_bBackground ) then
@@ -231,7 +265,7 @@ gui.RegisterStylePanel("input_entry", {
             draw.Text(self.sHelpText, 6, tx, ty, color_text, 1, 1, COLOR.BLACK)
         end
     end,
-}, "DTextEntry", {"input"}, {})
+}, "DTextEntry", {}, {})
 
 -- Text Input
 gui.RegisterStylePanel("input_text", {
@@ -244,7 +278,7 @@ gui.RegisterStylePanel("input_text", {
             UpdateVar(new_value)
         end
     end,
-}, "EditablePanel", {"input"}, {})
+}, "EditablePanel", {}, {})
 
 -- Bool Input
 gui.RegisterStylePanel("input_bool", {
@@ -296,7 +330,7 @@ gui.RegisterStylePanel("input_bool", {
             UpdateVar(new_value)
         end
     end,
-}, "EditablePanel", {"input", text = "zen.input_bool"}, {})
+}, "EditablePanel", {text = "zen.input_bool"}, {})
 
 -- Number Input
 gui.RegisterStylePanel("input_number", {
@@ -309,7 +343,7 @@ gui.RegisterStylePanel("input_number", {
             UpdateVar(new_value)
         end
     end,
-}, "EditablePanel", {"input", text = "zen.input_number"}, {})
+}, "EditablePanel", {text = "zen.input_number"}, {})
 
 -- Arg Input
 gui.RegisterStylePanel("input_arg", {
@@ -322,7 +356,7 @@ gui.RegisterStylePanel("input_arg", {
             UpdateVar(new_value)
         end
     end,
-}, "EditablePanel", {"input", text = "zen.input_arg"}, {})
+}, "EditablePanel", {text = "zen.input_arg"}, {})
 
 -- Vector Input
 gui.RegisterStylePanel("input_vector", {
@@ -335,7 +369,7 @@ gui.RegisterStylePanel("input_vector", {
             UpdateVar(new_value)
         end
     end,
-}, "EditablePanel", {"input"}, {})
+}, "EditablePanel", {}, {})
 
 -- Color Input
 gui.RegisterStylePanel("input_color", {
@@ -348,7 +382,7 @@ gui.RegisterStylePanel("input_color", {
             UpdateVar(new_value)
         end
     end,
-}, "EditablePanel", {"input"}, {})
+}, "EditablePanel", {}, {})
 
 -- Entity Input
 gui.RegisterStylePanel("input_entity", {
@@ -361,7 +395,7 @@ gui.RegisterStylePanel("input_entity", {
             UpdateVar(new_value)
         end
     end,
-}, "EditablePanel", {"input"}, {})
+}, "EditablePanel", {}, {})
 
 gui.RegisterStylePanel("input_player", {
     Setup = function(self, tInfo, UpdateVar)
@@ -373,7 +407,7 @@ gui.RegisterStylePanel("input_player", {
             UpdateVar(new_value)
         end
     end,
-}, "EditablePanel", {"input"}, {})
+}, "EditablePanel", {}, {})
 
 
 
@@ -390,7 +424,7 @@ local supported_input_panel_styles = {
 
 gui.RegisterStylePanel("mass_input", {
     Init = function(self)
-        self.pnlList = self:zen_AddStyled("list", {"dock_fill", "input", "auto_size"})
+        self.pnlList = self:zen_AddStyled("list", {"dock_fill", "auto_size"})
     end,
     Setup = function(self, data, onChanged)
         local wide = self.pnlList:GetWide()
@@ -402,7 +436,7 @@ gui.RegisterStylePanel("mass_input", {
             local sStyleName = supported_input_panel_styles[iType]
             assert(sStyleName, "Style not exists for type: ", iType)
 
-            local pnlHandler = self.pnlList:zen_AddStyled("base", {"dock_top", tall = 15, "auto_size", "input"})
+            local pnlHandler = self.pnlList:zen_AddStyled("base", {"dock_top", tall = 15, "auto_size"})
             pnlHandler:DockPadding(0,0,0,0)
             pnlHandler.Paint = function(self, w, h)
                 if k % 2 == 0 then
@@ -416,10 +450,10 @@ gui.RegisterStylePanel("mass_input", {
                 end
             end
             
-            pnlHandler.pnlKey = pnlHandler:zen_AddStyled("text", {"dock_left", font = ui.ffont(6), wide = wide/2-5, "auto_size", "input", content_align = 4, text = " " .. Name})
-            pnlHandler.pnlValue = pnlHandler:zen_AddStyled("base", {"dock_right", wide = wide/2-5, "auto_size", "input"})
+            pnlHandler.pnlKey = pnlHandler:zen_AddStyled("text", {"dock_left", font = ui.ffont(6), wide = wide/2-5, "auto_size", content_align = 4, text = " " .. Name})
+            pnlHandler.pnlValue = pnlHandler:zen_AddStyled("base", {"dock_right", wide = wide/2-5, "auto_size"})
 
-            pnlHandler.pnlChange = pnlHandler.pnlValue:zen_AddStyled(sStyleName, {"dock_fill", "input", "auto_size"})
+            pnlHandler.pnlChange = pnlHandler.pnlValue:zen_AddStyled(sStyleName, {"dock_fill", "auto_size"})
 
             local onChange = function(new_value)
                 tValues[Name] = new_value
@@ -441,4 +475,4 @@ gui.RegisterStylePanel("mass_input", {
             end
         end
     end
-}, "EditablePanel", {"input"}, {})
+}, "EditablePanel", {}, {})

@@ -53,7 +53,7 @@ function map_edit.CreateParticleViewer(pnlContext, vw)
     local nav = gui.SuperCreate({
         {{
             {"main", "frame"};
-            {parent = pnlContext, popup = gui.proxySkip, size = {300, 500}};
+            {parent = pnlContext, "focus", "center", size = {300, 500}};
             {};
             {
                 {"content", "content"};

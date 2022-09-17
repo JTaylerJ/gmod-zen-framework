@@ -96,7 +96,7 @@ gui.RegisterStylePanel("help_text_array", {
             self.bActive = false
         end
     end
-}, "EditablePanel", {key_input = false, mouse_input = false, draw_on_top = true}, {})
+}, "EditablePanel", {mouse_input = false, draw_on_top = true}, {})
 
 function META.PANEL:zen_SetHelpTextArray(tsArray)
     if tsArray == nil then

@@ -36,6 +36,10 @@ local util_StringUpper = util.StringUpper
 local util_StringLower = util.StringLower
 local concat = table.concat
 
+function input.GetPressedButtons()
+	return table.Copy(KeyPressed)
+end
+
 function input.IsKeyPressed(but)
     return KeyPressed[but]
 end

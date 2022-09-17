@@ -8,7 +8,6 @@ function zen.nvars.OpenMenu(ent)
     local pnl = vgui.Create("zen.properties")
     pnl:SetPos(input.GetCursorPos())
     pnl:SetSize(300, 500)
-    pnl:MakePopup()
 
     pnl:SetupData(ent, vars)
 end

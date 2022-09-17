@@ -110,7 +110,6 @@ end
 
 local KEY_SINGLE_REPLACER = {
 	[KEY_SPACE] = " ",
-	[KEY_TAB] = "\t",
 	[KEY_PAD_0] = "0",
 	[KEY_PAD_1] = "1",
 	[KEY_PAD_2] = "2",
@@ -127,11 +126,18 @@ local KEY_SINGLE_REPLACER = {
 	[KEY_PAD_PLUS] = "+",
 	[KEY_PAD_DECIMAL] = ".",
 	[KEY_SEMICOLON] = ":",
-	[KEY_UP] = "↑",
-	[KEY_LEFT] = "←",
-	[KEY_DOWN] = "↓",
-	[KEY_RIGHT] = "→",
 }
+
+function input.GetButtonChar(but)
+	local char = KEY_SINGLE_REPLACER[but] or input.GetKeyName(but)
+	if len(char) == 1 then
+		if input_IsShiftDown() then
+			char = util.StringUpper(char)
+		end
+
+		return char
+	end
+end
 
 
 local function playerButtonUp(ply, but)
@@ -148,32 +154,34 @@ local function playerButtonUp(ply, but)
 		KeyINPressed[in_key] = nil
 	end
 
+	local char = KeyPressed_Chars[but]
+
 	if KeyPressed_Chars[but] then
 		KeyPressed_Chars[but] = nil
-		ihook.Run("PlayerButtonUnPress.char", ply, but, in_key, bind_name)
+		ihook.Run("PlayerButtonUnPress.char", ply, but, in_key, bind_name, char)
 	end
 
 	if KeyPressed_GameUI[but] then
 		KeyPressed_GameUI[but] = true
-		ihook.Run("PlayerButtonUnPress.gameui", ply, but, in_key, bind_name)
+		ihook.Run("PlayerButtonUnPress.gameui", ply, but, in_key, bind_name, char)
 	end
 
 	if KeyPressed_Cursor[but] then
 		KeyPressed_Cursor[but] = nil
-		ihook.Run("PlayerButtonUnPress.cursor", ply, but, in_key, bind_name)
+		ihook.Run("PlayerButtonUnPress.cursor", ply, but, in_key, bind_name, char)
 	end
 
 	if KeyPressed_VGUI_Input[but] then
 		KeyPressed_VGUI_Input[but] = nil
-		ihook.Run("PlayerButtonUnPress.vgui_input", ply, but, in_key, bind_name)
+		ihook.Run("PlayerButtonUnPress.vgui_input", ply, but, in_key, bind_name, char)
 	end
 
 	if KeyPressed_Normal[but] then
 		KeyPressed_Normal[but] = true
-		ihook.Run("PlayerButtonUnPress.normal", ply, but, in_key, bind_name)
+		ihook.Run("PlayerButtonUnPress.normal", ply, but, in_key, bind_name, char)
 	end
 
-	ihook.Run("PlayerButtonUnPress", ply, but, in_key, bind_name)
+	ihook.Run("PlayerButtonUnPress", ply, but, in_key, bind_name, char)
 end
 
 local function playerButtonDown(ply, but)
@@ -194,49 +202,44 @@ local function playerButtonDown(ply, but)
 		KeyINPressed[in_key] = true
 	end
 
-	local char = KEY_SINGLE_REPLACER[but] or input.GetKeyName(but)
-	if len(char) == 1 then
-		if input_IsShiftDown() then
-			char = util.StringUpper(char)
-		end
-
+	local char = input.GetButtonChar(but)
+	if char then
 		local new_phrase = concat({LastKeysPhrase, char})
 		local ph_len = len(new_phrase)
 
 		local start = math_max(ph_len - 255, 1)
 
 		LastKeysPhrase = sub(new_phrase, start, ph_len)
-
 		KeyPressed_Chars[but] = true
-		ihook.Run("PlayerButtonPress.char", ply, but, in_key, bind_name)
-	end
 
+		ihook.Run("PlayerButtonPress.char", ply, but, in_key, bind_name, char)
+	end
 
 	local gameui_enabled = gui_IsGameUIVisible()
 	if gameui_enabled then
 		KeyPressed_GameUI[but] = true
-		ihook.Run("PlayerButtonPress.gameui", ply, but, in_key, bind_name)
+		ihook.Run("PlayerButtonPress.gameui", ply, but, in_key, bind_name, char)
 	end
 
 	local isCursorVisible = vgui_CursorVisible()
 	if isCursorVisible then
 		KeyPressed_Cursor[but] = true
-		ihook.Run("PlayerButtonPress.cursor", ply, but, in_key, bind_name)
+		ihook.Run("PlayerButtonPress.cursor", ply, but, in_key, bind_name, char)
 	end
 
 	local vgui_text_input = vgui_GetKeyboardFocus()
 	local vgui_input = IsValid(vgui_text_input) and HasFocus(vgui_text_input)
 	if vgui_input then
 		KeyPressed_VGUI_Input[but] = true
-		ihook.Run("PlayerButtonPress.vgui_input", ply, but, in_key, bind_name)
+		ihook.Run("PlayerButtonPress.vgui_input", ply, but, in_key, bind_name, char)
 	end
 
 	if gameui_enabled != true and isCursorVisible != true and vgui_input != true then
 		KeyPressed_Normal[but] = true
-		ihook.Run("PlayerButtonPress.normal", ply, but, in_key, bind_name)
+		ihook.Run("PlayerButtonPress.normal", ply, but, in_key, bind_name, char)
 	end
 
-	ihook.Run("PlayerButtonPress", ply, but, in_key, bind_name)
+	ihook.Run("PlayerButtonPress", ply, but, in_key, bind_name, char)
 end
 
 

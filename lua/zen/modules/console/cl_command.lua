@@ -97,15 +97,28 @@ local function getQuotasArgs(source)
         end
     end
 
+    local isNotClosed = lastLVL != nil
+    local iEditChar
+
+    if isNotClosed then
+        local startChar = lastV[1]
+        local endChar = #source
+        local phrase = sub(source, startChar, endChar)
+        local phrase_trimmed = sub(phrase, 2, #phrase)
+        iEditChar = endChar
+        insert(tResult, {startChar, endChar, phrase, value = phrase_trimmed})
+    end
+
+
     local clear_source = GetClearSource(source, tResult)
 
-    return tResult, clear_source
+    return tResult, clear_source, iEditChar
 end
 
 
 local function getTags(source)
     local t_QoutasList = getGMatchWithCharIDS(source, PATTERN_SEARCH_TAGS)
-    
+
     local tResult = {}
     for k, v in pairs(t_QoutasList) do
         local ignore, tag_name = unpack(v.args)
@@ -116,9 +129,14 @@ local function getTags(source)
         insert(tResult, v)
     end
 
+    local iEditChar
+    if #source == tResult[#tResult][2] then
+        iEditChar = #source
+    end
+
     local clear_source = GetClearSource(source, tResult)
 
-    return tResult, clear_source
+    return tResult, clear_source, iEditChar
 end
 
 local function getSimpleArgs(source)
@@ -133,8 +151,13 @@ local function getSimpleArgs(source)
         insert(tResult, v)
     end
 
+    local iEditChar
+    if #source == tResult[#tResult][2] then
+        iEditChar = #source
+    end
+
     local clear_source = GetClearSource(source, tResult)
-    return tResult, clear_source
+    return tResult, clear_source, iEditChar
 end
 
 -- PrintTable()
@@ -152,43 +175,53 @@ local print_nice = function(what, ...)
     print(what .. "(" .. concat(tbl,", ") .. ")")
 end
 
-local table_ClearKeysAbsolute = function(tbl)
+local check_Table = function(tbl, iEditChar, clearKeys)
     local values = {}
 
+    local iEditID
+
     for k, v in SortedPairs(tbl) do
-        insert(values, v)
-        tbl[k] = nil
+        local newid = insert(values, v.value)
+
+        if iEditChar and iEditChar >= v[1] and iEditChar <= v[2] then
+            iEditID = newid
+        end
+
+        if clearKeys then
+            tbl[k] = nil
+        end
     end
 
-    for k, v in ipairs(values) do
-        tbl[k] = v
+    if clearKeys then
+        for k, v in ipairs(values) do
+            tbl[k] = v
+        end
     end
+
+    return iEditID
 end
 
 
 
-local t_StringArgsResultCache = setmetatable({}, {__mode = "kv"})
 function iconsole.GetStringArgs(source)
-    if t_StringArgsResultCache[source] then return unpack(t_StringArgsResultCache[source]) end
+    local tStringVars, clear_str, iEditChar1 = getQuotasArgs(source)
+    local tTags, clear_str, iEditChar2 = getTags(clear_str)
+    local tArgs, clear_str, iEditChar3 = getSimpleArgs(clear_str)
 
-    local tStringVars, clear_str = getQuotasArgs(source)
-    local tTags, clear_str = getTags(clear_str)
-    local tArgs, clear_str = getSimpleArgs(clear_str)
+    local iEditChar = iEditChar1 or iEditChar2 or iEditChar3
 
 
     local tResultArgs = {}
-    for _, v in pairs(tStringVars) do tResultArgs[v[1]] = v.value end
-    for _, v in pairs(tArgs) do tResultArgs[v[1]] = v.value end
+    for _, v in pairs(tStringVars) do tResultArgs[v[1]] = v end
+    for _, v in pairs(tArgs) do tResultArgs[v[1]] = v end
 
     local tResultTags = {}
-    for _, v in pairs(tTags) do tResultTags[v[1]] = v.value end
+    for _, v in pairs(tTags) do tResultTags[v[1]] = v end
 
-    table_ClearKeysAbsolute(tResultArgs)
-    table_ClearKeysAbsolute(tResultTags)
+    local iEditArgID = check_Table(tResultArgs, iEditChar, true)
+    local iEditTagID = check_Table(tResultTags, iEditChar, true)
 
-    t_StringArgsResultCache[source] = {tResultArgs, tResultTags, clear_str}
-
-    return tResultArgs, tResultTags, clear_str
+    return tResultArgs, tResultTags, clear_str, source, iEditArgID, iEditTagID
 end
 --[[
     print "STEAM_0:1:1111111" "Testing go" --gold
@@ -203,19 +236,53 @@ end
 ]]
 
 
+function iconsole.GetCommandArgs(source)
+    source = source or iconsole.phrase
+    local args, tags, clear_str, source, iEditArgID, iEditTagID = iconsole.GetStringArgs(source)
+    local cmd = args[1]
+    remove(args, 1)
+
+    return cmd, args, tags, clear_str, source, iEditArgID, iEditTagID
+end
+
+
 function iconsole.OnCommand(str, mode)
-    if str == "clear" then iconsole.ServerConsoleLog = "" return end
-    if not str or str == "" then str = "zen_null" end
-    iconsole.AddConsoleLog(IS_MSGN, ":" .. str)
-    if mode == MODE_DEFAULT then
-        nt.Send("zen.console.command", {"string"}, {str})
-    elseif mode == MODE_SERVER then
-        nt.Send("zen.console.server_console", {"string"}, {str})
-    elseif mode == MODE_CLIENT then
-        local args = str:Split(" ")
-        local cmd = args[1]
-        table.remove(args, 1)
-        RunConsoleCommand(args[1], unpack(args))
+    local cmd, args, tags = iconsole.GetCommandArgs(str)
+
+    iconsole.AddConsoleLog(nil, ":" .. str)
+
+    local tCommand = iconsole.t_Commands[cmd]
+    if tCommand then
+        local lua_res, resOrErr, com = pcall(tCommand.callback, cmd, args, tags, mode)
+
+        if lua_res then
+            if resOrErr != false then
+                if isstring(resOrErr) then
+                    iconsole.AddConsoleLog(nil, "command information: " .. cmd, Color(255,255,0))
+                    iconsole.AddConsoleLog(nil, resOrErr or com, COLOR.W)
+                else
+                    iconsole.AddConsoleLog(nil, com or ("Sucessful runned: " .. cmd), COLOR.G)
+                end
+            else
+                iconsole.AddConsoleLog(nil, com or ("Failed run: " .. cmd), Color(255,255,0))
+            end
+        else
+            local errtext = resOrErr .. "\n\t" .. debug.traceback()
+            iconsole.AddConsoleLog(nil, ("Error run: " .. cmd), COLOR.R)
+            iconsole.AddConsoleLog(nil, errtext, COLOR.R)
+        end
+    else
+        if not str or str == "" then str = "zen_null" end
+        if mode == MODE_DEFAULT then
+            nt.Send("zen.console.command", {"string"}, {str})
+        elseif mode == MODE_SERVER then
+            nt.Send("zen.console.server_console", {"string"}, {str})
+        elseif mode == MODE_CLIENT then
+            local args = str:Split(" ")
+            local cmd = args[1]
+            table.remove(args, 1)
+            RunConsoleCommand(args[1], unpack(args))
+        end
     end
 end
 ihook.Listen("OnFastConsoleCommand", "fast_console_phrase", iconsole.OnCommand)
@@ -228,5 +295,106 @@ function iconsole.RegCommand(cmd_name, cmd_callback, cmd_types)
     }
 end
 
+local COLOR_AUTOCOMPLE_SELECT_ARG = Color(125, 125, 255)
+
+local function font_text(text, font)
+    if font == nil then return text end
+	local color_start = concat{"<font=",font,">"}
+	local color_end = "</font>"
+	return concat{color_start,text,color_end}
+end
+
+local function color_text(text, color)
+    if color == nil then return text end
+	local color_start = concat{"<color=",color.r,",",color.g,",",color.b,",",color.a,">"}
+	local color_end = "</color>"
+	return concat{color_start,text,color_end}
+end
+
+local function text_selected(text)
+    return color_text(text, COLOR_AUTOCOMPLE_SELECT_ARG)
+end
+
+local function text_editing(text)
+    return font_text(text, iconsole.DrawFont_UnderLine)
+end
+
+
+function iconsole.AutoCompleteCalc(cmd_name, args, tags, clear_str, source, iEditArgID, iEditTagID)
+    local iArgIDEdit = iEditArgID and (iEditArgID-1) or (!iEditTagID and (#args+1))
+
+    local tCommand = iconsole.t_Commands[cmd_name]
+    if tCommand == nil then
+        local firstCommand
+        local t_FindCommands = {}
+        for name in pairs(iconsole.t_Commands) do
+            if find(name, cmd_name) then
+                insert(t_FindCommands, name)
+                if not firstCommand then
+                    firstCommand = name
+                end
+            end
+        end
+
+        local sCommandList = concat{"Commands:", "\n", concat(t_FindCommands), "\n"}
+
+        return firstCommand, sCommandList
+    else
+        local lines = {}
+        local t_Types = {}
+        if tCommand.cmd_types then
+            for id, v in pairs(tCommand.cmd_types) do
+                local str = concat({"[", v.type, " ", v.name, "]"})
+
+                if id == iArgIDEdit then
+                    str = text_selected(str)
+                end
+
+                insert(t_Types, str)
+            end
+        end
+        lines[1] = "Command Info:"
+        lines[2] = concat{cmd_name, " ", concat(t_Types, " ")}
+
+        local t_Args = {}
+        for id, value in pairs(args) do
+            if id == iArgIDEdit then
+                value = text_editing(value)
+            end
+            insert(t_Args, value)
+        end
+        lines[3] = concat{text_selected(":= ["), concat(t_Args, text_selected("][")), text_selected("]")}
+
+        local t_Tags = {}
+        for id, tag in pairs(tags) do
+            if id == iEditTagID then
+                tag = text_editing(tag)
+            end
+            insert(t_Tags, tag)
+        end
+
+        if next(t_Tags) then
+            insert(lines, concat{text_selected("tags: ["), concat(t_Tags, text_selected("][")), text_selected("]")})
+        end
+
+        local fullInfo = concat(lines, "\n")
+
+
+        return nil, fullInfo
+    end
+end
+
+local t_AutoComplatecache = setmetatable({}, {__mode = "kv"})
 function iconsole.GetAutoComplete(str)
+    --if t_AutoComplatecache[str] then return unpack(t_AutoComplatecache[str]) end
+    if str == "" then return false, false end
+
+    local cmd_name, args, tags, clear_str, source, iEditArgID, iEditTagID = iconsole.GetCommandArgs(str)
+    if cmd_name == nil then return false, false end
+
+
+    local inputHelpString, helpFullHelp = iconsole.AutoCompleteCalc(cmd_name, args, tags, clear_str, source, iEditArgID, iEditTagID)
+    t_AutoComplatecache[str] = {inputHelpString, helpFullHelp}
+
+    return inputHelpString, helpFullHelp
 end

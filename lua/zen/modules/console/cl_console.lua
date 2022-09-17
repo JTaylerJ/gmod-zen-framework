@@ -4,6 +4,7 @@ local ui = zen.Import("ui")
 iconsole.INPUT_MODE = false
 iconsole.phrase = ""
 iconsole.DrawFont = ui.ffont(6)
+iconsole.DrawFont_UnderLine = ui.font("iconsole.underline",6,nil,{underline = true})
 
 
 local _I = table.concat
@@ -66,18 +67,37 @@ local FlagsWithNewLine = {
 	[IS_EPOE] = true,
 }
 
+local COLOR_INPUT_NEXT = Color(100,100,100,100)
+
+function iconsole.AddColorToText(text, color)
+	if color == nil then return text end
+	local color_start = _I{"<color=",color.r,",",color.g,",",color.b,",",color.a,">"}
+	local color_end = "</color>"
+	return _I{color_start,text,color_end}
+end
+
 iconsole.ServerConsoleLog = iconsole.ServerConsoleLog or ""
 function iconsole.AddConsoleLog(flags, str, clr)
 	if flags and bit.band(flags, IS_ERROR) == IS_ERROR then
 		clr = COLOR.RED
 	end
 
-	iconsole.ServerConsoleLog = iconsole.ServerConsoleLog .. str
+	flags = flags or IS_MSGN
+
+
+	local AddText = ""
+
+	AddText = AddText .. str
 
 	if not flags or FlagsWithNewLine[flags] then
-		str = string.gsub(str, "%c", "")
-		iconsole.ServerConsoleLog = iconsole.ServerConsoleLog .. "\n"
+		-- str = string.gsub(str, "\n", "")
+		-- str = string.gsub(str, "\r", "")
+		AddText = AddText .. "\n"
 	end
+
+	AddText = iconsole.AddColorToText(AddText, clr)
+
+	iconsole.ServerConsoleLog = iconsole.ServerConsoleLog .. AddText
 end
 
 local last_console_log
@@ -101,6 +121,7 @@ function iconsole.GetConsoleLog(Wide)
 		local add_text = block.text
 
 		source = source .. add_text .. "\n"
+		source = iconsole.AddColorToText(source, block.colour)
 	end
 	last_result = source
 
@@ -187,9 +208,6 @@ ihook.Listen("PlayerButtonPress", "fast_console_phrase", function(ply, but, in_k
 	iconsole.SetPhrase("")
 	do return end
 	::next::
-    if not iconsole.IsEntryInput then
-	    input.StartKeyTrapping()
-    end
 end)
 
 ihook.Listen("DrawOverlay", "fast_console_phrase", function()
@@ -201,10 +219,10 @@ ihook.Listen("DrawOverlay", "fast_console_phrase", function()
 	local text = ""
 
 	local IA = function(dat)
-		text = text .. _I{table.concat(dat)}
+		text = _I{text, table.concat(dat)}
 	end
     local IAN = function(dat)
-		text = text .. _I{table.concat(dat), "\n"}
+		text = _I{text, table.concat(dat), "\n"}
 	end
 
 	IA{"<font=" .. iconsole.DrawFont .. ">"}
@@ -260,12 +278,27 @@ ihook.Listen("DrawOverlay", "fast_console_phrase", function()
 		IAN{}
 	end
 
+	
+	
 	IA{":",iconsole.phrase}
-
+	
+	
+	
+	
+	
 	if alpha > 25 then
 		IA{"<colour=255,255,255," .. alpha .. ">" .. "|" .. "</colour>"}
+	else
+		IA{" "}
 	end
-
+	
+	local inputHelp, fullHelp = iconsole.GetAutoComplete(iconsole.phrase)
+	IA{iconsole.AddColorToText(inputHelp or "", COLOR_INPUT_NEXT)}
+	if fullHelp and fullHelp != "" then
+		IAN{}
+		IAN{"--------------------------"}
+		IA{fullHelp}
+	end
 	IA{""}
 
 	local object = markup.Parse(text, Wide)

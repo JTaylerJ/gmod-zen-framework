@@ -1,29 +1,24 @@
-zen.console = zen.console or {}
-local iconsole = zen.console
+local iconsole = zen.Init("console")
+local ui = zen.Import("ui")
+
 iconsole.INPUT_MODE = false
 iconsole.phrase = ""
+iconsole.DrawFont = ui.ffont(6)
+
+
 local _I = table.concat
-if IsValid(iconsole.dentry) then iconsole.dentry:Remove() end
 iconsole.InitEntry = function()
 	if IsValid(iconsole.dentry) then iconsole.dentry:Remove() end
 	iconsole.dentry = vgui.Create("DTextEntry")
 	iconsole.dentry:ParentToHUD()
 
 	iconsole.dentry:MakePopup()
-	iconsole.dentry:RequestFocus()
-	iconsole.dentry:SetKeyboardInputEnabled(true)
 	iconsole.dentry:SetMouseInputEnabled(false)
 	iconsole.dentry:SetAlpha(0)
 
 	iconsole.dentry.AllowInput = function(self, char)
-		local new_but = input.GetKeyCode(char)
-		ihook.Run("PlayerButtonPress", LocalPlayer(), new_but, char, true)
-		ihook.Run("PlayerButtonUnPress", LocalPlayer(), new_but, char, true)
+		iconsole.AddChar(char)
 		return true
-	end
-	iconsole.dentry.OnKeyCode = function(self, new_but)
-		ihook.Run("PlayerButtonPress", LocalPlayer(), new_but, "")
-		ihook.Run("PlayerButtonUnPress", LocalPlayer(), new_but, "")
 	end
 end
 
@@ -35,9 +30,11 @@ iconsole.SetPhrase = function(str)
 	end
 
     iconsole.phrase = str
-    if IsValid(iconsole.dentry) then
-        iconsole.dentry:SetText(str)
-    end
+end
+
+iconsole.AddChar = function(char)
+	if utf8.len(iconsole.phrase) >= 100 or char == nil or char == "" then return end
+	iconsole.SetPhrase(iconsole.phrase .. char)
 end
 
 local MODE_DEFAULT = 0
@@ -45,12 +42,6 @@ local MODE_CLIENT = 1
 local MODE_SERVER = 2
 
 iconsole.mode = MODE_DEFAULT
-
-
-local KeyReplace = {}
-KeyReplace[KEY_SPACE] = " "
-KeyReplace[KEY_TAB] = "  "
-
 
 local KeyStart = KEY_SEMICOLON
 local KeyDefault = KEY_D
@@ -96,7 +87,7 @@ function iconsole.GetConsoleLog(Wide)
 
 	last_console_log = iconsole.ServerConsoleLog
 
-	local console_obj = markup.Parse("<font=DebugOverlay>" .. iconsole.ServerConsoleLog .. "</font>", Wide)
+	local console_obj = markup.Parse("<font=" .. iconsole.DrawFont .. ">" .. iconsole.ServerConsoleLog .. "</font>", Wide)
 
 	local blocks = console_obj.blocks
 	local block_count = #blocks
@@ -116,20 +107,15 @@ function iconsole.GetConsoleLog(Wide)
 	return last_result
 end
 
-iconsole.IsKeyDown = function(but)
-    return input.IsKeyDown(but) or input.IsKeyPressed(but)
-end
+local IsDown = input.IsButtonDown
 
-ihook.Listen("PlayerButtonPress", "fast_console_phrase", function(ply, but, char, isCharInput)
+ihook.Listen("PlayerButtonPress", "fast_console_phrase", function(ply, but, in_key, bind, char)
 	if not iconsole.INPUT_MODE then
-		if iconsole.IsKeyDown(KEY_LCONTROL) and iconsole.IsKeyDown(KEY_LALT) and but == KeyStart then
+		if IsDown(KEY_LCONTROL) and IsDown(KEY_LALT) and but == KeyStart then
 			nt.Send("zen.console.console_status", {"bool"}, {true})
 			iconsole.INPUT_MODE = true
 			iconsole.SetPhrase("")
 			iconsole.InitEntry()
-
-			iconsole.IsEntryValid = IsValid(iconsole.dentry)
-    		iconsole.IsEntryInput = iconsole.IsEntryValid and iconsole.dentry:IsEditing()
 
 			if not iconsole.IsEntryInput then
 				input.StartKeyTrapping()
@@ -139,20 +125,10 @@ ihook.Listen("PlayerButtonPress", "fast_console_phrase", function(ply, but, char
 		return
 	end
 
-	if iconsole.IsKeyDown(but) then
-		gui.InternalKeyCodePressed(but)
-	end
+	if IsDown(KEY_LCONTROL) and but == KEY_C then goto stop end
+	if but == KEY_ESCAPE then goto stop end
 
-	local trapping_key = input.CheckKeyTrapping()
-	but = trapping_key or but
-
-    iconsole.IsEntryValid = IsValid(iconsole.dentry)
-    iconsole.IsEntryInput = iconsole.IsEntryValid and iconsole.dentry:IsEditing()
-	
-	if iconsole.IsKeyDown(KEY_LCONTROL) and iconsole.IsKeyDown(KEY_C) then goto stop end
-	if iconsole.IsKeyDown(KEY_ESCAPE) then goto stop end
-
-    if iconsole.IsKeyDown(KEY_LALT) then
+    if IsDown(KEY_LALT) then
 		if but == KeyDefault then 
 			iconsole.mode = MODE_DEFAULT
 			nt.Send("zen.console.console_mode", {"uint8"}, {iconsole.mode})
@@ -170,7 +146,7 @@ ihook.Listen("PlayerButtonPress", "fast_console_phrase", function(ply, but, char
 		end
 	end
 
-	if iconsole.IsKeyDown(KEY_LCONTROL) then
+	if IsDown(KEY_LCONTROL) then
 		if but == KEY_BACKSPACE then
 			local args = string.Split(iconsole.phrase, " ")
 			local lastargs = #args
@@ -196,26 +172,12 @@ ihook.Listen("PlayerButtonPress", "fast_console_phrase", function(ply, but, char
 		goto next
 	end
 
-	if (iconsole.IsEntryInput and isCharInput) then
-		if utf8.len(iconsole.phrase) >= 100 then return end
-        iconsole.SetPhrase(iconsole.phrase .. char)
-        goto next
-    elseif (not iconsole.IsEntryInput) then
-		if utf8.len(iconsole.phrase) >= 100 then return end
-        local char
-        local char_replace = KeyReplace[but]
-        if char_replace then
-            char = char_replace
-        else
-            char = input.GetKeyName(but)
-            if #char != 1 then goto next end
-            if iconsole.IsKeyDown(KEY_LSHIFT) then
-                char = string.upper(char) or char
-            end
-        end
-
-        iconsole.SetPhrase(iconsole.phrase .. char)
-		goto next
+	do
+		local dentry_no_works = not (IsValid(iconsole.dentry) and iconsole.dentry:HasFocus() and iconsole.dentry:IsEditing())
+		if dentry_no_works then
+			iconsole.AddChar(char)
+			goto next
+		end
 	end
 
 	
@@ -248,6 +210,8 @@ ihook.Listen("DrawOverlay", "fast_console_phrase", function()
     local IAN = function(dat)
 		text = text .. _I{table.concat(dat), "\n"}
 	end
+
+	IA{"<font=" .. iconsole.DrawFont .. ">"}
 
 	IAN{"============================================================================================================================="}
 
@@ -359,8 +323,6 @@ local mode_colors = {
 	[MODE_SERVER] = clr_ser,
 }
 
-local clr_black = Color(0,0,0)
-local clr_blue = Color(0,0,255)
 ihook.Listen("PostDrawOpaqueRenderables", "npc_info", function()
 	for k, ply in pairs(ents.FindByClass("player")) do
 		if ply == LocalPlayer() then continue end

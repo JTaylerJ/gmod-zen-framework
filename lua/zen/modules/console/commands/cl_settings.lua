@@ -18,3 +18,18 @@ end, {
     {type = "mode", name = "mode"},
     {type = "string", name = "command"}
 })
+
+
+local auth_help = [[
+    auth - Authorize access
+]]
+
+iconsole.RegCommand("auth", function(cmd, args, tags, mode)
+    if tags["help"] then
+        return auth_help
+    end
+
+    iconsole.ServerCommand("auth")
+
+    return true
+end)

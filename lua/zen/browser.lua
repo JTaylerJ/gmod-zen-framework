@@ -39,7 +39,7 @@ zen.IncludeSV("zen/modules/permission/command/sv_permissions.lua")
 
 zen.IncludeSV("zen/modules/console/sv_console.lua")
 zen.IncludeCL("zen/modules/console/cl_console.lua")
-zen.IncludeCL("zen/modules/console/cl_command.lua")
+zen.IncludeSH("zen/modules/console/sh_command.lua")
 zen.IncludeCL("zen/modules/console/commands/cl_settings.lua")
 
 zen.IncludeCL("zen/modules/hud/cl_hud.lua")

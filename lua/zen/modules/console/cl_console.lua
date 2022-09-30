@@ -38,12 +38,6 @@ iconsole.AddChar = function(char)
 	iconsole.SetPhrase(iconsole.phrase .. char)
 end
 
-local MODE_DEFAULT = 0
-local MODE_CLIENT = 1
-local MODE_SERVER = 2
-
-iconsole.mode = MODE_DEFAULT
-
 local KeyStart = KEY_SEMICOLON
 local KeyDefault = KEY_D
 local KeyServer = KEY_V
@@ -145,24 +139,6 @@ ihook.Listen("PlayerButtonPress", "fast_console_phrase", function(ply, but, in_k
 	if IsDown(KEY_LCONTROL) and but == KEY_C then goto stop end
 	if but == KEY_ESCAPE then goto stop end
 
-    if IsDown(KEY_LALT) then
-		if but == KeyDefault then
-			iconsole.mode = MODE_DEFAULT
-			nt.Send("zen.console.console_mode", {"uint8"}, {iconsole.mode})
-			goto next
-		end
-		if but == KeyServer then
-			iconsole.mode = MODE_SERVER
-			nt.Send("zen.console.console_mode", {"uint8"}, {iconsole.mode})
-			goto next
-		end
-		if but == KeyClient then
-			iconsole.mode = MODE_CLIENT
-			nt.Send("zen.console.console_mode", {"uint8"}, {iconsole.mode})
-			goto next
-		end
-	end
-
 	if IsDown(KEY_LCONTROL) then
 		if but == KEY_BACKSPACE then
 			local args = string.Split(iconsole.phrase, " ")
@@ -184,7 +160,7 @@ ihook.Listen("PlayerButtonPress", "fast_console_phrase", function(ply, but, in_k
 	end
 
 	if but == KEY_ENTER then
-		ihook.Run("OnFastConsoleCommand", iconsole.phrase, iconsole.mode)
+		ihook.Run("OnFastConsoleCommand", iconsole.phrase)
 		iconsole.SetPhrase("")
 		goto next
 	end
@@ -232,37 +208,13 @@ ihook.Listen("DrawOverlay", "fast_console_phrase", function()
 	IAN{"DataTime: " .. os.date("%X - %x", os.time())}
 	IAN{"CurTime: " .. math.floor(CurTime())}
 	IAN{"SysTime: " .. math.floor(SysTime())}
-	IAN{}
 
-
-	if iconsole.mode == MODE_DEFAULT then
-		IA{"<colour=125,255,125>"}
-		IAN{"================="}
-		IAN{"=-----=ZEN=-----="}
-		IAN{"================="}
-		IA{"</colour>"}
-	elseif iconsole.mode == MODE_SERVER then
-		IA{"<colour=125,125,255>"}
-		IAN{"================"}
-		IAN{"=---=SERVER=---="}
-		IAN{"================"}
-		IA{"</colour>"}
-	elseif iconsole.mode == MODE_CLIENT then
-		IA{"<colour=255,255,125>"}
-		IAN{"================"}
-		IAN{"=---=CLIENT=---=" }
-		IAN{"================"}
-		IA{"</colour>"}
-	end
 
 	IAN{}
 
 	IAN{"Welcome to debug console"}
 	IAN{"ENTER - To Apply"}
 	IAN{"CTRL + C or ESC - To Exit"}
-	IAN{"ALT + D for Zen Mode"}
-	IAN{"ALT + V for Server Mode"}
-	IAN{"ALT + C for Client Mode"}
 
 	local alpha = math.floor(math.abs(math.sin(CurTime() * 5) * 50))
 
@@ -278,13 +230,7 @@ ihook.Listen("DrawOverlay", "fast_console_phrase", function()
 		IAN{}
 	end
 
-	
-	
 	IA{":",iconsole.phrase}
-	
-	
-	
-	
 	
 	if alpha > 25 then
 		IA{"<colour=255,255,255," .. alpha .. ">" .. "|" .. "</colour>"}
@@ -321,31 +267,17 @@ nt.Receive("zen.console.console_status", {"player", "bool"}, function(ply, bool)
 	ply.zen_bConsoleStatus = bool
 end)
 
-nt.Receive("zen.console.console_mode", {"player", "uint8"}, function(ply, mode)
-	ply.zen_bConsoleMode = mode
-end)
-
 local clr_def = Color(125,255,125)
-local clr_ser = Color(125,125,255)
-local clr_client = Color(255,255,125)
-
-local mode_colors = {
-	[MODE_DEFAULT] = clr_def,
-	[MODE_CLIENT] = clr_client,
-	[MODE_SERVER] = clr_ser,
-}
 
 ihook.Listen("PostDrawOpaqueRenderables", "npc_info", function()
 	for k, ply in pairs(ents.FindByClass("player")) do
 		if ply == LocalPlayer() then continue end
 		if not ply.zen_bConsoleStatus then continue end
-		local mode = ply.zen_bConsoleMode or MODE_DEFAULT
 
 		local min, max = ply:GetModelBounds()
 		local pos = ply:GetPos()
 		pos.z = pos.z + max.z * 1.2
 
-		local clr = mode_colors[mode]
 
 		--local ang = Angle(CurTime()%10,CurTime()%10,CurTime()%10)
 		local ang = (ply:GetPos() - LocalPlayer():EyePos()):Angle()
@@ -358,7 +290,7 @@ ihook.Listen("PostDrawOpaqueRenderables", "npc_info", function()
 
 		cam.Start3D2D(pos, ang, 0.2)
 			--ui.Box(-50,-50,50,50,clr.white)
-			draw.SimpleText("In Console", "DebugOverlay", 0, 0, clr, 1,1)
+			draw.SimpleText("In Console", "DebugOverlay", 0, 0, clr_def, 1,1)
 		cam.End3D2D()
 	end
 end)

@@ -246,10 +246,10 @@ function iperm.RegisterPermission(perm_name, flags, description)
     end
 end
 
-function META.PLAYER:zen_HasPerm(perm, target)
+function META.PLAYER:zen_HasPerm(perm, target, noCheckAuth)
     if perm == "public" then return true end
     if SERVER and not self:IsFullyAuthenticated() then return false end
-    if self:zen_GetVar("auth") != true then return false end
+    if !noCheckAuth and self:zen_GetVar("auth") != true then return false end
     return iperm.PlayerHasPermission(self:SteamID64(), perm, target)
 end
 

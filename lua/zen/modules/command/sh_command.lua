@@ -1,5 +1,5 @@
-local iconsole = zen.Import("console")
-iconsole.t_Commands = iconsole.t_Commands or {}
+local icmd = zen.Import("command")
+icmd.t_Commands = icmd.t_Commands or {}
 
 local len = string.len
 local sub = string.sub
@@ -203,7 +203,7 @@ end
 
 
 
-function iconsole.GetStringArgs(source)
+function icmd.GetStringArgs(source)
     local tStringVars, clear_str, iEditChar1 = getQuotasArgs(source)
     local tTags, clear_str, iEditChar2 = getTags(clear_str)
     local tArgs, clear_str, iEditChar3 = getSimpleArgs(clear_str)
@@ -236,59 +236,66 @@ end
 ]]
 
 
-function iconsole.GetCommandArgs(source)
-    source = source or iconsole.phrase
-    local args, tags, clear_str, source, iEditArgID, iEditTagID = iconsole.GetStringArgs(source)
+function icmd.GetCommandArgs(source)
+    source = source or icmd.phrase
+    local args, tags, clear_str, source, iEditArgID, iEditTagID = icmd.GetStringArgs(source)
     local cmd = args[1]
     remove(args, 1)
 
     return cmd, args, tags, clear_str, source, iEditArgID, iEditTagID
 end
 
-function iconsole.ServerCommand(str)
+function icmd.ServerCommand(str)
     nt.Send("zen.console.command", {"string"}, {str})
 end
 
-function iconsole.ServerConsole(str)
+function icmd.ServerConsole(str)
     nt.Send("zen.console.server_console", {"string"}, {str})
 end
 
-function iconsole.OnCommand(str)
-    local cmd, args, tags = iconsole.GetCommandArgs(str)
+function icmd.Log(...)
+    iconsole.AddConsoleLog(nil, ...)
+    MsgC(...)
+end
 
-    iconsole.AddConsoleLog(nil, "=" .. str)
+function icmd.OnCommand(str, who)
+    local cmd, args, tags = icmd.GetCommandArgs(str)
+    who = who or LocalPlayer()
 
-    local tCommand = iconsole.t_Commands[cmd]
+    icmd.Log("=" .. str)
+
+    local tCommand = icmd.t_Commands[cmd]
     if tCommand then
-        local lua_res, resOrErr, com = pcall(tCommand.callback, cmd, args, tags)
+        local lua_res, resOrErr, com = pcall(tCommand.callback, who, cmd, args, tags)
 
         if lua_res then
             if resOrErr != false then
                 if isstring(resOrErr) then
-                    iconsole.AddConsoleLog(nil, "command information: " .. cmd, Color(255,255,0))
-                    iconsole.AddConsoleLog(nil, resOrErr or com, COLOR.W)
+                    icmd.Log("command information: " .. cmd, Color(255,255,0))
+                    icmd.Log(resOrErr or com, COLOR.W)
                 else
-                    iconsole.AddConsoleLog(nil, com or ("Sucessful runned: " .. cmd), COLOR.G)
+                    icmd.Log(com or ("Sucessful runned: " .. cmd), COLOR.G)
                 end
             else
-                iconsole.AddConsoleLog(nil, com or ("Failed run: " .. cmd), Color(255,255,0))
+                icmd.Log(com or ("Failed run: " .. cmd), Color(255,255,0))
             end
         else
             local errtext = resOrErr .. "\n\t" .. debug.traceback()
-            iconsole.AddConsoleLog(nil, ("Error run: " .. cmd), COLOR.R)
-            iconsole.AddConsoleLog(nil, errtext, COLOR.R)
+            icmd.Log(("Error run: " .. cmd), COLOR.R)
+            icmd.Log(errtext, COLOR.R)
         end
     else
-        iconsole.AddConsoleLog(nil, "Command not exists:", cmd, COLOR.R)
+        icmd.Log("Command not exists:", cmd, COLOR.R)
     end
 end
-ihook.Listen("OnFastConsoleCommand", "fast_console_phrase", iconsole.OnCommand)
+ihook.Listen("OnFastConsoleCommand", "fast_console_phrase", icmd.OnCommand)
 
 
-function iconsole.RegCommand(cmd_name, cmd_callback, cmd_types)
-    iconsole.t_Commands[cmd_name] = {
+function icmd.Register(cmd_name, cmd_callback, cmd_types, cmd_data)
+    icmd.t_Commands[cmd_name] = {
         callback = cmd_callback,
-        cmd_types = cmd_types
+        cmd_types = cmd_types,
+        cmd_data = cmd_data,
     }
 end
 
@@ -313,18 +320,18 @@ local function text_selected(text)
 end
 
 local function text_editing(text)
-    return font_text(text, iconsole.DrawFont_UnderLine)
+    return font_text(text, icmd.DrawFont_UnderLine)
 end
 
 
-function iconsole.AutoCompleteCalc(cmd_name, args, tags, clear_str, source, iEditArgID, iEditTagID)
+function icmd.AutoCompleteCalc(cmd_name, args, tags, clear_str, source, iEditArgID, iEditTagID)
     local iArgIDEdit = iEditArgID and (iEditArgID-1) or (!iEditTagID and (#args+1))
 
-    local tCommand = iconsole.t_Commands[cmd_name]
+    local tCommand = icmd.t_Commands[cmd_name]
     if tCommand == nil then
         local firstCommand
         local t_FindCommands = {}
-        for name in pairs(iconsole.t_Commands) do
+        for name in pairs(icmd.t_Commands) do
             if find(name, cmd_name) then
                 insert(t_FindCommands, name)
                 if not firstCommand then
@@ -382,15 +389,15 @@ function iconsole.AutoCompleteCalc(cmd_name, args, tags, clear_str, source, iEdi
 end
 
 local t_AutoComplatecache = setmetatable({}, {__mode = "kv"})
-function iconsole.GetAutoComplete(str)
+function icmd.GetAutoComplete(str)
     --if t_AutoComplatecache[str] then return unpack(t_AutoComplatecache[str]) end
     if str == "" then return false, false end
 
-    local cmd_name, args, tags, clear_str, source, iEditArgID, iEditTagID = iconsole.GetCommandArgs(str)
+    local cmd_name, args, tags, clear_str, source, iEditArgID, iEditTagID = icmd.GetCommandArgs(str)
     if cmd_name == nil then return false, false end
 
 
-    local inputHelpString, helpFullHelp = iconsole.AutoCompleteCalc(cmd_name, args, tags, clear_str, source, iEditArgID, iEditTagID)
+    local inputHelpString, helpFullHelp = icmd.AutoCompleteCalc(cmd_name, args, tags, clear_str, source, iEditArgID, iEditTagID)
     t_AutoComplatecache[str] = {inputHelpString, helpFullHelp}
 
     return inputHelpString, helpFullHelp

@@ -11,7 +11,7 @@ ihook.Listen("zen.map_edit.Render", "points", function(rendermode, priority, vw)
     if rendermode == RENDER_3D and priority == RENDER_POST then
 		local y = 0
 		y = y - 5
-		draw3d2d.Text(vw.lastTrace.HitPos, nil, 0.1, true, "v", 10, 0, y, COLOR.WHITE, 1, 1, COLOR.BLACK)
+		draw3d2d.Text(vw.lastTrace.HitPos, nil, 0.01, true, "v", 100, 0, y, COLOR.WHITE, 1, 1, COLOR.BLACK)
 
 		y = y - 35
 		draw3d2d.Text(vw.lastTrace.HitPos, nil, 0.1, true, GetVectorString(vw.lastTrace.HitPos), 10, 0, y, COLOR.WHITE, 1, 1, COLOR.BLACK)

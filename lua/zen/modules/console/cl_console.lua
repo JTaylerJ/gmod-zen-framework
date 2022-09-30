@@ -132,7 +132,7 @@ local IsDown = input.IsButtonDown
 
 ihook.Listen("PlayerButtonPress", "fast_console_phrase", function(ply, but, in_key, bind, char)
 	if not iconsole.INPUT_MODE then
-		if IsDown(KEY_LCONTROL) and IsDown(KEY_LALT) and but == KeyStart then
+		if (IsDown(KEY_LCONTROL) and IsDown(KEY_LALT) and but == KeyStart) or bind == "zen_console" then
 			nt.Send("zen.console.console_status", {"bool"}, {true})
 			iconsole.INPUT_MODE = true
 			iconsole.SetPhrase("")

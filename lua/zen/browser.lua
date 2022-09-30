@@ -51,6 +51,7 @@ zen.IncludeCL("zen/modules/map_edit/modules/cl_points.lua")
 
 zen.IncludeCL("zen/modules/map_edit/modules/cl_world_click.lua")
 zen.IncludeCL("zen/modules/map_edit/modules/cl_particle.lua")
+zen.IncludeCL("zen/modules/map_edit/modules/cl_origin_pos.lua")
 
 zen.IncludeSH("zen/modules/map_edit/modules/var_edit/sh_nvars.lua")
 zen.IncludeSV("zen/modules/map_edit/modules/var_edit/sv_nvars.lua")

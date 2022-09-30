@@ -288,6 +288,9 @@ ihook.Handler("PlayerButtonPress", "zen.map_edit", function(ply, but, in_key, bi
 	if bind_name == "+menu_context" then
 		if IsValid(map_edit.pnl_Context) and not map_edit.pnl_Context:zen_ChildrenHasKeyboardFocus() then
 			map_edit.pnl_Context:SetVisible(true)
+			vw.IsContextActive = true
+			vw.ContextHoverEntity = vw.hoverEntity
+			vw.ContextHoverOrigin = vw.hoverOrigin
 		end
 	end
 
@@ -308,6 +311,9 @@ ihook.Handler("PlayerButtonUnPress", "zen.map_edit", function(ply, but, in_key, 
 		if IsValid(map_edit.pnl_Context) and not map_edit.pnl_Context:zen_ChildrenHasKeyboardFocus() then
 			map_edit.pnl_Context:SetVisible(false)
 		end
+		vw.IsContextActive = false
+		vw.ContextHoverEntity = nil
+		vw.ContextHoverOrigin = nil
 	end
 
 	if in_key == IN_RELOAD then return end

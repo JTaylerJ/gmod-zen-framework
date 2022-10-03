@@ -1,5 +1,5 @@
 nt.mt_EntityVars = nt.mt_EntityVars or {}
-local id, self, tContent = nt.RegisterChannel("entity_var", nt.t_ChannelFlags.PUBLIC, {
+local id, tChannel = nt.RegisterChannel("entity_var", nt.t_ChannelFlags.PUBLIC, {
     id = 10,
     priority = 10,
     types = {"uint16", "string_id", "any"},
@@ -8,27 +8,37 @@ local id, self, tContent = nt.RegisterChannel("entity_var", nt.t_ChannelFlags.PU
         self.iCounter = self.iCounter or 0
     end,
     OnWrite = function(self, target, ent_id, key, value)
-        local tContent = self.tContent
+        if SERVER then
+            local tContent = self.tContent
 
-        if not tContent[ent_id] then
-            tContent[ent_id] = 0
-            nt.mt_EntityVars[ent_id] = {}
-            self.iCounter = self.iCounter + 1
+            if not tContent[ent_id] then
+                tContent[ent_id] = 0
+                nt.mt_EntityVars[ent_id] = {}
+                self.iCounter = self.iCounter + 1
+            end
+            local IsDelete = value == nil
+            local tVars = nt.mt_EntityVars[ent_id]
+
+            if tVars[key] and IsDelete then
+                tContent[ent_id] = tContent[ent_id] - 1
+            elseif tVars[key] == nil and not IsDelete then
+                tContent[ent_id] = tContent[ent_id] + 1
+            end
+
+            nt.mt_EntityVars[ent_id][key] = value
+
+            local ent = Entity(ent_id)
+            if IsValid(ent) and nt.mt_EntityVars[ent_id] then
+                nt.mt_EntityVars[ent] = nt.mt_EntityVars[ent_id]
+            end
         end
-        local IsDelete = value == nil
-        local tVars = nt.mt_EntityVars[ent_id]
-
-        if tVars[key] and IsDelete then
-            tContent[ent_id] = tContent[ent_id] - 1
-        elseif tVars[key] == nil and not IsDelete then
-            tContent[ent_id] = tContent[ent_id] + 1
-        end
-
-        nt.mt_EntityVars[ent_id][key] = value
-
-        local ent = Entity(ent_id)
-        if IsValid(ent) and nt.mt_EntityVars[ent_id] then
-            nt.mt_EntityVars[ent] = nt.mt_EntityVars[ent_id]
+    end,
+    OnRead = function(self, target, ent_id, key, value)
+        if CLIENT then 
+            local ent = Entity(ent_id)
+            local id = IsValid(ent) and ent or ent_id
+            nt.mt_EntityVars[id] = nt.mt_EntityVars[id] or {}
+            nt.mt_EntityVars[id][key] = value
         end
     end,
     WritePull = function(self, target)
@@ -56,39 +66,47 @@ local id, self, tContent = nt.RegisterChannel("entity_var", nt.t_ChannelFlags.PU
         end
     end,
 })
+local tContent = tChannel.tContent
 
-nt.RegisterChannel("entity_removed")
+
+local function RemoveID(self, ent_id)
+    if not tContent[ent_id] then return end
+
+    tChannel.iCounter = tChannel.iCounter - 1
+    tContent[ent_id] = nil
+    nt.mt_EntityVars[ent_id] = nil
+    local ent = Entity(ent_id)
+    if ent then
+        nt.mt_EntityVars[ent] = nil
+    end
+end
+
+nt.RegisterChannel("entity_removed", nil, {
+    types = {"uint16"},
+    OnRead = function(self, ply, ent_id)
+        if CLIENT then
+            RemoveID(ent_id)
+        end
+    end,
+    OnWrite = function(self, ply, ent_id)
+        if SERVER then
+            RemoveID(ent_id)
+        end
+    end
+})
 
 if SERVER then
     ihook.Listen("EntityRemoved", "zen.nt.entity_vars", function(ent)
-        local ent_id = ent:EntIndex()
-        if not tContent[ent_id] then return end
-
-        self.iCounter = self.iCounter - 1
-        tContent[ent_id] = nil
-        nt.mt_EntityVars[ent_id] = nil
-        nt.mt_EntityVars[ent] = nil
-
-        if SERVER then
-            nt.Send("entity_removed", {"uint16"}, {ent_id})
-        end
+        nt.SendToChannel("entity_removed", nil, ent:EntIndex())
     end)
 end
 
 if CLIENT then
-    nt.Receive("entity_removed", {"uint16"}, function(tChannel, ent_id)
-        if not tContent[ent_id] then return end
-
-        self.iCounter = self.iCounter - 1
-        tContent[ent_id] = nil
-        nt.mt_EntityVars[ent_id] = nil
-        nt.mt_EntityVars[Entity(ent_id)] = nil
-    end)
-
     ihook.Listen("NetworkEntityCreated", "zen.nt.entity_vars", function(ent)
         local index = ent:EntIndex()
         if nt.mt_EntityVars[index] then
             nt.mt_EntityVars[ent] = nt.mt_EntityVars[index]
+            nt.mt_EntityVars[index] = nil
         end
     end)
 end

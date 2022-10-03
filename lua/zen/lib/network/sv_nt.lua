@@ -45,11 +45,15 @@ function nt.Send(channel_name, types, data, target)
     assertTable(data, "data")
 
     local channel_id = nt.GetChannelID(channel_name)
-
     local tChannel = nt.mt_Channels[channel_name]
 
     local bSuccess = true
     local sLastError
+
+    if bSuccess and not channel_id then
+        bSuccess = false
+        sLastError = "SEND: channel_id not exists"
+    end
 
     if bSuccess then
         if target then
@@ -59,6 +63,8 @@ function nt.Send(channel_name, types, data, target)
             end
         end
     end
+
+    local to = target and target:SteamID64() or "server"
 
     local iCounter = 0
     if bSuccess then
@@ -94,6 +100,7 @@ function nt.Send(channel_name, types, data, target)
         net.Start(nt.channels.sendMessage)
         net.WriteUInt(channel_id, 12)
     end
+
         if iCounter > 0 then
             for id = 1, iCounter do
                 local net_type = types[id]
@@ -108,10 +115,18 @@ function nt.Send(channel_name, types, data, target)
             end
         end
 
-    if target then
-        net.Send(target)
-    else
-        net.Broadcast()
+    if SERVER then
+        if target then
+            net.Send(target)
+        else
+            net.Broadcast()
+        end
+    elseif CLIENT_DLL then
+        net.SendToServer()
+    end
+
+    if tChannel.OnWrite then
+        tChannel.OnWrite(tChannel, target, unpack(data))
     end
 
     if nt.i_debug_lvl >= 2 then
@@ -121,11 +136,7 @@ function nt.Send(channel_name, types, data, target)
     ihook.Run("nt.Send", {channel_name, types, data, target})
 
     if nt.i_debug_lvl >= 1 then
-        if target then
-            zen.print("[nt.debug] Sent network \"",channel_name,"\" to player ", target:SteamID64())
-        else
-            zen.print("[nt.debug] Broadcast network \"",channel_name,"\"")
-        end
+        zen.print("[nt.debug] Sent network \"",channel_name,"\" to ", to)
     end
 end
 

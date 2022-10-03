@@ -1,3 +1,5 @@
+local _I = table.concat
+
 ihook.Listen("ReadyForNetwork.Pre", "nt.SendAllNetworkChannels", function(ply)
 
     for _, v in ipairs(nt.mt_ChannelsPublicPriority) do
@@ -179,6 +181,9 @@ net.Receive(nt.channels.sendMessage, function(len, ply)
     local channel_id = net.ReadUInt(12)
     local channel_name = nt.GetChannelName(channel_id)
 
+    if not IsValid(ply) then ply = nil end
+    local from = ply and ply:SteamID64() or "server"
+
     local bSuccess = true
     local sLastError
 
@@ -189,8 +194,9 @@ net.Receive(nt.channels.sendMessage, function(len, ply)
 
     local tChannel = nt.mt_Channels[channel_name]
     local tReceiverData = nt.mt_listReceivers[channel_name]
+    local bWaitingInspect = true
 
-    if bSuccess and tChannel and (tChannel.fReader or tChannel.types) then
+    if bSuccess and bWaitingInspect and tChannel and (tChannel.fReader or tChannel.types) then
         local result = {}
 
         if nt.i_debug_lvl >= 2 then
@@ -199,27 +205,28 @@ net.Receive(nt.channels.sendMessage, function(len, ply)
 
         if tChannel.fReader then
             result = {tChannel.fReader(tChannel)}
-            
+
             if nt.i_debug_lvl >= 2 then
                 for k, v in pairs(result) do
-                    zen.print("[nt.debug] Read \"",type(v),"\"", " \"",tostring(v),"\"")
+                    zen.print("[nt.debug]   Read \"",type(v),"\"", " \"",tostring(v),"\"")
                 end
             end
         elseif tChannel.types then
             for _, net_type in ipairs(tChannel.types) do
-                local fReader = nt.GetTypeReaderFunc(net_type)
+                local fReader, isSpecial, a1, a2, a3, a4, a5 = nt.GetTypeReaderFunc(net_type)
 
                 if not fReader then
                     bSuccess = false
-                    sLastError = I{"GET: Reader not exists: ", net_type}
+                    sLastError = _I{"GET: Reader not exists: ", net_type}
                     goto result
                 end
 
-                local read_result = fReader()
+
+                local read_result = fReader(a1, a2, a3, a4, a5)
                 table.insert(result, read_result)
 
                 if nt.i_debug_lvl >= 2 then
-                    zen.print("[nt.debug] Read \"",net_type,"\"", " \"",tostring(read_result),"\"")
+                    zen.print("[nt.debug]   Read \"",net_type,"\"", " \"",tostring(read_result),"\"")
                 end
 
                 if net_type == "next" and read_result == false then break end
@@ -231,7 +238,7 @@ net.Receive(nt.channels.sendMessage, function(len, ply)
         end
 
         if nt.i_debug_lvl >= 1 then
-            zen.print("[nt.debug] GET: Received network \"",channel_name,"\" from ", ply:SteamID64())
+            zen.print("[nt.debug] GET: Received network \"",channel_name,"\" from ", from)
         end
 
         if tChannel.OnRead then
@@ -241,10 +248,10 @@ net.Receive(nt.channels.sendMessage, function(len, ply)
         ihook.Run("nt.Receive", channel_name, ply, unpack(result))
     end
 
-    if bSuccess then
+    if bSuccess and bWaitingInspect then
         if not tReceiverData then
             bSuccess = false
-            sLastError = I{"GET: Received data not exists"}
+            sLastError = _I{"GET: Received data not exists"}
             goto result
         end
 
@@ -275,8 +282,14 @@ net.Receive(nt.channels.sendMessage, function(len, ply)
         end
 
         if nt.i_debug_lvl >= 1 then
-            zen.print("[nt.debug] GET: Received network \"",channel_name,"\" from ", ply:SteamID64())
+            zen.print("[nt.debug] GET: Received network \"",channel_name,"\" from ", from)
         end
+        bWaitingInspect = false
+    end
+
+    if bWaitingInspect then
+        bSuccess = false
+        sLastError = "network not inspected"
     end
 
     ::result::

@@ -36,7 +36,7 @@ net.Receive(nt.channels.clientReady, function(len, ply)
     ihook.Run("ReadyForNetwork", ply)
 end)
 
-ihook.Listen("nt.Receive", "zen.nt.logs", function(channel_name, ...)
+ihook.Listen("nt.Receive", "zen.nt.logs", function(channel_name, ply, ...)
     if nt.i_debug_lvl >= 1 then
         zen.print("[nt.received] ", channel_name)
         print(...)

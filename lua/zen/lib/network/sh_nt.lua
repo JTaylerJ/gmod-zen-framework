@@ -228,55 +228,6 @@ local _I = table.concat
 local FromSID64 = util.SteamIDFrom64
 local ToSID64 = util.SteamIDTo64
 
-
----@param type_name string
----@return function fReader, boolean? isSpecial, ...
-function nt.GetTypeReaderFunc(type_name)
-    assertStringNice(type_name, "type_name")
-
-    local defReader = nt.mt_listReader[type_name]
-    if defReader then return defReader end
-
-    if nt.mt_listReader_SpecialCache[type_name] then
-        return unpack(nt.mt_listReader_SpecialCache[type_name])
-    end
-
-    do
-        local specialID, type_name = string.match(type_name, "([%w]+):([%w]+)")
-        if specialID and type_name then
-            local specReader = nt.mt_listReader_Special[specialID]
-            local defReader = nt.mt_listReader[type_name]
-            if specReader and defReader then
-                nt.mt_listReader_SpecialCache[type_name] = {specReader, true, type_name}
-                return specReader, true, type_name
-            else
-                if specReader and not defReader then
-                    error("GetTypReader defReader not exists: " .. tostring(type_name))
-                elseif not specReader and defReader then
-                    error("GetTypReader specReader not exists: " .. tostring(specialID))
-                end
-            end
-        end
-    end
-end
-nt.mt_listReader_SpecialCache = {}
-nt.mt_listReader_Special = {}
-nt.mt_listReader_Special["array"] = function(type_name, ...)
-    local fReader = nt.mt_listReader[type_name]
-
-    local count = net.ReadUInt(8)
-
-    local tArray = {}
-    for k = 1, count do
-        local value = fReader()
-        table.insert(tArray, value)
-    end
-
-    return tArray
-end
-
-
-
 nt.mt_listReader = {}
 nt.mt_listReader["angle"] = function() return net.ReadAngle() end
 nt.mt_listReader["bit"] = function() return net.ReadBit() end
@@ -314,56 +265,52 @@ nt.mt_listReader["steamid64"] = function()
 end
 nt.mt_listReader["sid64"] = nt.mt_listReader["steamid64"]
 
----@param type_name string
----@return function fReader, boolean? isSpecial, ...
-function nt.GetTypeWriterFunc(type_name)
-    assertStringNice(type_name, "type_name")
+nt.mt_listReader_SpecialCache = {}
+nt.mt_listReader_Special = {}
+nt.mt_listReader_Special["array"] = function(type_name, ...)
+    local fReader = nt.mt_listReader[type_name]
 
-    local defWriter = nt.mt_listWriter[type_name]
-    if defWriter then return defWriter end
+    local count = net.ReadUInt(8)
 
-    if nt.mt_listWriter_SpecialCache[type_name] then
-        return unpack(nt.mt_listWriter_SpecialCache[type_name])
+    local tArray = {}
+    for k = 1, count do
+        local value = fReader()
+        table.insert(tArray, value)
     end
 
-    local specialID, type_name = string.match(type_name, "([%w]+):([%w]+)")
-    if specialID and type_name then
-        local specWriter = nt.mt_listWriter_Special[specialID]
-        local defWriter = nt.mt_listWriter[type_name]
-        if specWriter and defWriter then
-            nt.mt_listWriter_SpecialCache[type_name] = {specWriter, true, type_name}
-            return specWriter, true, type_name
-        else
-            if specWriter and not defWriter then
-                error("GetTypeWriter defWriter not exists: " .. tostring(type_name))
-            elseif not specWriter and defWriter then
-                error("GetTypeWriter specWriter not exists: " .. tostring(specialID))
+    return tArray
+end
+
+---@param type_name string
+---@return function fReader, boolean? isSpecial, ...
+function nt.GetTypeReaderFunc(type_name)
+    assertStringNice(type_name, "type_name")
+
+    local defReader = nt.mt_listReader[type_name]
+    if defReader then return defReader end
+
+    if nt.mt_listReader_SpecialCache[type_name] then
+        return unpack(nt.mt_listReader_SpecialCache[type_name])
+    end
+
+    do
+        local specialID, type_name = string.match(type_name, "([%w]+):([%w]+)")
+        if specialID and type_name then
+            local specReader = nt.mt_listReader_Special[specialID]
+            local defReader = nt.mt_listReader[type_name]
+            if specReader and defReader then
+                nt.mt_listReader_SpecialCache[type_name] = {specReader, true, type_name}
+                return specReader, true, type_name
+            else
+                if specReader and not defReader then
+                    error("GetTypReader defReader not exists: " .. tostring(type_name))
+                elseif not specReader and defReader then
+                    error("GetTypReader specReader not exists: " .. tostring(specialID))
+                end
             end
         end
     end
 end
-
-
-nt.mt_listWriter_SpecialCache = {}
-nt.mt_listWriter_Special = {}
-nt.mt_listWriter_Special["array"] = function(var, type_name)
-    local fWriter = nt.mt_listWriter[type_name]
-
-    if table.IsEmpty(var) then
-        net.WriteUInt(0, 8)
-        return
-    end
-
-    local count = #var
-
-    net.WriteUInt(count, 8)
-
-    for k = 1, count do
-        local value = var[k]
-        fWriter(value)
-    end
-end
-
 
 nt.mt_listWriter = {}
 nt.mt_listWriter["angle"] = function(var) return net.WriteAngle(var) end
@@ -403,6 +350,25 @@ nt.mt_listWriter["steamid64"] = function(var)
 end
 nt.mt_listWriter["sid64"] = nt.mt_listWriter["steamid64"]
 
+nt.mt_listWriter_SpecialCache = {}
+nt.mt_listWriter_Special = {}
+nt.mt_listWriter_Special["array"] = function(var, type_name)
+    local fWriter = nt.mt_listWriter[type_name]
+
+    if table.IsEmpty(var) then
+        net.WriteUInt(0, 8)
+        return
+    end
+
+    local count = #var
+
+    net.WriteUInt(count, 8)
+
+    for k = 1, count do
+        local value = var[k]
+        fWriter(value)
+    end
+end
 
 nt.mt_listSpecialCheckFunc = {}
 nt.mt_listSpecialCheckFunc["array"] = function(value)
@@ -411,6 +377,35 @@ nt.mt_listSpecialCheckFunc["array"] = function(value)
         count = count + 1
         if k != count then
             return false, "array not support table with custom keys"
+        end
+    end
+end
+
+---@param type_name string
+---@return function fReader, boolean? isSpecial, ...
+function nt.GetTypeWriterFunc(type_name)
+    assertStringNice(type_name, "type_name")
+
+    local defWriter = nt.mt_listWriter[type_name]
+    if defWriter then return defWriter end
+
+    if nt.mt_listWriter_SpecialCache[type_name] then
+        return unpack(nt.mt_listWriter_SpecialCache[type_name])
+    end
+
+    local specialID, type_name = string.match(type_name, "([%w]+):([%w]+)")
+    if specialID and type_name then
+        local specWriter = nt.mt_listWriter_Special[specialID]
+        local defWriter = nt.mt_listWriter[type_name]
+        if specWriter and defWriter then
+            nt.mt_listWriter_SpecialCache[type_name] = {specWriter, true, type_name}
+            return specWriter, true, type_name
+        else
+            if specWriter and not defWriter then
+                error("GetTypeWriter defWriter not exists: " .. tostring(type_name))
+            elseif not specWriter and defWriter then
+                error("GetTypeWriter specWriter not exists: " .. tostring(specialID))
+            end
         end
     end
 end
@@ -598,8 +593,6 @@ net.Receive(nt.channels.sendMessage, function(len, ply)
 
     if nt.i_debug_lvl >= 2 then
         zen.print("[nt.debug] Received \"",channel_name,"\" from ", from)
-        print(channel_name, bSuccess, bWaitingInspect, tChannel, tChannel.fReader, tChannel.types)
-        PrintTable(tChannel)
     end
 
 

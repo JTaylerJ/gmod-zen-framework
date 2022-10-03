@@ -99,7 +99,7 @@ function nt.RegisterChannel(channel_name, flags, data)
 
     if (SERVER and FLAGS.SAVING) or (CLIENT and FLAGS.CLIENT_SAVING) then
         local tContent
-        assertFunction(data.fSaving, "data.fSaving")
+        assertFunction(data.Save, "data.Save")
         if data.fSaveInit then
             assertFunction(data.fSaveInit, "data.fSaveInit")
             tChannel.bSaveInitialized = false
@@ -116,22 +116,22 @@ function nt.RegisterChannel(channel_name, flags, data)
         end
         tChannel.tContent = tContent
         tChannel.iCounter = tChannel.iCounter or 0
-        tChannel.fSaving = data.fSaving
+        tChannel.Save = data.Save
     end
 
     if FLAGS.POSTREAD then
-        assertFunction(data.fPostReader, "data.fPostReader")
-        tChannel.fPostReader = data.fPostReader
+        assertFunction(data.OnRead, "data.OnRead")
+        tChannel.OnRead = data.OnRead
     end
 
     if FLAGS.NEW_PLAYER_PULLS then
         if SERVER then
-            assertFunction(data.fPullWriter, "data.fPullWriter")
-            tChannel.fPullWriter = data.fPullWriter
+            assertFunction(data.WritePull, "data.WritePull")
+            tChannel.WritePull = data.WritePull
         end
         if CLIENT then
-            assertFunction(data.fPullReader, "data.fPullReader")
-            tChannel.fPullReader = data.fPullReader
+            assertFunction(data.ReadPull, "data.ReadPull")
+            tChannel.ReadPull = data.ReadPull
         end
     end
 
@@ -159,8 +159,8 @@ function nt.SendToChannel(channel_name, target, ...)
 
     local data = {...}
 
-    if tChannel.fSaving then
-        tChannel.fSaving(tChannel, tChannel.tContent, unpack(data))
+    if tChannel.Save then
+        tChannel.Save(tChannel, tChannel.tContent, unpack(data))
     end
 
 

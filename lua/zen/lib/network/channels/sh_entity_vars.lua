@@ -3,7 +3,7 @@ local id, tChannel, tContent = nt.RegisterChannel("entity_var", nt.t_ChannelFlag
     id = 10,
     priority = 10,
     types = {"uint16", "string_id", "any"},
-    fSaving = function(tChannel, tContent, ent_id, key, value)
+    Save = function(tChannel, tContent, ent_id, key, value)
         if not tContent[ent_id] then
             tContent[ent_id] = 0
             nt.mt_EntityVars[ent_id] = {}
@@ -25,9 +25,9 @@ local id, tChannel, tContent = nt.RegisterChannel("entity_var", nt.t_ChannelFlag
             nt.mt_EntityVars[ent] = nt.mt_EntityVars[ent_id]
         end
     end,
-    fPostReader = function(tChannel, ent, key, value)
+    OnRead = function(tChannel, ent, key, value)
     end,
-    fPullWriter = function(tChannel, tContent, ply)
+    WritePull = function(tChannel, tContent, ply)
         net.WriteUInt(tChannel.iCounter, 12)
         for ent_id, v in pairs(tContent) do
             net.WriteUInt(ent_id, 16)
@@ -38,7 +38,7 @@ local id, tChannel, tContent = nt.RegisterChannel("entity_var", nt.t_ChannelFlag
             end
         end
     end,
-    fPullReader = function(tChannel, tContent, tResult)
+    ReadPull = function(tChannel, tContent, tResult)
         tChannel.iCounter = net.ReadUInt(12)
         for k = 1, tChannel.iCounter do
             local ent_id = net.ReadUInt(16)

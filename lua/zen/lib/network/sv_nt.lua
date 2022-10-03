@@ -1,4 +1,4 @@
-ihook.Listen("ReadyForNetwork", "nt.SendAllNetworkChannels", function(ply)
+ihook.Listen("ReadyForNetwork.Pre", "nt.SendAllNetworkChannels", function(ply)
 
     for _, v in ipairs(nt.mt_ChannelsPublicPriority) do
         local channel_name = v.name
@@ -14,8 +14,8 @@ ihook.Listen("ReadyForNetwork", "nt.SendAllNetworkChannels", function(ply)
 
         net.Start(nt.channels.pullChannels)
             net.WriteUInt(channel_id, 32)
-            if tChannel.fPullWriter then
-                tChannel.fPullWriter(tChannel, tContent, ply)
+            if tChannel.WritePull then
+                tChannel.WritePull(tChannel, tContent, ply)
             end
         net.Send(ply)
 
@@ -31,6 +31,7 @@ end)
 
 net.Receive(nt.channels.clientReady, function(len, ply)
     ply.mbReadyForNetwork = true
+    ihook.Run("ReadyForNetwork.Pre", ply)
     ihook.Run("ReadyForNetwork", ply)
 end)
 
@@ -233,8 +234,8 @@ net.Receive(nt.channels.sendMessage, function(len, ply)
             zen.print("[nt.debug] GET: Received network \"",channel_name,"\" from ", ply:SteamID64())
         end
 
-        if tChannel.fPostReader then
-            tChannel.fPostReader(tChannel, ply, unpack(result))
+        if tChannel.OnRead then
+            tChannel.OnRead(tChannel, ply, unpack(result))
         end
 
         ihook.Run("nt.Receive", channel_name, ply, unpack(result))

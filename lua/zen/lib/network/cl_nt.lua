@@ -182,12 +182,12 @@ net.Receive(nt.channels.sendMessage, function(len)
             zen.print("[nt.debug] GET: Received network \"",channel_name,"\" from server")
         end
 
-        if CLIENT and tChannel.fSaving then
-            tChannel.fSaving(tChannel, tChannel.tContent, unpack(result))
+        if CLIENT and tChannel.Save then
+            tChannel.Save(tChannel, tChannel.tContent, unpack(result))
         end
 
-        if tChannel.fPostReader then
-            tChannel.fPostReader(tChannel, unpack(result))
+        if tChannel.OnRead then
+            tChannel.OnRead(tChannel, unpack(result))
         end
 
         ihook.Run("nt.Receive", channel_name, unpack(result))
@@ -267,21 +267,21 @@ net.Receive(nt.channels.pullChannels, function()
     end
 
     if bSuccess then
-        if tChannel.fPullReader then
+        if tChannel.ReadPull then
             local tResult = {}
 
-            tChannel.fPullReader(tChannel, tContent, tResult)
+            tChannel.ReadPull(tChannel, tContent, tResult)
             
-            if CLIENT and tChannel.fSaving then
+            if CLIENT and tChannel.Save then
                 for k, result in pairs(tResult) do
-                    tChannel.fSaving(tChannel, tContent, unpack(result))
+                    tChannel.Save(tChannel, tContent, unpack(result))
                 end
             end
 
-            if tChannel.fPostReader then
+            if tChannel.OnRead then
                 for k, result in pairs(tResult) do
                     ihook.Run("nt.Receive", channel_name, unpack(result))
-                    tChannel.fPostReader(tChannel, unpack(result))
+                    tChannel.OnRead(tChannel, unpack(result))
                 end
             else
                 for k, result in pairs(tResult) do

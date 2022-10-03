@@ -12,9 +12,9 @@ icmd.Register("alias", function(who, cmd, args, tags, mode)
 
     return true
 end, {
-    {type = "string", name = "alias"},
-    {type = "mode", name = "mode"},
-    {type = "string", name = "command"}
+    {type = "string_id", name = "alias"},
+    {type = "int8", name = "mode"},
+    {type = "string_id", name = "command"}
 }, {
     help = alias_help
 })

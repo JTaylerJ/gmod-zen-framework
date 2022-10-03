@@ -1,5 +1,4 @@
-local icmd = zen.Init("command")
-local iconsole = zen.Init("console")
+local icmd, iconsole = zen.Init("command", "console")
 
 icmd.t_Commands = icmd.t_Commands or {}
 
@@ -261,10 +260,7 @@ function icmd.Log(...)
     MsgN()
 end
 
-function icmd.OnCommand(str, who)
-    local cmd, args, tags = icmd.GetCommandArgs(str)
-    who = who or LocalPlayer()
-
+function icmd.OnCommandResult(cmd, args, tags, who)
     icmd.Log("=" .. str)
 
     local tCommand = icmd.t_Commands[cmd]
@@ -299,21 +295,42 @@ function icmd.OnCommand(str, who)
         icmd.Log("Command not exists: " .. cmd, COLOR.R)
     end
 end
+
+function icmd.OnCommand(str, who)
+    local cmd, args, tags = icmd.GetCommandArgs(str)
+    if not who and CLIENT_DLL then who = LocalPlayer() end
+
+    return icmd.OnCommandResult(cmd, args, tags)
+end
 ihook.Listen("OnFastConsoleCommand", "fast_console_phrase", icmd.OnCommand)
 
 
-function icmd.Register(cmd_name, cmd_callback, cmd_types, cmd_data)
+function icmd.Register(name, callback, types, data)
     local tCommand = {
-        callback = cmd_callback,
-        cmd_types = cmd_types or {},
-        cmd_data = cmd_data or {},
+        callback = callback,
+        types = types or {},
+        data = data or {},
+        types_clear = {},
+        types_names = {},
+        name = name,
     }
+    for k, v in pairs(tCommand.types) do
+        if not v.type then error("cmd_type not exists for: " .. name .. ", id: " .. k) end
+        local funcWriter = nt.GetTypeWriterFunc(v.type)
+        if not funcWriter then error("func writer not exists for: " .. name .. ", id: " .. k .. ", type: " .. v.type .. ", name: " .. tostring(v.name) ) end
+        table.insert(tCommand.types_clear, v.type)
+        table.insert(tCommand.types_names, v.name or "")
+    end
     if SERVER then tCommand.IsServerCommand = true tCommand.ENV = "Server" end
     if CLIENT then tCommand.IsClientCommand = true tCommand.ENV = "Client" end
     if MENU then tCommand.IsMenuCommand = true tCommand.ENV = "Menu" end
 
-    icmd.t_Commands[cmd_name] = tCommand
+    icmd.t_Commands[name] = tCommand
+
+    ihook.Run("zen.icmd.Register", name, tCommand)
 end
+
+
 
 local COLOR_AUTOCOMPLE_SELECT_ARG = Color(125, 125, 255)
 

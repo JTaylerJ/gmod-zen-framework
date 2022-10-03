@@ -1,5 +1,5 @@
-local iconsole = zen.Init("console")
-local ui, icmd = zen.Import("ui", "command")
+local iconsole, icmd = zen.Init("console", "command")
+local ui = zen.Import("ui", "command")
 
 iconsole.INPUT_MODE = false
 iconsole.phrase = ""
@@ -265,7 +265,7 @@ ihook.Listen("DrawOverlay", "fast_console_phrase", function()
 	object:Draw(SX,SY)
 end)
 
-nt.Receive("zen.console.console_status", {"player", "bool"}, function(ply, bool)
+nt.Receive("zen.console.console_status", {"player", "bool"}, function(_, ply, bool)
 	ply.zen_bConsoleStatus = bool
 end)
 
@@ -297,7 +297,7 @@ ihook.Listen("PostDrawOpaqueRenderables", "npc_info", function()
 	end
 end)
 
-nt.Receive("zen.console.message", {"string"}, function(var)
+nt.Receive("zen.console.message", {"string"}, function(_, var)
     iconsole.AddConsoleLog(IS_MSGN, var)
 end)
 

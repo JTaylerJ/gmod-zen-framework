@@ -15,10 +15,10 @@ icmd.Register("perm.set", function(who, tar_sid64, perm_name, avaliable, target_
     return true, sResult
 end, {
     {type = "sid64", name = "target"},
-    {type = "string", name = "perm_name"},
+    {type = "string_id", name = "perm_name"},
     {type = "bool", name = "avaliable"},
-    {type = "number", name = "target_flags"},
-    {type = "number", name = "unique_flags"},
+    {type = "uint8", name = "target_flags"},
+    {type = "uint8", name = "unique_flags"},
 }, {
     perm = "permissions.set",
     help = "Setup permissions for players"

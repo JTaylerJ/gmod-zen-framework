@@ -32,6 +32,6 @@ ihook.Listen("zen.worldclick.onPressEntity", "zen.nvars", function(ent, code, tr
     end
 end)
 
-nt.Receive("nvars.get_buttons", {"entity", "table"}, function(ent, tButtons)
+nt.Receive("nvars.get_buttons", {"entity", "table"}, function(_, ent, tButtons)
     zen.nvars.mt_EntityButtons = tButtons
 end)

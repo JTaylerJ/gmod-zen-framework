@@ -3,12 +3,7 @@ zen.network = izen.network
 nt = zen.network
 nt.t_ChannelFlags = {}
 nt.t_ChannelFlags.SIMPLE_NETWORK        = 0
-nt.t_ChannelFlags.ONWRITE                = 2 ^ 4
-nt.t_ChannelFlags.ONREAD              = 2 ^ 5
-nt.t_ChannelFlags.NEW_PLAYER_PULLS      = 2 ^ 6
-nt.t_ChannelFlags.PUBLIC                = 2 ^ 7 + nt.t_ChannelFlags.ONREAD + nt.t_ChannelFlags.NEW_PLAYER_PULLS
-
-nt.t_ChannelFlags.ENTITY_KEY_VALUE      = nt.t_ChannelFlags.ONWRITE + nt.t_ChannelFlags.PUBLIC
+nt.t_ChannelFlags.PUBLIC                = 2 ^ 1
 
 nt.channels = nt.channels or {}
 nt.channels.registerWordSingle = "nt.RegisterStringNumbersSingle"
@@ -34,16 +29,12 @@ cvars.AddChangeCallback("zen_network_debug", function(var, old_value, new_value)
 end, "nt.OnChange")
 nt.i_debug_lvl = GetConVar("zen_network_debug"):GetInt() or 0
 
-local bit_band = bit.band
-local function isFlagSet(flags, flag) return bit_band(flags, flag) == flag end
-
 nt.mt_Channels = nt.mt_Channels or {}
 nt.mt_ChannelsIDS = nt.mt_ChannelsIDS or {}
 nt.mt_ChannelsNames = nt.mt_ChannelsNames or {}
 
 nt.mt_ChannelsPublic = nt.mt_ChannelsPublic or {}
 nt.mt_ChannelsPublicPriority = nt.mt_ChannelsPublicPriority or {}
-nt.mt_ChannelsContent = nt.mt_ChannelsContent or {}
 function nt.RegisterChannel(channel_name, flags, data)
     local flags = flags or nt.t_ChannelFlags.SIMPLE_NETWORK
     assertString(channel_name, "channel_name")
@@ -71,7 +62,7 @@ function nt.RegisterChannel(channel_name, flags, data)
     tChannel.flags = flags
     tChannel.name = channel_name
 
-    if flags <= 0 then return channel_id, tChannel end
+    if flags == nt.t_ChannelFlags.SIMPLE_NETWORK and !data then return channel_id, tChannel end
 
     tChannel.FLAGS = util.GetFlagsTable(nt.t_ChannelFlags, flags)
     local FLAGS = tChannel.FLAGS
@@ -88,6 +79,25 @@ function nt.RegisterChannel(channel_name, flags, data)
 
     if data.types then
         assertTable(data.types, "data.types not exists")
+
+        for id, human_type in pairs(data.types) do
+            if not human_type then
+                bSuccess = false
+                sLastError = _I{"GET: human_type is nil, id: ", id}
+                break
+            end
+
+
+            if bSuccess then
+                local fReader = nt.GetTypeReaderFunc(human_type)
+                if not fReader then
+                    bSuccess = false
+                    sLastError = _I{"GET: Reader not exists: ", human_type}
+                    break
+                end
+            end
+        end
+
         tChannel.types = data.types
     else
         assertFunction(data.fWriter, "data.fWriter")
@@ -96,17 +106,22 @@ function nt.RegisterChannel(channel_name, flags, data)
         tChannel.fReader = data.fReader
     end
 
-    if FLAGS.ONWRITE then
+    if data.Init then
+        assertFunction(data.Init, "data.Init")
+        tChannel.Init = data.Init
+    end
+
+    if data.OnWrite then
         assertFunction(data.OnWrite, "data.OnWrite")
         tChannel.OnWrite = data.OnWrite
     end
 
-    if FLAGS.ONREAD then
+    if data.OnRead then
         assertFunction(data.OnRead, "data.OnRead")
         tChannel.OnRead = data.OnRead
     end
 
-    if FLAGS.NEW_PLAYER_PULLS then
+    if FLAGS.PUBLIC then
         if SERVER then
             assertFunction(data.WritePull, "data.WritePull")
             tChannel.WritePull = data.WritePull
@@ -131,7 +146,11 @@ function nt.RegisterChannel(channel_name, flags, data)
         table.sort(nt.mt_ChannelsPublicPriority, function(a, b) return a.iPriority < b.iPriority end)
     end
 
-    return channel_id, tChannel, tChannel.tContent
+    if tChannel.Init then
+        tChannel.Init(tChannel)
+    end
+
+    return channel_id, tChannel
 end
 
 function nt.SendToChannel(channel_name, target, ...)
@@ -203,15 +222,6 @@ end
 
 function nt.GetChannelName(channel_id)
     return nt.mt_ChannelsNames[channel_id]
-end
-
-function nt.GetChannelNetVar(list_name, key, default)
-    local tChannel = nt.mt_Channels[list_name]
-    if not tChannel then return end
-    local tContent = nt.mt_ChannelsContent[list_name]
-    if not tContent then return end
-
-    return tContent[key]
 end
 
 local _I = table.concat
@@ -455,3 +465,214 @@ function nt.Read(types)
     end
     return unpack(args)
 end
+
+function nt.Receive(channel_name, types, callback)
+    nt.RegisterChannel(channel_name, nt.t_ChannelFlags.SIMPLE_NETWORK, {
+        types = types,
+        OnRead = function(tChannel, ply, ...)
+            return callback(ply, ...)
+        end
+    })
+end
+
+function nt.Send(channel_name, types, data, target)
+    assertString(channel_name, "channel_name")
+    types = types or {}
+    data = data or {}
+    assertTable(types, "types")
+    assertTable(data, "data")
+
+    local channel_id = nt.GetChannelID(channel_name)
+    local tChannel = nt.mt_Channels[channel_name]
+
+    local bSuccess = true
+    local sLastError
+
+    if bSuccess and not channel_id then
+        bSuccess = false
+        sLastError = "SEND: channel_id not exists"
+    end
+
+    if bSuccess then
+        if target then
+            if isentity(target) and not IsValid(target) or not target:IsPlayer() then
+                bSuccess = false
+                sLastError = "SEND: target entity not is player or not is valid"
+            end
+        end
+    end
+
+    local to = target and target:SteamID64() or "server"
+
+    local iCounter = 0
+    if bSuccess then
+        local res, iCounterOrError = util.CheckTypeTableWithDataTable(types, data, function(net_type, value, type_id, id)
+            if SERVER and net_type == "string_id" then
+                nt.RegisterStringNumbers(value)
+            end
+            local fWriter = nt.GetTypeWriterFunc(net_type)
+            if not fWriter then
+                return false, "Type-Writer not exists: " .. net_type
+            end
+        end, nt.funcValidCustomType)
+        if res then
+            iCounter = iCounterOrError
+        else
+            bSuccess = false
+            sLastError = iCounterOrError
+        end
+    end
+
+    if not bSuccess then
+        MsgC(COLOR.ERROR, "[NT-Predicted-Error] ", channel_name, "\n", sLastError, "\n")
+        return
+    end
+
+    if nt.i_debug_lvl >= 2 then
+        zen.print("[nt.debug] Start \"",channel_name,"\"")
+    end
+
+    if tChannel and tChannel.customNetworkString then
+        net.Start(tChannel.customNetworkString)
+    else
+        net.Start(nt.channels.sendMessage)
+        net.WriteUInt(channel_id, 12)
+    end
+
+        if iCounter > 0 then
+            for id = 1, iCounter do
+                local net_type = types[id]
+                local fWriter, isSpecial, a1, a2, a3, a4, a5 = nt.GetTypeWriterFunc(net_type)
+                local value = data[id]
+
+                if nt.i_debug_lvl >= 2 then
+                    zen.print("[nt.debug] Write \"",net_type,"\"", " \"",tostring(value),"\"")
+                end
+
+                fWriter(value, a1, a2, a3, a4, a5)
+            end
+        end
+
+    if SERVER then
+        if target then
+            net.Send(target)
+        else
+            net.Broadcast()
+        end
+    elseif CLIENT_DLL then
+        net.SendToServer()
+    end
+
+    if tChannel.OnWrite then
+        tChannel.OnWrite(tChannel, target, unpack(data))
+    end
+
+    if nt.i_debug_lvl >= 2 then
+        zen.print("[nt.debug] End \"",channel_name,"\"")
+    end
+
+    ihook.Run("nt.Send", {channel_name, types, data, target})
+
+    if nt.i_debug_lvl >= 1 then
+        zen.print("[nt.debug] Sent network \"",channel_name,"\" to ", to)
+    end
+end
+
+net.Receive(nt.channels.sendMessage, function(len, ply)
+    local channel_id = net.ReadUInt(12)
+    local channel_name = nt.GetChannelName(channel_id)
+
+    if not IsValid(ply) then ply = nil end
+    local from = ply and ply:SteamID64() or "server"
+
+    local bSuccess = true
+    local sLastError
+
+    if not channel_name then
+        bSuccess = false
+        sLastError = _I{"GET: Received unknown message name ", channel_id, "\n", debug.traceback(), "\n"}
+    end
+
+    local tChannel = nt.mt_Channels[channel_name]
+    local bWaitingInspect = true
+
+    if nt.i_debug_lvl >= 2 then
+        zen.print("[nt.debug] Received \"",channel_name,"\" from ", from)
+        print(channel_name, bSuccess, bWaitingInspect, tChannel, tChannel.fReader, tChannel.types)
+        PrintTable(tChannel)
+    end
+
+
+    if bSuccess and bWaitingInspect and tChannel and (tChannel.fReader or tChannel.types) then
+        if nt.i_debug_lvl >= 2 then
+            zen.print("[nt.debug] Start Read \"",channel_name,"\"")
+        end
+
+        if tChannel.fReader then
+            local result = {tChannel.fReader(tChannel)}
+
+            if tChannel.OnRead then
+                tChannel.OnRead(tChannel, ply, unpack(result))
+            end
+
+            if nt.i_debug_lvl >= 2 then
+                for k, v in pairs(result) do
+                    zen.print("[nt.debug]   Read \"",type(v),"\"", " \"",tostring(v),"\"")
+                end
+            end
+
+            ihook.Run("nt.Receive", channel_name, ply, unpack(result))
+
+            bWaitingInspect = false
+        elseif tChannel.types then
+            local result = {}
+            for _, net_type in ipairs(tChannel.types) do
+                local fReader, isSpecial, a1, a2, a3, a4, a5 = nt.GetTypeReaderFunc(net_type)
+
+                if not fReader then
+                    bSuccess = false
+                    sLastError = _I{"GET: Reader not exists: ", net_type}
+                    goto result
+                end
+
+
+                local read_result = fReader(a1, a2, a3, a4, a5) -- TODO: Can add multivars return
+                table.insert(result, read_result)
+
+                if nt.i_debug_lvl >= 2 then
+                    zen.print("[nt.debug]   Read \"",net_type,"\"", " \"",tostring(read_result),"\"")
+                end
+
+                if net_type == "next" and read_result == false then break end
+            end
+
+            if tChannel.OnRead then
+                tChannel.OnRead(tChannel, ply, unpack(result)) -- TODO: Can add miltivars return
+            end
+
+            ihook.Run("nt.Receive", channel_name, ply, unpack(result))
+
+            bWaitingInspect = false
+        end
+
+        if nt.i_debug_lvl >= 2 then
+            zen.print("[nt.debug] End Read \"",channel_name,"\"")
+        end
+
+        if nt.i_debug_lvl >= 1 then
+            zen.print("[nt.debug] GET: Received network \"",channel_name,"\" from ", from)
+        end
+    end
+
+    if bWaitingInspect then
+        bSuccess = false
+        sLastError = "network not inspected"
+    end
+
+    ::result::
+
+    if not bSuccess then
+        MsgC(COLOR.ERROR, "[NT-Predicted-Error] ", channel_name, "\n", sLastError, "\n")
+        return
+    end
+end)

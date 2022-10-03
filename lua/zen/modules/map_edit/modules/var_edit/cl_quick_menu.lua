@@ -297,7 +297,7 @@ ihook.Listen("zen.map_edit.OnButtonPress", "quickmenu", function(ply, but, in_ke
 	end
 end)
 
-nt.Receive("nvars.get_buttons", {"entity", "table"}, function(ent, tButtons)
+nt.Receive("nvars.get_buttons", {"entity", "table"}, function(_, ent, tButtons)
 	nvars.circles[1].content = {}
 	local tContent = nvars.circles[1].content
     for k, v in pairs(tButtons) do

@@ -114,32 +114,32 @@ nt.RegisterChannel("string_id.single_word", nt.t_ChannelFlags.PUBLIC, {
     id = 3,
     priority = 3,
     types = {"uint16", "string"},
-    OnRead = function(tChannel, word_id, word)
+    OnRead = function(self, ply, word_id, word)
         if CLIENT then
             nt.RegisterStringNumbers(word, word_id)
         end
     end,
-    WritePull = function(tChannel, _, ply)
+    WritePull = function(self, _, ply)
         net.WriteUInt(table.Count(nt.mt_StringNumbersSingle), 16)
         for word_id, tWord in pairs(nt.mt_StringNumbersSingle) do
-            nt.Write(tChannel.types, {tWord.id, tWord.word})
+            nt.Write(self.types, {tWord.id, tWord.word})
         end
     end,
-    ReadPull = function(tChannel, tContent, tResult)
-        tChannel.iCounter = net.ReadUInt(16)
-        for k = 1, tChannel.iCounter do
-            local k, v = nt.Read(tChannel.types)
-            table.insert(tResult, { k, v })
+    ReadPull = function(self, addResult)
+        self.iCounter = net.ReadUInt(16)
+        for k = 1, self.iCounter do
+            local k, v = nt.Read(self.types)
+            addResult(k, v)
         end
     end,
 })
 
 
-nt.RegisterChannel("string_id.multi_word", nt.t_ChannelFlags.PUBLIC, { -- TODO: Fix multi_word
+nt.RegisterChannel("string_id.multi_word", nt.t_ChannelFlags.PUBLIC, {
     id = 4,
     priority = 4,
     types = {"uint16", "array:uint16"},
-    OnRead = function(tChannel, word_id, tWordArray)
+    OnRead = function(self, ply, word_id, tWordArray)
         if CLIENT then
             local full_word = {}
             for k, id in pairs(tWordArray) do
@@ -149,17 +149,17 @@ nt.RegisterChannel("string_id.multi_word", nt.t_ChannelFlags.PUBLIC, { -- TODO: 
             nt.RegisterStringNumbers(word, word_id)
         end
     end,
-    WritePull = function(tChannel, _, ply)
+    WritePull = function(self, _, ply)
         net.WriteUInt(table.Count(nt.mt_StringNumbersMulti), 16)
         for word_id, tWord in pairs(nt.mt_StringNumbersMulti) do
-            nt.Write(tChannel.types, {word_id, tWord.content})
+            nt.Write(self.types, {word_id, tWord.content})
         end
     end,
-    ReadPull = function(tChannel, tContent, tResult)
-        tChannel.iCounter = net.ReadUInt(16)
-        for k = 1, tChannel.iCounter do
-            local k, v = nt.Read(tChannel.types)
-            table.insert(tResult, { k, v })
+    ReadPull = function(self, addResult)
+        self.iCounter = net.ReadUInt(16)
+        for k = 1, self.iCounter do
+            local k, v = nt.Read(self.types)
+            addResult(k, v)
         end
     end,
 })

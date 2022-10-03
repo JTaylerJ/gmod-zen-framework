@@ -38,6 +38,7 @@ zen.IncludeSV("zen/modules/console/sv_console.lua")
 zen.IncludeCL("zen/modules/console/cl_console.lua")
 
 zen.IncludeSH("zen/modules/command/sh_command.lua")
+zen.IncludeSH("zen/modules/command/sh_network.lua")
 zen.IncludeSV("zen/modules/command/list/sv_perms.lua")
 zen.IncludeSV("zen/modules/command/list/sv_base.lua")
 zen.IncludeCL("zen/modules/command/list/cl_macros.lua")

@@ -1,13 +1,19 @@
 nt.mt_EntityVars = nt.mt_EntityVars or {}
-local id, tChannel, tContent = nt.RegisterChannel("entity_var", nt.t_ChannelFlags.ENTITY_KEY_VALUE, {
+local id, self, tContent = nt.RegisterChannel("entity_var", nt.t_ChannelFlags.PUBLIC, {
     id = 10,
     priority = 10,
     types = {"uint16", "string_id", "any"},
-    Save = function(tChannel, tContent, ent_id, key, value)
+    Init = function(self)
+        self.tContent = self.tContent or {}
+        self.iCounter = self.iCounter or 0
+    end,
+    OnWrite = function(self, target, ent_id, key, value)
+        local tContent = self.tContent
+
         if not tContent[ent_id] then
             tContent[ent_id] = 0
             nt.mt_EntityVars[ent_id] = {}
-            tChannel.iCounter = tChannel.iCounter + 1
+            self.iCounter = self.iCounter + 1
         end
         local IsDelete = value == nil
         local tVars = nt.mt_EntityVars[ent_id]
@@ -25,10 +31,10 @@ local id, tChannel, tContent = nt.RegisterChannel("entity_var", nt.t_ChannelFlag
             nt.mt_EntityVars[ent] = nt.mt_EntityVars[ent_id]
         end
     end,
-    OnRead = function(tChannel, ent, key, value)
-    end,
-    WritePull = function(tChannel, tContent, ply)
-        net.WriteUInt(tChannel.iCounter, 12)
+    WritePull = function(self, target)
+        local tContent = self.tContent
+
+        net.WriteUInt(self.iCounter, 12)
         for ent_id, v in pairs(tContent) do
             net.WriteUInt(ent_id, 16)
             net.WriteUInt(tContent[ent_id], 12)
@@ -38,14 +44,14 @@ local id, tChannel, tContent = nt.RegisterChannel("entity_var", nt.t_ChannelFlag
             end
         end
     end,
-    ReadPull = function(tChannel, tContent, tResult)
-        tChannel.iCounter = net.ReadUInt(12)
-        for k = 1, tChannel.iCounter do
+    ReadPull = function(self, addResult)
+        self.iCounter = net.ReadUInt(12)
+        for k = 1, self.iCounter do
             local ent_id = net.ReadUInt(16)
             local iCounter = net.ReadUInt(12)
             for k = 1, iCounter do
                 local k, v = nt.Read({"string_id", "any"})
-                table.insert(tResult, {ent_id, k, v })
+                addResult(ent_id, k, v)
             end
         end
     end,
@@ -58,7 +64,7 @@ if SERVER then
         local ent_id = ent:EntIndex()
         if not tContent[ent_id] then return end
 
-        tChannel.iCounter = tChannel.iCounter - 1
+        self.iCounter = self.iCounter - 1
         tContent[ent_id] = nil
         nt.mt_EntityVars[ent_id] = nil
         nt.mt_EntityVars[ent] = nil
@@ -70,10 +76,10 @@ if SERVER then
 end
 
 if CLIENT then
-    nt.Receive("entity_removed", {"uint16"}, function(ent_id)
+    nt.Receive("entity_removed", {"uint16"}, function(tChannel, ent_id)
         if not tContent[ent_id] then return end
 
-        tChannel.iCounter = tChannel.iCounter - 1
+        self.iCounter = self.iCounter - 1
         tContent[ent_id] = nil
         nt.mt_EntityVars[ent_id] = nil
         nt.mt_EntityVars[Entity(ent_id)] = nil

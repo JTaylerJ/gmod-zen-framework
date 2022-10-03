@@ -1,4 +1,4 @@
-nt.RegisterChannel("channels", nt.t_ChannelFlags.PUBLIC + nt.t_ChannelFlags.SAVING, {
+nt.RegisterChannel("channels", nt.t_ChannelFlags.PUBLIC + nt.t_ChannelFlags.SAVE, {
     id = 1,
     priority = 1,
     types = {"string", "int32"},

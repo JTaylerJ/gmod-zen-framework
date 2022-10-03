@@ -3,13 +3,13 @@ zen.network = izen.network
 nt = zen.network
 nt.t_ChannelFlags = {}
 nt.t_ChannelFlags.SIMPLE_NETWORK        = 0
-nt.t_ChannelFlags.SAVING                = 2 ^ 3
-nt.t_ChannelFlags.CLIENT_SAVING         = 2 ^ 4
-nt.t_ChannelFlags.POSTREAD              = 2 ^ 5
+nt.t_ChannelFlags.SAVE                = 2 ^ 3
+nt.t_ChannelFlags.CLIENT_SAVE         = 2 ^ 4
+nt.t_ChannelFlags.ONREAD              = 2 ^ 5
 nt.t_ChannelFlags.NEW_PLAYER_PULLS      = 2 ^ 6
-nt.t_ChannelFlags.PUBLIC                = 2 ^ 7 + nt.t_ChannelFlags.POSTREAD + nt.t_ChannelFlags.NEW_PLAYER_PULLS
+nt.t_ChannelFlags.PUBLIC                = 2 ^ 7 + nt.t_ChannelFlags.ONREAD + nt.t_ChannelFlags.NEW_PLAYER_PULLS
 
-nt.t_ChannelFlags.ENTITY_KEY_VALUE      = nt.t_ChannelFlags.SAVING + nt.t_ChannelFlags.CLIENT_SAVING + nt.t_ChannelFlags.PUBLIC
+nt.t_ChannelFlags.ENTITY_KEY_VALUE      = nt.t_ChannelFlags.SAVE + nt.t_ChannelFlags.CLIENT_SAVE + nt.t_ChannelFlags.PUBLIC
 
 nt.channels = nt.channels or {}
 nt.channels.registerWordSingle = "nt.RegisterStringNumbersSingle"
@@ -97,7 +97,7 @@ function nt.RegisterChannel(channel_name, flags, data)
         tChannel.fReader = data.fReader
     end
 
-    if (SERVER and FLAGS.SAVING) or (CLIENT and FLAGS.CLIENT_SAVING) then
+    if (SERVER and FLAGS.SAVE) or (CLIENT and FLAGS.CLIENT_SAVE) then
         local tContent
         assertFunction(data.Save, "data.Save")
         if data.fSaveInit then
@@ -119,7 +119,7 @@ function nt.RegisterChannel(channel_name, flags, data)
         tChannel.Save = data.Save
     end
 
-    if FLAGS.POSTREAD then
+    if FLAGS.ONREAD then
         assertFunction(data.OnRead, "data.OnRead")
         tChannel.OnRead = data.OnRead
     end

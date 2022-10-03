@@ -92,7 +92,7 @@ function nt.RegisterChannel(channel_name, flags, data)
                 local fReader = nt.GetTypeReaderFunc(human_type)
                 if not fReader then
                     bSuccess = false
-                    sLastError = _I{"GET: Reader not exists: ", human_type}
+                    sLastError = _I{"GET: Reader not exists #1: ", human_type}
                     break
                 end
             end
@@ -164,50 +164,48 @@ function nt.SendToChannel(channel_name, target, ...)
         tChannel.OnWrite(tChannel, target, unpack(data))
     end
 
-    if tChannel.bPublic then
-        if tChannel.types then
-            nt.Send(channel_name, tChannel.types, data)
-        elseif tChannel.fWriter then
-            if nt.i_debug_lvl >= 2 then
-                zen.print("[nt.debug] Start \"",channel_name,"\"")
-            end
+    if tChannel.types then
+        nt.Send(channel_name, tChannel.types, data)
+    elseif tChannel.fWriter then
+        if nt.i_debug_lvl >= 2 then
+            zen.print("[nt.debug] Start \"",channel_name,"\"")
+        end
 
-            if tChannel.customNetworkString then
-                net.Start(tChannel.customNetworkString)
+        if tChannel.customNetworkString then
+            net.Start(tChannel.customNetworkString)
+        else
+            net.Start(nt.channels.sendMessage)
+            net.WriteUInt(tChannel.id, 32)
+        end
+
+        if nt.i_debug_lvl >= 2 then
+            for k, v in pairs(data) do
+                zen.print("[nt.debug] Pre-Write \"",type(v),"\"", " \"",tostring(v),"\"")
+            end
+        end
+
+        tChannel.fWriter(tChannel, unpack(data))
+
+        if SERVER then
+            if target then
+                net.Send(target)
             else
-                net.Start(nt.channels.sendMessage)
-                net.WriteUInt(tChannel.id, 32)
-            end
-
-            if nt.i_debug_lvl >= 2 then
-                for k, v in pairs(data) do
-                    zen.print("[nt.debug] Pre-Write \"",type(v),"\"", " \"",tostring(v),"\"")
-                end
-            end
-
-            tChannel.fWriter(tChannel, unpack(data))
-
-            if SERVER then
-                if target then
-                    net.Send(target)
-                else
-                    net.Broadcast()
-                end
-            else
-                net.SendToServer()
-            end
-
-            if nt.i_debug_lvl >= 2 then
-                zen.print("[nt.debug] End \"",channel_name,"\"")
-            end
-
-            if nt.i_debug_lvl >= 1 then
-                zen.print("[nt.debug] Sent network \"",channel_name,"\" to server/players")
+                net.Broadcast()
             end
         else
-            MsgC(COLOR.ERROR, "[NT-Predicted-Error] Channel not have send option", channel_name, "\n")
-            return
+            net.SendToServer()
         end
+
+        if nt.i_debug_lvl >= 2 then
+            zen.print("[nt.debug] End \"",channel_name,"\"")
+        end
+
+        if nt.i_debug_lvl >= 1 then
+            zen.print("[nt.debug] Sent network \"",channel_name,"\" to server/players")
+        end
+    else
+        MsgC(COLOR.ERROR, "[NT-Predicted-Error] Channel not have send option", channel_name, "\n")
+        return
     end
 end
 
@@ -303,9 +301,9 @@ function nt.GetTypeReaderFunc(type_name)
                 return specReader, true, type_name
             else
                 if specReader and not defReader then
-                    error("GetTypReader defReader not exists: " .. tostring(type_name))
+                    error("GetTypReader defReader not exists #2: " .. tostring(type_name))
                 elseif not specReader and defReader then
-                    error("GetTypReader specReader not exists: " .. tostring(specialID))
+                    error("GetTypReader specReader not exists #3: " .. tostring(specialID))
                 end
             end
         end
@@ -624,7 +622,7 @@ net.Receive(nt.channels.sendMessage, function(len, ply)
 
                 if not fReader then
                     bSuccess = false
-                    sLastError = _I{"GET: Reader not exists: ", net_type}
+                    sLastError = _I{"GET: Reader not exists #4: ", net_type}
                     goto result
                 end
 

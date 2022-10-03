@@ -1,6 +1,6 @@
 local _I = table.concat
 
-function nt.Send(channel_name, types, data)
+function nt.Send(channel_name, types, data, target)
     assertString(channel_name, "channel_name")
     types = types or {}
     data = data or {}
@@ -64,6 +64,10 @@ function nt.Send(channel_name, types, data)
         end
 
     net.SendToServer()
+
+    if tChannel.OnWrite then
+        tChannel.OnWrite(tChannel, target, unpack(data))
+    end
 
     if nt.i_debug_lvl >= 2 then
         zen.print("[nt.debug] End \"",channel_name,"\"")
@@ -269,7 +273,7 @@ net.Receive(nt.channels.pullChannels, function()
             local tResult = {}
 
             tChannel.ReadPull(tChannel, tContent, tResult)
-            
+
             if tChannel.OnRead then
                 for k, result in pairs(tResult) do
                     ihook.Run("nt.Receive", channel_name, unpack(result))

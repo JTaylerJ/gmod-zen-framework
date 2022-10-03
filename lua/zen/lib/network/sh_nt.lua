@@ -3,13 +3,12 @@ zen.network = izen.network
 nt = zen.network
 nt.t_ChannelFlags = {}
 nt.t_ChannelFlags.SIMPLE_NETWORK        = 0
-nt.t_ChannelFlags.SAVE                = 2 ^ 3
-nt.t_ChannelFlags.CLIENT_SAVE         = 2 ^ 4
+nt.t_ChannelFlags.ONWRITE                = 2 ^ 4
 nt.t_ChannelFlags.ONREAD              = 2 ^ 5
 nt.t_ChannelFlags.NEW_PLAYER_PULLS      = 2 ^ 6
 nt.t_ChannelFlags.PUBLIC                = 2 ^ 7 + nt.t_ChannelFlags.ONREAD + nt.t_ChannelFlags.NEW_PLAYER_PULLS
 
-nt.t_ChannelFlags.ENTITY_KEY_VALUE      = nt.t_ChannelFlags.SAVE + nt.t_ChannelFlags.CLIENT_SAVE + nt.t_ChannelFlags.PUBLIC
+nt.t_ChannelFlags.ENTITY_KEY_VALUE      = nt.t_ChannelFlags.ONWRITE + nt.t_ChannelFlags.PUBLIC
 
 nt.channels = nt.channels or {}
 nt.channels.registerWordSingle = "nt.RegisterStringNumbersSingle"
@@ -73,7 +72,7 @@ function nt.RegisterChannel(channel_name, flags, data)
     tChannel.name = channel_name
 
     if flags <= 0 then return channel_id, tChannel end
-    
+
     tChannel.FLAGS = util.GetFlagsTable(nt.t_ChannelFlags, flags)
     local FLAGS = tChannel.FLAGS
 
@@ -97,26 +96,9 @@ function nt.RegisterChannel(channel_name, flags, data)
         tChannel.fReader = data.fReader
     end
 
-    if (SERVER and FLAGS.SAVE) or (CLIENT and FLAGS.CLIENT_SAVE) then
-        local tContent
-        assertFunction(data.Save, "data.Save")
-        if data.fSaveInit then
-            assertFunction(data.fSaveInit, "data.fSaveInit")
-            tChannel.bSaveInitialized = false
-            tChannel.fSaveInit = data.fSaveInit
-            tContent = tChannel.fSaveInit(tChannel, nt.mt_ChannelsContent)
-            assert(tContent != nil, "tChannel.fSaveInit should return not nil value! id: " .. tChannel.name)
-        end
-
-        if tContent == nil then
-            if not nt.mt_ChannelsContent[channel_name] then
-                nt.mt_ChannelsContent[channel_name] = {}
-            end
-            tContent = nt.mt_ChannelsContent[channel_name]
-        end
-        tChannel.tContent = tContent
-        tChannel.iCounter = tChannel.iCounter or 0
-        tChannel.Save = data.Save
+    if FLAGS.ONWRITE then
+        assertFunction(data.OnWrite, "data.OnWrite")
+        tChannel.OnWrite = data.OnWrite
     end
 
     if FLAGS.ONREAD then
@@ -159,10 +141,9 @@ function nt.SendToChannel(channel_name, target, ...)
 
     local data = {...}
 
-    if tChannel.Save then
-        tChannel.Save(tChannel, tChannel.tContent, unpack(data))
+    if tChannel.OnWrite then
+        tChannel.OnWrite(tChannel, target, unpack(data))
     end
-
 
     if tChannel.bPublic then
         if tChannel.types then
@@ -178,7 +159,7 @@ function nt.SendToChannel(channel_name, target, ...)
                 net.Start(nt.channels.sendMessage)
                 net.WriteUInt(tChannel.id, 32)
             end
-                
+
             if nt.i_debug_lvl >= 2 then
                 for k, v in pairs(data) do
                     zen.print("[nt.debug] Pre-Write \"",type(v),"\"", " \"",tostring(v),"\"")
@@ -186,7 +167,7 @@ function nt.SendToChannel(channel_name, target, ...)
             end
 
             tChannel.fWriter(tChannel, unpack(data))
-            
+
             if SERVER then
                 if target then
                     net.Send(target)
@@ -200,7 +181,7 @@ function nt.SendToChannel(channel_name, target, ...)
             if nt.i_debug_lvl >= 2 then
                 zen.print("[nt.debug] End \"",channel_name,"\"")
             end
-        
+
             if nt.i_debug_lvl >= 1 then
                 zen.print("[nt.debug] Sent network \"",channel_name,"\" to server/players")
             end

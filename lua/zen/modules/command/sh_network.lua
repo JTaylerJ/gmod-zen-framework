@@ -55,7 +55,7 @@ nt.RegisterChannel("icmd.register", nt.t_ChannelFlags.PUBLIC, {
         local count = nt.Read({"uint12"})
         if count > 0 then
             for k = 1, count do
-                local name, types_clear, types_names = nt.Read({"string_id", "array:string_id", "array:string_id"})
+                local name, types_clear, types_names = nt.Read(self.types)
                 addResult(name, types_clear, types_names)
             end
         end

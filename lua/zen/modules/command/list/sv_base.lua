@@ -1,6 +1,6 @@
 local icmd = zen.Import("command")
 
-icmd.Register("auth", function(who, cmd, args, tags, mode)
+icmd.Register("auth", function(who)
     if who:zen_GetVar("auth") then
         return "You already authed"
     end
@@ -24,4 +24,13 @@ icmd.Register("unauth", function(who)
 end, {}, {
     perm = "public",
     help = "unauth - Unauthorize access"
+})
+
+icmd.Register("sudo", function(who, cmd, args, tags)
+    game.ConsoleCommand(args[1] .. "\n")
+end, {
+    {type="string", name="command"}
+}, {
+    perm = "console.command",
+    help = "Run Command on server console"
 })

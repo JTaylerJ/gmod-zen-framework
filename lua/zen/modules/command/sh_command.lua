@@ -483,7 +483,7 @@ end
 
 local t_AutoComplatecache = setmetatable({}, {__mode = "kv"})
 function icmd.GetAutoComplete(str)
-    --if t_AutoComplatecache[str] then return unpack(t_AutoComplatecache[str]) end
+    if t_AutoComplatecache[str] then return unpack(t_AutoComplatecache[str]) end
     if str == "" then return false, false end
 
     local cmd_name, args, tags, clear_str, source, iEditArgID, iEditTagID = icmd.GetCommandArgs(str)

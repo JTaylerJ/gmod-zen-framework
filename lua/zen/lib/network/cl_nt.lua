@@ -121,9 +121,12 @@ function nt.Receive(channel_name, types, postFunction)
     end
 end
 
-net.Receive(nt.channels.sendMessage, function(len)
+net.Receive(nt.channels.sendMessage, function(len, ply)
     local channel_id = net.ReadUInt(12)
     local channel_name = nt.GetChannelName(channel_id)
+
+    if not IsValid(ply) then ply = nil end
+    local from = ply and ply:SteamID64() or "server"
 
     local bSuccess = true
     local sLastError
@@ -179,19 +182,14 @@ net.Receive(nt.channels.sendMessage, function(len)
         end
 
         if nt.i_debug_lvl >= 1 then
-            zen.print("[nt.debug] GET: Received network \"",channel_name,"\" from server")
-        end
-
-        if CLIENT and tChannel.Save then
-            tChannel.Save(tChannel, tChannel.tContent, unpack(result))
+            zen.print("[nt.debug] GET: Received network \"",channel_name,"\" from ", from)
         end
 
         if tChannel.OnRead then
-            tChannel.OnRead(tChannel, unpack(result))
+            tChannel.OnRead(tChannel, ply, unpack(result))
         end
 
-        ihook.Run("nt.Receive", channel_name, unpack(result))
-        bWaitingInspect = false
+        ihook.Run("nt.Receive", channel_name, ply, unpack(result))
     end
 
     if bSuccess and bWaitingInspect then
@@ -221,14 +219,14 @@ net.Receive(nt.channels.sendMessage, function(len)
             zen.print("[nt.debug] End Read \"",channel_name,"\"")
         end
 
-        ihook.Run("nt.Receive", channel_name, unpack(result))
+        ihook.Run("nt.Receive", channel_name, ply, unpack(result))
 
         if tReceiverData.postFunc then
-            tReceiverData.postFunc(unpack(result))
+            tReceiverData.postFunc(ply, unpack(result))
         end
 
         if nt.i_debug_lvl >= 1 then
-            zen.print("[nt.debug] GET: Received network \"",channel_name,"\" from server")
+            zen.print("[nt.debug] GET: Received network \"",channel_name,"\" from ", from)
         end
         bWaitingInspect = false
     end
@@ -272,16 +270,10 @@ net.Receive(nt.channels.pullChannels, function()
 
             tChannel.ReadPull(tChannel, tContent, tResult)
             
-            if CLIENT and tChannel.Save then
-                for k, result in pairs(tResult) do
-                    tChannel.Save(tChannel, tContent, unpack(result))
-                end
-            end
-
             if tChannel.OnRead then
                 for k, result in pairs(tResult) do
                     ihook.Run("nt.Receive", channel_name, unpack(result))
-                    tChannel.OnRead(tChannel, unpack(result))
+                    tChannel.OnRead(tChannel, ply, unpack(result))
                 end
             else
                 for k, result in pairs(tResult) do

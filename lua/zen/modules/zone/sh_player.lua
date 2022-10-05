@@ -67,20 +67,6 @@ ihook.Listen("shared.PlayerDisconnected", "zen.zone.AutoDelete", function(ply)
     end
 end)
 
-ihook.Listen("zen.zone.OnPlayerJoin", "zen.zone.player.OnPlayerJoin", function(uniqueID, ply)
-    local ZONE = zones_list[uniqueID]
-    if not ZONE or not ZONE.OnPlayerJoin then return end
-
-    ZONE.OnPlayerJoin(ply)
-end)
-
-ihook.Listen("zen.zone.OnPlayerExit", "zen.zone.player.OnPlayerExit", function(uniqueID, ply)
-    local ZONE = zones_list[uniqueID]
-    if not ZONE or not ZONE.OnPlayerExit then return end
-
-    ZONE.OnPlayerExit(ply)
-end)
-
 ihook.Listen("zen.zone.OnEntityJoin", "zen.zone.player.OnEntityJoin", function(uniqueID, ply)
     local ZONE = zones_list[uniqueID]
     if not ZONE or not ZONE.OnEntityJoin then return end

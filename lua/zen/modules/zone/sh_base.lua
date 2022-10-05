@@ -66,9 +66,9 @@ function zone.InitEmpty(uniqueID)
     zone.t_Zones[uniqueID] = ZONE
 
     if CLIENT_DLL then
-        ZONE.ent = ents.CreateClientside("base_anim")
+        ZONE.ent = ents.CreateClientside("zen_zone")
     elseif SERVER then
-        ZONE.ent = ents.Create("base_anim")
+        ZONE.ent = ents.Create("zen_zone")
     end
 
     if IsValid(ZONE.ent) then
@@ -101,45 +101,16 @@ function zone.InitSphere(uniqueID, origin, radius)
 
     ZONE.vertices = util.GetIcoSphereVertex(radius, 2)
 
-    if CLIENT then
-        ZONE.Mesh = Mesh()
-        ZONE.Mesh:BuildFromTriangles(ZONE.vertices)
-    end
 
     if IsValid(ZONE.ent) then
         local ent = ZONE.ent
-        ent:SetAngles(angle_zero)
+
         ent:SetPos(origin)
+        ent:SetAngles(angle_zero)
 
-        if SERVER then
-            ent:SetUseType(SIMPLE_USE)
-        end
-        if CLIENT then
-            function ent:Draw()
-            -- self:DrawModel()
-            end
-        end
-
-        ent:SetNoDraw(true)
-
-        ent:SetModel( "models/combine_helicopter/helicopter_bomb01.mdl" )
-        ent:PhysicsInit(SOLID_VPHYSICS);
-
-        ent:PhysicsInitConvex( ZONE.vertices )
-
-
-        ent:SetMoveType(MOVETYPE_NONE)
-        local phys = ent:GetPhysicsObject()
-        if (phys:IsValid()) then
-            phys:SetMaterial("default_silent");
-            phys:EnableMotion(false)
-        end
-
-		-- ent:SetCustomCollisionCheck(true);
-		ent:EnableCustomCollisions(true);
+        ent.vertices = ZONE.vertices
 
         ent:Spawn()
-        -- ent:Activate()
     end
 
     return ZONE

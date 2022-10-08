@@ -174,6 +174,105 @@ end, {
     "left_dock",
 })
 
+gui.RegisterParam("dock_margin", function(pnl, value)
+    if value == nil then value = {0,0,0,0} end
+    pnl:DockMargin(unpack(value))
+    pnl:InvalidateParent(true)
+end, {
+    "dock_margin",
+    "margin",
+})
+
+gui.RegisterParam("dock_margin_top", function(pnl, value)
+    local a1, a2, a3, a4 = pnl:GetDockMargin()
+    pnl:DockMargin(a1, value, a3, a4)
+    pnl:InvalidateParent(true)
+end, {
+    "margin_top",
+    "margin_up",
+    "top_margin",
+    "up_margin",
+})
+
+gui.RegisterParam("dock_margin_bottom", function(pnl, value)
+    local a1, a2, a3, a4 = pnl:GetDockMargin()
+    pnl:DockMargin(a1, a2, a3, value)
+    pnl:InvalidateParent(true)
+end, {
+    "margin_bottom",
+    "margin_down",
+    "bottom_margin",
+    "down_margin",
+})
+
+gui.RegisterParam("dock_margin_left", function(pnl, value)
+    local a1, a2, a3, a4 = pnl:GetDockMargin()
+    pnl:DockMargin(value, a2, a3, a4)
+    pnl:InvalidateParent(true)
+end, {
+    "margin_left",
+    "left_margin",
+})
+
+gui.RegisterParam("dock_margin_right", function(pnl, value)
+    local a1, a2, a3, a4 = pnl:GetDockMargin()
+    pnl:DockMargin(a1, a2, value, a4)
+    pnl:InvalidateParent(true)
+end, {
+    "margin_right",
+    "right_margin",
+})
+
+gui.RegisterParam("dock_padding", function(pnl, value)
+    if value == nil then value = {0,0,0,0} end
+    pnl:DockPadding(unpack(value))
+    pnl:InvalidateParent(true)
+end, {
+    "dock_margin",
+    "padding",
+})
+
+gui.RegisterParam("dock_padding_top", function(pnl, value)
+    local a1, a2, a3, a4 = pnl:GetDockPadding()
+    pnl:DockPadding(a1, value, a3, a4)
+    pnl:InvalidateParent(true)
+end, {
+    "padding_top",
+    "padding_up",
+    "top_padding",
+    "up_padding",
+})
+
+gui.RegisterParam("dock_padding_bottom", function(pnl, value)
+    local a1, a2, a3, a4 = pnl:GetDockPadding()
+    pnl:DockPadding(a1, a2, a3, value)
+    pnl:InvalidateParent(true)
+end, {
+    "padding_bottom",
+    "padding_down",
+    "bottom_padding",
+    "down_padding",
+})
+
+gui.RegisterParam("dock_padding_left", function(pnl, value)
+    local a1, a2, a3, a4 = pnl:GetDockPadding()
+    pnl:DockPadding(value, a2, a3, a4)
+    pnl:InvalidateParent(true)
+end, {
+    "padding_left",
+    "left_padding",
+})
+
+gui.RegisterParam("dock_padding_right", function(pnl, value)
+    local a1, a2, a3, a4 = pnl:GetDockPadding()
+    pnl:DockPadding(a1, a2, value, a4)
+    pnl:InvalidateParent(true)
+end, {
+    "padding_right",
+    "right_padding",
+})
+
+
 gui.RegisterParam("set_auto_delete", function(pnl, value)
     if value == nil then value = true end
     pnl:SetAutoDelete(value)
@@ -390,7 +489,7 @@ end, {
 
 gui.RegisterParam("set_mouse_input_enabled", function(pnl, value)
     if value == nil then value = true end
-    pnl:SetKeyboardInputEnabled(value)
+    pnl:SetMouseInputEnabled(value)
 end, {
     "set_mouse_input_enabled",
     "mouse_input_enabled",

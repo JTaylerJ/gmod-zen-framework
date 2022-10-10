@@ -534,7 +534,7 @@ function icmd.AutoCompleteCalc(cmd_name, args, tags, clear_str, source, iEditArg
         local t_Args = {}
         for id, value in pairs(args) do
 
-            if id <= iArgIDEdit then
+            if iArgIDEdit and id <= iArgIDEdit then
                 t_ProcessValues[id] = value
             end
             if id == iArgIDEdit then
@@ -574,33 +574,36 @@ function icmd.AutoCompleteCalc(cmd_name, args, tags, clear_str, source, iEditArg
         end
 
         tAutoComplete.select = {}
-        local t_Select = tAutoComplete.select
 
-        local function addSelect(data)
-            insert(t_Select, data)
-        end
+        if iArgIDEdit and last_id == iArgIDEdit then
+            local t_Select = tAutoComplete.select
+
+            local function addSelect(data)
+                insert(t_Select, data)
+            end
 
 
 
-        local typen_auto_complete = tAutoComplete.activeTypen and icmd.t_AutoCompleteTypen[tAutoComplete.activeTypen]
+            local typen_auto_complete = tAutoComplete.activeTypen and icmd.t_AutoCompleteTypen[tAutoComplete.activeTypen]
 
-        if typen_auto_complete then
-            typen_auto_complete(tAutoComplete.activeTypen, tAutoComplete.activeText, nil, addSelect)
-        end
+            if typen_auto_complete then
+                typen_auto_complete(tAutoComplete.activeTypen, tAutoComplete.activeText, nil, addSelect)
+            end
 
-        local auto_complete_arg_name = tAutoComplete.activeArgName and icmd.t_AutoCompleteArgName[tAutoComplete.activeArgName]
+            local auto_complete_arg_name = tAutoComplete.activeArgName and icmd.t_AutoCompleteArgName[tAutoComplete.activeArgName]
 
-        if auto_complete_arg_name then
-            auto_complete_arg_name(tAutoComplete.activeArgName, tAutoComplete.activeText, nil, addSelect)
-        end
+            if auto_complete_arg_name then
+                auto_complete_arg_name(tAutoComplete.activeArgName, tAutoComplete.activeText, nil, addSelect)
+            end
 
-        if next(t_Select) then
-            addLine("Search (PAD 1-9):", tAutoComplete.activeText)
-            for k = 1, 9 do
-                local dat = t_Select[k]
-                if not dat then continue end
+            if next(t_Select) then
+                addLine("Search (PAD 1-9):", tAutoComplete.activeText)
+                for k = 1, 9 do
+                    local dat = t_Select[k]
+                    if not dat then continue end
 
-                addLine(k, ": ", dat.text)
+                    addLine(k, ": ", dat.text)
+                end
             end
         end
 

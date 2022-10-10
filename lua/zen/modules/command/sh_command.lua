@@ -447,6 +447,7 @@ end
 
 local COLOR_AUTOCOMPLE_SELECT_ARG = Color(125, 125, 255)
 local COLOR_AUTOCOMPLE_ERR = Color(255,125,125)
+local COLOR_AUTOCOMPLE_EDITING = Color(125, 255, 125)
 
 local function font_text(text, font)
     if font == nil then return text end
@@ -467,7 +468,7 @@ local function text_selected(text)
 end
 
 local function text_editing(text)
-    return font_text(text, icmd.DrawFont_UnderLine)
+    return color_text(text, COLOR_AUTOCOMPLE_EDITING)
 end
 
 local function text_error(text)
@@ -521,7 +522,7 @@ function icmd.AutoCompleteCalc(cmd_name, args, tags, clear_str, source, iEditArg
                 end
 
                 if id == iArgIDEdit then
-                    str = text_selected(str)
+                    str = text_editing(str)
                 end
 
                 insert(t_Types, str)
@@ -550,12 +551,13 @@ function icmd.AutoCompleteCalc(cmd_name, args, tags, clear_str, source, iEditArg
 
         local t_Info = {}
         local res, last_id, sError, tResult, tResult2 = util.AutoConvertValueToType(t_ProcessTypes, t_ProcessValues)
+
         if res == false then
             addLine(text_selected(last_id), ": ", text_error(sError))
         else
-            for k, v in pairs(tResult) do
-                local text = k == last_id and text_selected(tostring(v)) or tostring(v)
-                t_Info[k] = text
+            for id, v in pairs(tResult) do
+                local text = (id == iArgIDEdit) and text_editing(tostring(v)) or tostring(v)
+                t_Info[id] = text
             end
         end
 
@@ -563,7 +565,7 @@ function icmd.AutoCompleteCalc(cmd_name, args, tags, clear_str, source, iEditArg
 
         local t_Tags = {}
         for id, tag in pairs(tags) do
-            if iEditTagID and id == iEditTagID then
+            if id == iEditTagID then
                 tag = text_editing(tag)
             end
             insert(t_Tags, tag)

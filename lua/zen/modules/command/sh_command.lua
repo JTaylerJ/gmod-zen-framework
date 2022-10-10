@@ -315,7 +315,7 @@ local function niceTags(tags)
     return tResult
 end
 
-function icmd.CreateCommandQuery(cmd, args, tags_clear, who)
+function icmd.CreateCommandQuery(tCommand, cmd, args, tags_clear, who)
     local t_CMD_QUERY = {}
     t_CMD_QUERY.tags_clear = tags_clear
     t_CMD_QUERY.who = who
@@ -326,16 +326,24 @@ function icmd.CreateCommandQuery(cmd, args, tags_clear, who)
     }
     t_CMD_QUERY.tags = niceTags(tags_clear)
 
+    if tCommand then
+        local res, sError, tResult = util.AutoConvertValueToType(tCommand.types_clear, t_CMD_QUERY.args)
+        t_CMD_QUERY.bConvertResult = res
+        t_CMD_QUERY.sConvertError = sError
+        t_CMD_QUERY.args_converted = tResult
+    end
+
     return t_CMD_QUERY
 end
 
 function icmd.OnCommandResult(cmd, args, tags_clear, who)
     if not cmd then return end
 
-    local QCMD = icmd.CreateCommandQuery(cmd, args, tags_clear, who)
+    local tCommand = icmd.t_Commands[cmd]
+
+    local QCMD = icmd.CreateCommandQuery(tCommand, cmd, args, tags_clear, who)
     local tags = QCMD.tags
 
-    local tCommand = icmd.t_Commands[cmd]
     if tCommand then
         if tags["help"] then
             if tCommand.data.help then

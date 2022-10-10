@@ -5,6 +5,8 @@ local I = string.Interpolate
 icmd.Register("perm.set", function(QCMD, who, tar_sid64, perm_name, avaliable, target_flags, unique_flags)
     iperm.PlayerSetPermission(tar_sid64, perm_name, avaliable, target_flags, unique_flags)
 
+    PrintTable(QCMD)
+
     local sResult = ""
     if avaliable then
         sResult = I("Successful gived '${s:1}' access to '${s:2}' with flags '${s:3}', ${s:4}", {tar_sid64, perm_name, target_flags, unique_flags})

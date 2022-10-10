@@ -177,6 +177,16 @@ function util.StringToTYPE(value, value_type)
             dat[3] = dat[3] or 255
             dat[4] = dat[4] or 255
             return Color( unpack(dat) )
+        elseif nType == TYPE.STEAMID then
+            if util.IsSteamID(value) then return value end
+            if util.IsSteamID64(value) then
+                return util.SteamIDFrom64(value)
+            end
+        elseif nType == TYPE.STEAMID64 then
+            if util.IsSteamID64(value) then return value end
+            if util.IsSteamID(value) then
+                return util.SteamIDTo64(value)
+            end
         end
     else
         return nil
@@ -200,6 +210,7 @@ util.mt_TD_TypeConvert["table"] = TYPE.TABLE
 util.mt_TD_TypeConvert["vector"] = TYPE.VECTOR
 util.mt_TD_TypeConvert["int"] = TYPE.INT
 util.mt_TD_TypeConvert["uint"] = TYPE.UINT
+util.mt_TD_TypeConvert["number"] = TYPE.NUMBER
 for i = 1, 32 do
     util.mt_TD_TypeConvert["int" .. i] = TYPE.INT
     util.mt_TD_TypeConvert["uint" .. i] = TYPE.UINT
@@ -246,6 +257,25 @@ util.mt_TD_TypeBase[TYPE.CSENT] = TYPE.ENTITY
 util.mt_TD_TypeBase[TYPE.NEXTBOT] = TYPE.ENTITY
 util.mt_TD_TypeBase[TYPE.INT] = TYPE.NUMBER
 util.mt_TD_TypeBase[TYPE.UINT] = TYPE.NUMBER
+util.mt_TD_TypeBase[TYPE.STEAMID] = TYPE.STRING
+util.mt_TD_TypeBase[TYPE.STEAMID64] = TYPE.STRING
+
+util.mt_TD_CheckTypes = {}
+util.mt_TD_CheckTypes[TYPE.STEAMID] = function(v) return util.IsSteamID(v) end
+util.mt_TD_CheckTypes[TYPE.STEAMID64] = function(v) return util.IsSteamID64(v) end
+
+function get_typen_check(typen, value)
+    local func = util.mt_TD_CheckTypes[typen]
+
+    if func then
+        local res = func(value)
+        if res == true then
+            return true
+        else
+            return false
+        end
+    end
+end
 
 function get_typen(typeIDorHumanType)
     return isnumber(typeIDorHumanType) and typeIDorHumanType or util.mt_TD_TypeConvert[typeIDorHumanType]
@@ -273,7 +303,11 @@ local t_AutoConvertString_Nils = {
 local _I = table.concat
 local insert = table.insert
 function util.AutoConvertValueToType(types, data)
+    assertTable(types, "types")
+    assertTable(data, "data")
+
     local tResult = {}
+    local human_types = {}
 
     local bResult = true
     local sError
@@ -293,6 +327,8 @@ function util.AutoConvertValueToType(types, data)
         local human_type = get_humantype(typen)
         local typen_base = get_typen_base(typen)
 
+        human_types[id] = human_type
+
         local isNil = value == nil or t_AutoConvertString_Nils[value]
 
         if type == TYPE.ANY and isNil then
@@ -304,14 +340,32 @@ function util.AutoConvertValueToType(types, data)
 
         if new_value == nil then
             bResult = false
-            sError = _I{id, ": ",human_type, " expected (got '", tostring(value), "')"}
+            sError = _I{human_type, " expected (got '", tostring(value), "')"}
+            break
+        end
+
+        local custom_Check = get_typen_check(typen, new_value)
+        if custom_Check == false then
+            bResult = false
+            sError = _I{TYPE[typen], " expected (got '", tostring(new_value), "')"}
             break
         end
 
         tResult[id] = new_value
     end
 
-    return bResult, sError, tResult
+    local tResult2
+    if bResult then
+        local res, sErrorOrCount, tNextResult = util.CheckTypeTableWithDataTable(human_types, tResult)
+        if res == false then
+            bResult = false
+            sError = sErrorOrCount
+        end
+        tResult2 = tNextResult
+    end
+
+
+    return bResult, id, sError, tResult, tResult2
 end
 
 
@@ -323,7 +377,11 @@ function util.CheckTypeTableWithDataTable(types, data, funcValidate, funcValidCu
     local iTypesCount, iDataCount = 0, 0
     local tResult = {}
 
+
+    local processID = 0
+
     for k, human_type in ipairs(types) do
+        processID = processID + 1
         iTypesCount = iTypesCount + 1
         local dat_value = data[k]
 
@@ -346,7 +404,9 @@ function util.CheckTypeTableWithDataTable(types, data, funcValidate, funcValidCu
     end
 
     if bSuccess and iTypesCount > 0 then
+        local processID = 0
         for id = 1, iTypesCount do
+            processID = processID + 1
             local human_type = types[id]
             local value = data[id]
 
@@ -411,7 +471,7 @@ function util.CheckTypeTableWithDataTable(types, data, funcValidate, funcValidCu
     if bSuccess then
         return true, iTypesCount, tResult
     else
-        return false, sLastError, tResult
+        return false, processID, sLastError, tResult
     end
 end
 

@@ -499,7 +499,7 @@ function nt.Send(channel_name, types, data, target)
 
     local iCounter = 0
     if bSuccess then
-        local res, iCounterOrError = util.CheckTypeTableWithDataTable(types, data, function(net_type, value, type_id, id)
+        local res, lastID, sError = util.CheckTypeTableWithDataTable(types, data, function(net_type, value, type_id, id)
             if SERVER and net_type == "string_id" then
                 nt.RegisterStringNumbers(value)
             end
@@ -509,10 +509,10 @@ function nt.Send(channel_name, types, data, target)
             end
         end, nt.funcValidCustomType)
         if res then
-            iCounter = iCounterOrError
+            iCounter = lastID
         else
             bSuccess = false
-            sLastError = iCounterOrError
+            sLastError = sError
         end
     end
 

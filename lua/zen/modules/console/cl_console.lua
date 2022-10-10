@@ -8,6 +8,7 @@ iconsole.DrawFont_UnderLine = ui.font("iconsole.underline",6,nil,{underline = tr
 
 local concat = table.concat
 local format = string.format
+local sub = string.sub
 
 local _I = function(data) return concat(data, "") end
 iconsole.InitEntry = function()
@@ -25,6 +26,14 @@ iconsole.InitEntry = function()
 	end
 end
 
+iconsole.UpdateAutoComplete = function()
+	local help, fullHelp, tAutoComplete = icmd.GetAutoComplete(iconsole.phrase)
+
+	iconsole.auto_complete_help = help
+	iconsole.auto_complete_fullHelp = fullHelp
+	iconsole.auto_complete_tAutoComplete = tAutoComplete
+end
+
 iconsole.SetPhrase = function(str)
 	local len = utf8.len(str)
 
@@ -33,6 +42,10 @@ iconsole.SetPhrase = function(str)
 	end
 
     iconsole.phrase = str
+end
+
+iconsole.SetPhrase_ByAutoComplete = function(str)
+	iconsole.SetPhrase(str)
 end
 
 iconsole.AddChar = function(char)
@@ -196,6 +209,7 @@ ihook.Listen("PlayerButtonPress", "fast_console_phrase", function(ply, but, in_k
 			iconsole.INPUT_MODE = true
 			iconsole.SetPhrase("")
 			iconsole.InitEntry()
+			iconsole.UpdateAutoComplete()
 		end
 
 		return
@@ -232,6 +246,36 @@ ihook.Listen("PlayerButtonPress", "fast_console_phrase", function(ply, but, in_k
 		goto next
 	end
 
+
+	do
+		local is_numpad = but >= KEY_PAD_0 and but <= KEY_PAD_9
+
+
+		local help = iconsole.auto_complete_help
+		local fullHelp = iconsole.auto_complete_fullHelp
+		local tAutoComplete = iconsole.auto_complete_tAutoComplete
+
+		local t_Select = tAutoComplete.select
+		local activeText = tAutoComplete.activeText or ""
+
+
+
+		if is_numpad and t_Select and #t_Select > 0 then
+			local num = tonumber(char)
+			if num then
+				local tSelectItem = t_Select[num]
+				if tSelectItem then
+
+					print(iconsole.phrase, activeText)
+					local new_string = sub(iconsole.phrase, 1, #iconsole.phrase - #activeText-1) .. tSelectItem.value .. " "
+					iconsole.SetPhrase_ByAutoComplete(new_string)
+					goto next
+				end
+			end
+		end
+	end
+
+
 	do
 		local dentry_no_works = not (IsValid(iconsole.dentry) and iconsole.dentry:HasFocus() and iconsole.dentry:IsEditing())
 		if dentry_no_works then
@@ -241,7 +285,8 @@ ihook.Listen("PlayerButtonPress", "fast_console_phrase", function(ply, but, in_k
 	end
 
 
-	do return end
+
+	goto next
 	::stop::
 	iconsole.INPUT_MODE = false
     if IsValid(iconsole.dentry) then
@@ -250,6 +295,8 @@ ihook.Listen("PlayerButtonPress", "fast_console_phrase", function(ply, but, in_k
 	iconsole.SetPhrase("")
 	do return end
 	::next::
+
+	iconsole.UpdateAutoComplete()
 end)
 
 ihook.Listen("DrawOverlay", "fast_console_phrase", function()
@@ -304,7 +351,11 @@ ihook.Listen("DrawOverlay", "fast_console_phrase", function()
 		IA{" "}
 	end
 
-	local inputHelp, fullHelp = icmd.GetAutoComplete(iconsole.phrase)
+	local inputHelp = iconsole.auto_complete_help
+	local fullHelp = iconsole.auto_complete_fullHelp
+	local tAutoComplete = iconsole.auto_complete_tAutoComplete
+
+
 	IA{iconsole.AddColorToText(inputHelp or "", COLOR_INPUT_NEXT)}
 	if fullHelp and fullHelp != "" then
 		IAN{}

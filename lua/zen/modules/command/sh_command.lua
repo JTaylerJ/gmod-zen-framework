@@ -474,9 +474,13 @@ local function text_error(text)
     return color_text(text, COLOR_AUTOCOMPLE_ERR)
 end
 
-local t_Select = {}
+
 function icmd.AutoCompleteCalc(cmd_name, args, tags, clear_str, source, iEditArgID, iEditTagID)
     local iArgIDEdit = iEditArgID and (iEditArgID-1) or (!iEditTagID and (#args+1))
+
+    local tAutoComplete = {}
+
+    tAutoComplete.ID_EDIT = iArgIDEdit
 
     local tCommand = icmd.t_Commands[cmd_name]
     if tCommand == nil then
@@ -495,17 +499,16 @@ function icmd.AutoCompleteCalc(cmd_name, args, tags, clear_str, source, iEditArg
 
         return firstCommand, sCommandList
     else
-        local lines = {}
-        local t_Types = {}
-        local t_ProcessTypes = {}
+        tAutoComplete.lines = {}
+        tAutoComplete.types = {}
+        tAutoComplete.types_process = {}
+        local lines = tAutoComplete.lines
+        local t_Types = tAutoComplete.types
+        local t_ProcessTypes = tAutoComplete.types_process
 
         local addLine = function(...)
             insert(lines, concat({...}))
         end
-
-        local activeTypen
-        local activeText
-        local activeArgName
 
         if tCommand.types then
             for id, v in pairs(tCommand.types) do
@@ -513,8 +516,8 @@ function icmd.AutoCompleteCalc(cmd_name, args, tags, clear_str, source, iEditArg
 
                 if iArgIDEdit and id <= iArgIDEdit then
                     t_ProcessTypes[id] = v.type
-                    activeTypen = get_typen(v.type)
-                    activeArgName = v.name
+                    tAutoComplete.activeTypen = get_typen(v.type)
+                    tAutoComplete.activeArgName = v.name
                 end
 
                 if id == iArgIDEdit then
@@ -535,7 +538,7 @@ function icmd.AutoCompleteCalc(cmd_name, args, tags, clear_str, source, iEditArg
                 t_ProcessValues[id] = value
             end
             if id == iArgIDEdit then
-                activeText = value
+                tAutoComplete.activeText = value
                 value = text_editing(value)
             end
             insert(t_Args, value)
@@ -570,7 +573,8 @@ function icmd.AutoCompleteCalc(cmd_name, args, tags, clear_str, source, iEditArg
             addLine( text_selected("tags: ["), concat(t_Tags, text_selected("][")), text_selected("]") )
         end
 
-        t_Select = {}
+        tAutoComplete.select = {}
+        local t_Select = tAutoComplete.select
 
         local function addSelect(data)
             insert(t_Select, data)
@@ -578,21 +582,24 @@ function icmd.AutoCompleteCalc(cmd_name, args, tags, clear_str, source, iEditArg
 
 
 
-        local typen_auto_complete = activeTypen and icmd.t_AutoCompleteTypen[activeTypen]
+        local typen_auto_complete = tAutoComplete.activeTypen and icmd.t_AutoCompleteTypen[tAutoComplete.activeTypen]
 
         if typen_auto_complete then
-            typen_auto_complete(activeTypen, activeText, nil, addSelect)
+            typen_auto_complete(tAutoComplete.activeTypen, tAutoComplete.activeText, nil, addSelect)
         end
 
-        local auto_complete_arg_name = activeArgName and icmd.t_AutoCompleteArgName[activeArgName]
+        local auto_complete_arg_name = tAutoComplete.activeArgName and icmd.t_AutoCompleteArgName[tAutoComplete.activeArgName]
 
         if auto_complete_arg_name then
-            auto_complete_arg_name(activeArgName, activeText, nil, addSelect)
+            auto_complete_arg_name(tAutoComplete.activeArgName, tAutoComplete.activeText, nil, addSelect)
         end
 
         if next(t_Select) then
-            addLine("Search (TAB):", activeText)
-            for k, dat in pairs(t_Select) do
+            addLine("Search (PAD 1-9):", tAutoComplete.activeText)
+            for k = 1, 9 do
+                local dat = t_Select[k]
+                if not dat then continue end
+
                 addLine(k, ": ", dat.text)
             end
         end
@@ -600,7 +607,7 @@ function icmd.AutoCompleteCalc(cmd_name, args, tags, clear_str, source, iEditArg
         local fullInfo = concat(lines, "\n")
 
 
-        return nil, fullInfo
+        return nil, fullInfo, tAutoComplete
     end
 end
 
@@ -613,8 +620,9 @@ function icmd.GetAutoComplete(str)
     if cmd_name == nil then return false, false end
 
 
-    local inputHelpString, helpFullHelp = icmd.AutoCompleteCalc(cmd_name, args, tags, clear_str, source, iEditArgID, iEditTagID)
-    t_AutoComplatecache[str] = {inputHelpString, helpFullHelp}
+    local inputHelpString, helpFullHelp, tAutoComplete = icmd.AutoCompleteCalc(cmd_name, args, tags, clear_str, source, iEditArgID, iEditTagID)
+    tAutoComplete = tAutoComplete or {}
+    t_AutoComplatecache[str] = {inputHelpString, helpFullHelp, tAutoComplete}
 
-    return inputHelpString, helpFullHelp
+    return inputHelpString, helpFullHelp, tAutoComplete
 end

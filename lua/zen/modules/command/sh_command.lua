@@ -202,6 +202,15 @@ local check_Table = function(tbl, iEditChar, clearKeys)
     return iEditID
 end
 
+icmd.t_AutoCompleteTypen = icmd.t_AutoCompleteTypen or {}
+function icmd.RegisterAutoCompleteTypeN(typen, func)
+    icmd.t_AutoCompleteTypen[typen] =func
+end
+
+icmd.t_AutoCompleteArgName = icmd.t_AutoCompleteArgName or {}
+function icmd.RegisterAutoCompleteArgName(arg_name, func)
+    icmd.t_AutoCompleteArgName[arg_name] =func
+end
 
 
 function icmd.GetStringArgs(source)
@@ -437,6 +446,7 @@ end
 
 
 local COLOR_AUTOCOMPLE_SELECT_ARG = Color(125, 125, 255)
+local COLOR_AUTOCOMPLE_ERR = Color(255,125,125)
 
 local function font_text(text, font)
     if font == nil then return text end
@@ -460,7 +470,11 @@ local function text_editing(text)
     return font_text(text, icmd.DrawFont_UnderLine)
 end
 
+local function text_error(text)
+    return color_text(text, COLOR_AUTOCOMPLE_ERR)
+end
 
+local t_Select = {}
 function icmd.AutoCompleteCalc(cmd_name, args, tags, clear_str, source, iEditArgID, iEditTagID)
     local iArgIDEdit = iEditArgID and (iEditArgID-1) or (!iEditTagID and (#args+1))
 
@@ -483,9 +497,25 @@ function icmd.AutoCompleteCalc(cmd_name, args, tags, clear_str, source, iEditArg
     else
         local lines = {}
         local t_Types = {}
+        local t_ProcessTypes = {}
+
+        local addLine = function(...)
+            insert(lines, concat({...}))
+        end
+
+        local activeTypen
+        local activeText
+        local activeArgName
+
         if tCommand.types then
             for id, v in pairs(tCommand.types) do
                 local str = concat({"[", v.type, " ", v.name, "]"})
+
+                if iArgIDEdit and id <= iArgIDEdit then
+                    t_ProcessTypes[id] = v.type
+                    activeTypen = get_typen(v.type)
+                    activeArgName = v.name
+                end
 
                 if id == iArgIDEdit then
                     str = text_selected(str)
@@ -494,28 +524,77 @@ function icmd.AutoCompleteCalc(cmd_name, args, tags, clear_str, source, iEditArg
                 insert(t_Types, str)
             end
         end
-        lines[1] = "Command Info:"
-        lines[2] = concat{cmd_name, " ", concat(t_Types, " ")}
+        addLine("Command Info:")
+        addLine( cmd_name, " ", concat(t_Types, " ") )
 
+        local t_ProcessValues = {}
         local t_Args = {}
         for id, value in pairs(args) do
+
+            if id <= iArgIDEdit then
+                t_ProcessValues[id] = value
+            end
             if id == iArgIDEdit then
+                activeText = value
                 value = text_editing(value)
             end
             insert(t_Args, value)
         end
-        lines[3] = concat{text_selected(":= ["), concat(t_Args, text_selected("][")), text_selected("]")}
+
+
+        addLine( text_selected(":= ["), concat(t_Args, text_selected("][")), text_selected("]") )
+
+
+        local t_Info = {}
+        local res, last_id, sError, _, tResult = util.AutoConvertValueToType(t_ProcessTypes, t_ProcessValues)
+        if res == false then
+            addLine(text_selected(last_id), ": ", text_error(sError))
+        else
+            for k, v in pairs(tResult) do
+                local text = k == last_id and text_selected(tostring(v)) or tostring(v)
+                t_Info[k] = text
+            end
+        end
+
+        addLine( text_selected(":= ["), concat(t_Info, text_selected("][")), text_selected("]") )
 
         local t_Tags = {}
         for id, tag in pairs(tags) do
-            if id == iEditTagID then
+            if iEditTagID and id == iEditTagID then
                 tag = text_editing(tag)
             end
             insert(t_Tags, tag)
         end
 
         if next(t_Tags) then
-            insert(lines, concat{text_selected("tags: ["), concat(t_Tags, text_selected("][")), text_selected("]")})
+            addLine( text_selected("tags: ["), concat(t_Tags, text_selected("][")), text_selected("]") )
+        end
+
+        t_Select = {}
+
+        local function addSelect(data)
+            insert(t_Select, data)
+        end
+
+
+
+        local typen_auto_complete = activeTypen and icmd.t_AutoCompleteTypen[activeTypen]
+
+        if typen_auto_complete then
+            typen_auto_complete(activeTypen, activeText, nil, addSelect)
+        end
+
+        local auto_complete_arg_name = activeArgName and icmd.t_AutoCompleteArgName[activeArgName]
+
+        if auto_complete_arg_name then
+            auto_complete_arg_name(activeArgName, activeText, nil, addSelect)
+        end
+
+        if next(t_Select) then
+            addLine("Search (TAB):", activeText)
+            for k, dat in pairs(t_Select) do
+                addLine(k, ": ", dat.text)
+            end
         end
 
         local fullInfo = concat(lines, "\n")

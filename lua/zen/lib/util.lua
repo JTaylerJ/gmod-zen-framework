@@ -320,7 +320,7 @@ function util.AutoConvertValueToType(types, data)
 
         if typen == nil then
             bResult = false
-            sError = _I{id, ": ", " typen not exists for '", tostring(type), "'"}
+            sError = _I{"typen not exists for '", tostring(type), "'"}
             break
         end
 
@@ -896,6 +896,7 @@ COLOR.WARN = Color(255,125,0)
 ---@param value string
 ---@return boolean IsSteamID64
 function util.IsSteamID64(value)
+    if !isstring(value) then return false end
     if tonumber(value) and value:sub(1, 7) == "7656119" and (#value == 17 or #value == 18) then
         return true
     end
@@ -904,6 +905,7 @@ end
 ---@param value string
 ---@return boolean IsSteamID
 function util.IsSteamID(value)
+    if !isstring(value) then return false end
     if value:match("^STEAM_[0-5]:[0-1]:[0-9]+$") ~= nil then
 		return true
 	else

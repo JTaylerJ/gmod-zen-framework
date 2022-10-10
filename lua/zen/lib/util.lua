@@ -120,13 +120,35 @@ function util.TYPEToString(value, nType)
     end
 end
 
+local t_BooleanValues = {
+    ["1"] = true,
+    ["0"] = false,
+    ["true"] = true,
+    ["false"] = false,
+    ["+"] = true,
+    ["-"] = false,
+    ["*"] = true,
+    ["YES"] = true,
+    ["yes"] = true,
+    ["Y"] = true,
+    ["y"] = true,
+    ["no"] = false,
+    ["NO"] = false,
+    ["N"] = false,
+    ["n"] = false,
+    ["T"] = true,
+    ["t"] = true,
+    ["f"] = false,
+    ["F"] = false,
+}
+
 ---@param value string
 ---@return any|nil result
 function util.StringToTYPE(value, value_type)
     local nType = isnumber(value_type) and value_type or CVTYPE[value_type]
     if nType then
         if nType == TYPE.BOOLEAN then
-            return value == "true" and true or false
+            return t_BooleanValues[value]
         elseif nType == TYPE.NUMBER then
             return tonumber(value)
         elseif nType == TYPE.STRING then
@@ -224,6 +246,73 @@ util.mt_TD_TypeBase[TYPE.CSENT] = TYPE.ENTITY
 util.mt_TD_TypeBase[TYPE.NEXTBOT] = TYPE.ENTITY
 util.mt_TD_TypeBase[TYPE.INT] = TYPE.NUMBER
 util.mt_TD_TypeBase[TYPE.UINT] = TYPE.NUMBER
+
+function get_typen(typeIDorHumanType)
+    return isnumber(typeIDorHumanType) and typeIDorHumanType or util.mt_TD_TypeConvert[typeIDorHumanType]
+end
+
+function get_humantype(typen)
+    return util.mt_TD_TypeList[typen]
+end
+
+function get_typen_base(typen)
+    return util.mt_TD_TypeBase[typen]
+end
+
+function get_not_nil(...)
+    local key, value = next({...})
+    return value
+end
+
+local t_AutoConvertString_Nils = {
+    [""] = true,
+    [" "] = true,
+    ["_"] = true,
+}
+
+local _I = table.concat
+local insert = table.insert
+function util.AutoConvertValueToType(types, data)
+    local tResult = {}
+
+    local bResult = true
+    local sError
+
+    local id = 0
+    for k, type in pairs(types) do
+        id = id + 1
+        local typen = get_typen(type)
+        local value = data[id]
+
+        if typen == nil then
+            bResult = false
+            sError = _I{id, ": ", " typen not exists for '", tostring(type), "'"}
+            break
+        end
+
+        local human_type = get_humantype(typen)
+        local typen_base = get_typen_base(typen)
+
+        local isNil = value == nil or t_AutoConvertString_Nils[value]
+
+        if type == TYPE.ANY and isNil then
+            tResult[id] = nil
+            continue
+        end
+
+        local new_value = get_not_nil(util.StringToTYPE(value, typen), util.StringToTYPE(value, typen_base))
+
+        if new_value == nil then
+            bResult = false
+            sError = _I{id, ": ",human_type, " expected (got '", tostring(value), "')"}
+            break
+        end
+
+        tResult[id] = new_value
+    end
+
+    return bResult, sError, tResult
+end
 
 
 
@@ -1019,6 +1108,12 @@ function pcallNoHalt(func,...)
     local succ, err = pcall(func, ...)
     if not succ then ErrorNoHalt(err) end
     return succ, err
+end
+
+local _I = table.concat
+
+function assertConcat(value, ...)
+    assert(value, _I{...})
 end
 
 ---@param value any

@@ -28,11 +28,26 @@ local KeyPressed_VGUI_Input = {}
 local KeyPressed_Normal = {}
 local KeyPressed_Chars = {}
 local LastKeysPhrase = ""
+local LastPressed_Button
+local LastPressed_KeyIN
+local LastPressed_KeyBind
+
+local LastReleased_Button
+local LastReleased_KeyIN
+local LastReleased_KeyBind
 
 local len = utf8.len
 local sub = utf8.sub
 
 local concat = table.concat
+
+function input.LastPressedButton() return LastPressed_Button end
+function input.LastPressedKeyIN() return LastPressed_KeyIN end
+function input.LastPressedKeyBind() return LastPressed_KeyBind end
+
+function input.LastReleasedButton() return LastReleased_Button end
+function input.LastReleasedKeyIN() return LastReleased_KeyIN end
+function input.LastReleasedKeyBind() return LastReleased_KeyBind end
 
 function input.GetPressedButtons()
 	return table.Copy(KeyPressed)
@@ -152,6 +167,10 @@ local function playerButtonUp(ply, but)
 		KeyINPressed[in_key] = nil
 	end
 
+	LastReleased_Button = but
+	LastReleased_KeyIN = in_key
+	LastReleased_KeyBind = bind_name
+
 	local char = KeyPressed_Chars[but]
 	if char then
 		KeyPressed_Chars[but] = nil
@@ -198,6 +217,10 @@ local function playerButtonDown(ply, but)
 	if KeyINPressed then
 		KeyINPressed[in_key] = true
 	end
+
+	LastPressed_Button = but
+	LastPressed_KeyIN = in_key
+	LastPressed_KeyBind = bind_name
 
 	local char = input.GetButtonChar(but)
 	if char then

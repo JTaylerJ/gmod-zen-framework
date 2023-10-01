@@ -236,6 +236,13 @@ ihook.Listen("PlayerButtonPress", "fast_console_phrase", function(ply, but, in_k
 		end
 	end
 
+	if but == KEY_TAB then -- TODO: Test it to multiline shit
+		-- local tAutoComplete = iconsole.auto_complete_tAutoComplete
+		if iconsole.auto_complete_help and iconsole.auto_complete_help != "" and #iconsole.auto_complete_help > 2 then
+			iconsole.SetPhrase(iconsole.auto_complete_help)
+		end
+	end
+
 	if IsDown(KEY_LCONTROL) and but == KEY_L then
 		iconsole.ServerConsoleLog = ""
 	end
@@ -268,7 +275,7 @@ ihook.Listen("PlayerButtonPress", "fast_console_phrase", function(ply, but, in_k
 				if tSelectItem then
 
 					local add_tex = #activeText == " " and "" or " "
-					local new_string = sub(iconsole.phrase, 1, #iconsole.phrase - #activeText-1) .. add_tex .. tSelectItem.value .. " "
+					local new_string = sub(iconsole.phrase, 1, #iconsole.phrase - #add_tex - 1) .. add_tex .. tSelectItem.value .. " "
 					iconsole.SetPhrase_ByAutoComplete(new_string)
 					goto next
 				end

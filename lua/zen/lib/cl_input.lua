@@ -278,8 +278,8 @@ local function playerButtonDown(ply, but)
 	ihook.Run("PlayerButtonPress", ply, but, in_key, bind_name, char)
 end
 
-
-ihook.Handler('Think', "TestKeyPress", function()
+-- Main hook to check press button or no. Ignore when player in menu and others
+ihook.Handler('Think', "input.engine", function()
 	for key = KEY_FIRST, MOUSE_5 do
 		if input_IsButtonDown(key) then
 			if not KeyPressed[key] then

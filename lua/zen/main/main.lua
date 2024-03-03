@@ -1,10 +1,9 @@
 zen = (istable(zen) and zen.__zenLOADED) and zen or {}
 zen.__zenLOADED = true
-izen = (istable(izen) and izen.__izenLOADED) and izen or {}
-izen.__zenLOADED = true
-izen = istable(izen) and izen or {}
-izen.config = {}
-icfg = izen.config
+zen.config = {}
+zen.modules = {}
+imodules = zen.modules
+icfg = zen.config
 icfg.colors = icfg.colors or {}
 iclr = icfg.colors
 
@@ -16,13 +15,13 @@ icfg.console_space = " "
 local string_Split = string.Split
 
 local i
-function izen.print(...)
+function zen.print(...)
     local args = {...}
     local count = #args
 
     i = 0
 
-    MsgC(iclr.main, "[izen]", iclr.console_default)
+    MsgC(iclr.main, "[zen]", iclr.console_default)
     if count > 0 then
         while i < count do
             i = i + 1
@@ -31,17 +30,14 @@ function izen.print(...)
     end
     MsgC("\n", COLOR.WHITE)
 end
-zen.print = izen.print
 
-izen.old = izen.old or {}
-zen.old = izen.old
 
-function izen.Init(...)
+function zen.Init(...)
     local to_init = {...}
     local tResult = {}
     for _, module_name in ipairs(to_init) do
-        local last_module = "izen"
-        local module_table = izen
+        local last_module = "zen"
+        local module_table = imodules
         local modules_arg = string_Split(module_name, ".")
         for i, sub_module_name in ipairs(modules_arg) do
             last_module = last_module .. "." .. sub_module_name
@@ -50,7 +46,7 @@ function izen.Init(...)
             assert(istable(module_table), "\"" .. sub_module_name .. "\" name is taken \"" .. (last_module) .. "\"")
         end
 
-        if not module_table or module_table == izen then
+        if not module_table or module_table == imodules then
             error("Module not exists")
         end
 
@@ -59,15 +55,14 @@ function izen.Init(...)
 
     return unpack(tResult)
 end
-zen.Init = izen.Init
 
 
-function izen.Import(...)
+function zen.Import(...)
     local to_import = {...}
     local tResult = {}
     for _, module_name in ipairs(to_import) do
-        local last_module = "izen"
-        local module_table = izen
+        local last_module = "zen"
+        local module_table = imodules
         local modules_arg = string_Split(module_name, ".")
         for i, sub_module_name in ipairs(modules_arg) do
             last_module = last_module .. "." .. sub_module_name
@@ -75,7 +70,7 @@ function izen.Import(...)
             assert(module_table != nil, "\"" .. sub_module_name .. "\" not exists in \"" .. (last_module) .. "\"")
         end
 
-        if not module_table or module_table == izen then
+        if not module_table or module_table == imodules then
             error("Module not exists")
         end
 
@@ -84,12 +79,10 @@ function izen.Import(...)
 
     return unpack(tResult)
 end
-zen.Import = izen.Import
 
-function izen.Include(fl_path)
+function zen.Include(fl_path)
     return include(fl_path)
 end
-zen.Include = izen.Include
 
 function zen.IncludeSh(fl_path) AddCSLuaFile(fl_path) return zen.Include(fl_path) end
 function zen.IncludeSv(fl_path) if SERVER then return zen.Include(fl_path) end end

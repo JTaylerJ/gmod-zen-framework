@@ -265,8 +265,8 @@ ihook.Listen("zen.map_edit.Render", "points", function(rendermode, priority, vw)
 	end
 end)
 
-ihook.Listen("zen.map_edit.OnModeChange", "points", function(vw, old, new)
-    if old == MODE_EDIT_POINT then
+ihook.Listen("zen.map_edit.OnModeChange", "points", function(vw, old_mode, new)
+    if old_mode == MODE_EDIT_POINT then
         vw.edit_point = nil
     end
 end)

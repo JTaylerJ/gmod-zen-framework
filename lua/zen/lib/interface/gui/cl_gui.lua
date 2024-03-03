@@ -2,8 +2,6 @@ local basegui = gui
 local ui, gui = zen.Init("ui", "gui")
 local sub = string.sub
 
-local old = zen.Import("old")
-
 gui.t_StylePanels =gui.t_StylePanels or {}
 gui.t_Commands = gui.t_Commands or {}
 gui.t_CommandsAliases = gui.t_CommandsAliases or {}

@@ -129,7 +129,7 @@ function map_edit.GenerateGUI(mark_panels)
 	nav.instructions:SetText([[IN_RELOAD - Default Mode]])
 	nav.instructions:SizeToContents()
 	
-	ihook.Listen("zen.map_edit.OnModeChange", "zen.map_edit.setmode", function(vw, old, new)
+	ihook.Listen("zen.map_edit.OnModeChange", "zen.map_edit.setmode", function(vw, _, new)
 		if not IsValid(nav.mode_status) then return end
 		nav.mode_status:SetMode(new)
 	end)

@@ -11,6 +11,5 @@ concommand.Add("zen_reload_full", function(ply)
 
     nt = nil
     zen = nil
-    izen = nil
     include("zen/main/main.lua")
 end)

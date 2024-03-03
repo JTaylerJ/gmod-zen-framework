@@ -1,5 +1,4 @@
-izen.worldclick = izen.worldclick or {}
-zen.worldclick = izen.worldclick
+zen.worldclick = zen.worldclick or {}
 local worldclick = zen.worldclick
 
 function worldclick.Trace(ply, eye_pos, eye_normal)

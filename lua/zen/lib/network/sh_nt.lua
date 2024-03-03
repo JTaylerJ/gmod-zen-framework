@@ -1,5 +1,4 @@
-izen.network = izen.network or {}
-zen.network = izen.network
+zen.network = zen.network or {}
 nt = zen.network
 nt.t_ChannelFlags = {}
 nt.t_ChannelFlags.SIMPLE_NETWORK        = 0

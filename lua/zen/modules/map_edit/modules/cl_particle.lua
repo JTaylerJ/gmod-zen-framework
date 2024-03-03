@@ -9,7 +9,7 @@ local clr_white_alpha = Color(255,255,255,100)
 ihook.Listen("zen.map_edit.Render", "paticle_viewer", function(rendermode, priority, vw)
 end)
 
-ihook.Listen("zen.map_edit.OnModeChange", "paticle_viewer", function(vw, old, new)
+ihook.Listen("zen.map_edit.OnModeChange", "paticle_viewer", function(vw, _, new)
 end)
 
 

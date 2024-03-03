@@ -1,5 +1,4 @@
-izen.permission = izen.permission or {}
-zen.permission = izen.permission
+zen.permission = zen.permission or {}
 iperm = zen.permission
 
 iperm.flags = {}

@@ -1,3 +1,4 @@
+module("zen", package.seeall)
 
 ---@class TYPE
 ---@field type number|string

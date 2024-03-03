@@ -1,3 +1,5 @@
+module("zen", package.seeall)
+
 local icmd = zen.Init("command")
 
 nt.RegisterChannel("icmd.command", nt.t_ChannelFlags.SIMPLE_NETWORK, {

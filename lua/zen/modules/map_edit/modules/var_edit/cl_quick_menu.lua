@@ -1,3 +1,5 @@
+module("zen", package.seeall)
+
 zen.nvars = zen.nvars or {}
 local nvars = zen.nvars
 local ui, draw = zen.Import("ui", "ui.draw")

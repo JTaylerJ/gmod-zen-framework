@@ -1,3 +1,5 @@
+module("zen", package.seeall)
+
 include("shared.lua")
 
 function ENT:Draw()

@@ -1,3 +1,5 @@
+module("zen", package.seeall)
+
 local map_edit = zen.Init("map_edit")
 map_edit.t_Panels = map_edit.t_Panels or {}
 

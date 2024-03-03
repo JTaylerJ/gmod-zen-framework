@@ -1,3 +1,5 @@
+module("zen", package.seeall)
+
 local save = zen.Init("zen.Save")
 save.t_CachedPlayerValues = {}
 

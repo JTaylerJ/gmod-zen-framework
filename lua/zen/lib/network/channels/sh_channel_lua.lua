@@ -1,3 +1,5 @@
+module("zen", package.seeall)
+
 nt.RegisterChannel("channels", nt.t_ChannelFlags.PUBLIC, {
     id = 1,
     priority = 1,

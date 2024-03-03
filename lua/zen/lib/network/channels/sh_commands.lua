@@ -1,3 +1,5 @@
+module("zen", package.seeall)
+
 local clicmd = zen.Init("client_commands")
 
 local unpack = unpack

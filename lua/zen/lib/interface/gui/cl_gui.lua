@@ -1,3 +1,5 @@
+module("zen", package.seeall)
+
 local basegui = gui
 local ui, gui = zen.Init("ui", "gui")
 local sub = string.sub

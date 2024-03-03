@@ -1,3 +1,5 @@
+module("zen", package.seeall)
+
 iperm.RegisterPermission("zen.variable_edit.nvars", iperm.flags.NO_TARGET, "Access to edit entity nvars!")
 
 zen.nvars = zen.nvars or {}

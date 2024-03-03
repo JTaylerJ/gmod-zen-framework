@@ -1,3 +1,5 @@
+module("zen", package.seeall)
+
 local iconsole, icmd = zen.Init("console", "command")
 local ui = zen.Import("ui", "command")
 

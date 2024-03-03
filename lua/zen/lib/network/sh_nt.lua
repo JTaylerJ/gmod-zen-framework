@@ -1,3 +1,5 @@
+module("zen", package.seeall)
+
 zen.network = zen.network or {}
 nt = zen.network
 nt.t_ChannelFlags = {}

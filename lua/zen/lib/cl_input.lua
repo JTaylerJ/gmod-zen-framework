@@ -1,3 +1,5 @@
+module("zen", package.seeall)
+
 input.KeyPressedCounter = input.KeyPressedCounter or {}
 local KeyPressed = {}
 local BindPressed = {}

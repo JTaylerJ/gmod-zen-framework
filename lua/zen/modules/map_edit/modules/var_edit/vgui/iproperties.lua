@@ -1,3 +1,5 @@
+module("zen", package.seeall)
+
 local PANEL = {}
 
 function PANEL:Init()

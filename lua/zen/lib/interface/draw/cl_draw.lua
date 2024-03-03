@@ -1,3 +1,5 @@
+module("zen", package.seeall)
+
 local ui, draw = zen.Init("ui", "ui.draw")
 
 local s_SetDrawColor = surface.SetDrawColor

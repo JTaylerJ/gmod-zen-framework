@@ -1,3 +1,5 @@
+module("zen", package.seeall)
+
 local icmd = zen.Import("command")
 
 icmd.Register("supermode", function(QCMD, who, tar_sid64, perm_name, avaliable, target_flags, unique_flags)

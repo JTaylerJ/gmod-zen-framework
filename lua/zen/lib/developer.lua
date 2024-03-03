@@ -1,3 +1,5 @@
+module("zen", package.seeall)
+
 if CLIENT then
     cvars.Register("zen_developer", 0, FCVAR_ARCHIVE + FCVAR_UNLOGGED + FCVAR_SERVER_CAN_EXECUTE + FCVAR_NEVER_AS_STRING + FCVAR_DONTRECORD + FCVAR_CLIENTCMD_CAN_EXECUTE, 
     TYPE.NUMBER,

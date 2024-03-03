@@ -1,3 +1,5 @@
+module("zen", package.seeall)
+
 ihook = ihook or {}
 
 local ErrorNoHaltWithStack = ErrorNoHaltWithStack

@@ -1,3 +1,5 @@
+module("zen", package.seeall)
+
 local TABLE_KEY_NUMBER = 1
 local TABLE_KEY_STRING = 2
 local TABLE_KEY_ENTITY = 3

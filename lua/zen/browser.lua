@@ -1,3 +1,5 @@
+module("zen", package.seeall)
+
 -- Lua include list
 zen.IncludeSH("zen/config.lua")
 zen.IncludeSH("zen/lib/hook.lua")

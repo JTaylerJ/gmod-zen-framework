@@ -1,3 +1,5 @@
+module("zen", package.seeall)
+
 local _I = table.concat
 local insert = table.insert
 

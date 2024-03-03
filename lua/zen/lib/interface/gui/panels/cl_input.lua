@@ -1,3 +1,5 @@
+module("zen", package.seeall)
+
 local ui, gui, draw = zen.Import("ui", "gui", "ui.draw")
 
 

@@ -1,3 +1,5 @@
+module("zen", package.seeall)
+
 
 ENT.Base = "zen_base"
 ENT.Type = "anim"

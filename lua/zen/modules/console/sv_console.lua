@@ -1,3 +1,5 @@
+module("zen", package.seeall)
+
 nt.RegisterChannel("zen.console.command")
 nt.RegisterChannel("zen.console.message")
 

@@ -1,3 +1,5 @@
+module("zen", package.seeall)
+
 local zone = zen.Init("zone")
 
 zone.t_ZonesPlayers = zone.t_ZonesPlayers or {}

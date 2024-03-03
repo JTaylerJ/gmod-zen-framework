@@ -1,3 +1,5 @@
+module("zen", package.seeall)
+
 AddCSLuaFile("zen/main/main.lua")
 include("zen/main/main.lua")
 

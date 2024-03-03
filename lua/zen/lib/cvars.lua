@@ -1,3 +1,5 @@
+module("zen", package.seeall)
+
 CVARS_VALUES = CVARS_VALUES or {}
 
 CVARS = CVARS or {}

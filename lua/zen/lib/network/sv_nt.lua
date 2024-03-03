@@ -1,3 +1,5 @@
+module("zen", package.seeall)
+
 local _I = table.concat
 
 ihook.Listen("ReadyForNetwork.Pre", "nt.SendAllNetworkChannels", function(ply)

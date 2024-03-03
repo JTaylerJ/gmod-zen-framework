@@ -1,3 +1,5 @@
+module("zen", package.seeall)
+
 local ui, draw, draw3d = zen.Init("ui", "ui.draw", "ui.draw3d")
 
 function draw3d.GetScreenPosition(vec)

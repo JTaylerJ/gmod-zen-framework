@@ -1,3 +1,5 @@
+module("zen", package.seeall)
+
 -- Stable
 
 zen = (istable(zen) and zen.__zenLOADED) and zen or {}

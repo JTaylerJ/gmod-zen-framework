@@ -1,3 +1,5 @@
+module("zen", package.seeall)
+
 
 AddCSLuaFile( "cl_init.lua" )
 AddCSLuaFile( "shared.lua" )

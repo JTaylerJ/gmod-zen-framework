@@ -1,3 +1,5 @@
+module("zen", package.seeall)
+
 local sh_hooks = zen.Init("shared_hooks")
 
 local unpack = unpack

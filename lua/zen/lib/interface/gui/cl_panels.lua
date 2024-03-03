@@ -1,3 +1,5 @@
+module("zen", package.seeall)
+
 local ui, gui, draw = zen.Init("ui", "gui", "ui.draw")
 
 gui.RegisterStylePanel("base", {}, "EditablePanel", {}, {})

@@ -1,3 +1,5 @@
+module("zen", package.seeall)
+
 nt.RegisterChannel("map_edit.use")
 nt.RegisterChannel("map_edit.status")
 nt.RegisterChannel("map_edit.update.pos")

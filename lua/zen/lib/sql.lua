@@ -1,3 +1,5 @@
+module("zen", package.seeall)
+
 sql = sql or {}
 
 --- @param qe string SQL_QUERY

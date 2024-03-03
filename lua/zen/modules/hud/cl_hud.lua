@@ -1,3 +1,5 @@
+module("zen", package.seeall)
+
 RENDER_3D = 1
 RENDER_2D = 2
 

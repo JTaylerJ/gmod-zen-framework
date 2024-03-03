@@ -1,3 +1,5 @@
+module("zen", package.seeall)
+
 local icmd, iconsole = zen.Init("command", "console")
 
 icmd.t_Commands = icmd.t_Commands or {}

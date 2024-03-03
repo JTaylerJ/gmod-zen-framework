@@ -1,3 +1,5 @@
+module("zen", package.seeall)
+
 ihook.Listen("PlayerInitialSpawn", "zen.permission", function(ply)
     local sid64 = util.GetPlayerSteamID64(ply)
 

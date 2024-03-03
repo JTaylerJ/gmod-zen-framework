@@ -1,3 +1,5 @@
+module("zen", package.seeall)
+
 nt.RegisterChannel("nvars.edit")
 nt.RegisterChannel("nvars.get_buttons")
 nt.RegisterChannel("nvars.run_command")

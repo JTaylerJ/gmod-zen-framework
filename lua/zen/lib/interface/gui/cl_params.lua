@@ -1,3 +1,5 @@
+module("zen", package.seeall)
+
 local ui, gui = zen.Init("ui", "gui")
 
 gui.RegisterParam("tPanel", function(pnl, value)

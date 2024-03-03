@@ -1,3 +1,5 @@
+module("zen", package.seeall)
+
 
 -- This is called from ENT:KeyValue(key,value) to store the output from
 -- the map, it could also be called from ENT:AcceptInput I think, so if

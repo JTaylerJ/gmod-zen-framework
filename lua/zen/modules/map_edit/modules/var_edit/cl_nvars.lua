@@ -1,3 +1,5 @@
+module("zen", package.seeall)
+
 zen.nvars.mt_EntityButtons = {}
 
 function zen.nvars.OpenMenu(ent)

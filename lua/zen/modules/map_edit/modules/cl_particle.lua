@@ -1,3 +1,5 @@
+module("zen", package.seeall)
+
 local map_edit = zen.Init("map_edit")
 
 local gui, ui, draw, draw3d, draw3d2d = zen.Import("gui", "ui", "ui.draw", "ui.draw3d", "ui.draw3d2d")

@@ -1,3 +1,5 @@
+module("zen", package.seeall)
+
 local icmd = zen.Import("command")
 
 local I = string.Interpolate

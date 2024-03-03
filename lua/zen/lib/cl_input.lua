@@ -41,18 +41,30 @@ local sub = utf8.sub
 
 local concat = table.concat
 
+-- Get LastPressed Button
 function input.LastPressedButton() return LastPressed_Button end
+
+-- return EnumID of Last Pressed button
 function input.LastPressedKeyIN() return LastPressed_KeyIN end
+
+-- return String with bind of Last Pressed button
 function input.LastPressedKeyBind() return LastPressed_KeyBind end
 
+-- return LastReleased Button
 function input.LastReleasedButton() return LastReleased_Button end
+
+-- return EnumID of Last Released button
 function input.LastReleasedKeyIN() return LastReleased_KeyIN end
+
+-- return String with bind of Last Released button
 function input.LastReleasedKeyBind() return LastReleased_KeyBind end
 
+-- Get table with last pressed buttons
 function input.GetPressedButtons()
 	return table.Copy(KeyPressed)
 end
 
+-- Return pressed button or not
 function input.IsKeyPressed(but)
     return KeyPressed[but]
 end

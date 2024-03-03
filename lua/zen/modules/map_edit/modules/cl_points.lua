@@ -18,6 +18,10 @@ ihook.Listen("zen.map_edit.Render", "points", function(rendermode, priority, vw)
 		y = y - 35
 		draw3d2d.Text(vw.lastTrace.HitPos, nil, 0.1, true, GetVectorString(vw.lastTrace.HitPos), 10, 0, y, COLOR.WHITE, 1, 1, COLOR.BLACK)
 
+		if map_edit.SelectedToolMode then
+			y = y - 35
+			draw3d2d.Text(vw.lastTrace.HitPos, nil, 0.1, true, map_edit.SelectedToolMode, 10, 0, y, COLOR.WHITE, 1, 1, COLOR.BLACK)
+		end
 		local ent = vw.lastTrace.Entity
 
 		if IsValid(ent) then

@@ -76,6 +76,8 @@ zen.IncludeCL("zen/modules/map_edit/modules/var_edit/vgui/iproperties.lua")
 zen.IncludeCL("zen/modules/map_edit/menu/menu.lua")
 zen.IncludeCL("zen/modules/map_edit/menu/sheets/props.lua")
 
+zen.IncludeCL("zen/modules/map_edit/tool_mode/tool_mode.lua")
+
 zen.IncludeCL("zen/modules/fast_command/cl_fast_command.lua")
 
 zen.IncludeSH("zen/modules/zone/sh_base.lua")

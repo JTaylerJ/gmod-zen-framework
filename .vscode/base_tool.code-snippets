@@ -1,0 +1,20 @@
+{
+	"zen:tool": {
+		"prefix": "zen tool",
+		"body": [
+			"module(\"zen\", package.seeall)",
+			"",
+			"local ui, gui, map_edit = zen.Init(\"ui\", \"gui\", \"map_edit\")",
+			"",
+			"---@class zen_TOOL",
+			"local TOOL = {}",
+			"TOOL.id = \"${1:ID}\"",
+			"TOOL.name = \"${2:Name}\"",
+			"TOOL.Description = \"${3:Desc}\"",
+			"",
+			"function TOOL:Init()",
+			"end"
+		],
+		"description": "Zen tool module"
+	}
+}

@@ -18,8 +18,8 @@ end)
 function map_edit.OpenToolMode()
     map_edit.IsToolModeEnabled = true
 
-    -- if IsValid(map_edit.pnlToolMode) then
-    --     map_edit.pnlToolMode:SetVisible(true)
+    -- if IsValid(map_edit.pnlToolMenu_Base) then
+    --     map_edit.pnlToolMenu_Base:SetVisible(true)
     --     return
     -- end
 
@@ -29,7 +29,9 @@ end
 function map_edit.CloseToolMode()
     map_edit.IsToolModeEnabled = false
 
-    map_edit.pnlToolMode:SetVisible(false)
+    if IsValid(map_edit.pnlToolMenu_Base) then
+        map_edit.pnlToolMenu_Base:SetVisible(false)
+    end
 end
 
 
@@ -39,66 +41,75 @@ function map_edit.GetSelectedMode()
     return map_edit.SelectedToolMode
 end
 
-function map_edit.SetSelectedMode(mode)
-    if map_edit.SelectedToolMode then
-        local lastPanel = map_edit.tToolMode_PanelList[map_edit.SelectedToolMode]
-        if IsValid(lastPanel) then
-            lastPanel:SetSelected(false)
-        end
-    end
-
-    map_edit.SelectedToolMode = mode
-    local activePanel = map_edit.tToolMode_PanelList[mode]
-    if IsValid(activePanel) then
-        activePanel:SetSelected(true)
-    end
-end
-
 
 function map_edit.LoadToolMode()
-    if IsValid(map_edit.pnlToolMode) then map_edit.pnlToolMode:Remove() end
+    if IsValid(map_edit.pnlToolMenu_Base) then map_edit.pnlToolMenu_Base:Remove() end
 
-    map_edit.pnlToolMode = gui.Create("EditablePanel", nil, {
-        wide = 50, "dock_left", "popup"
-    }, "Tool Menu")
-    map_edit.pnlToolMode.Paint = function(self, w, h)
+    map_edit.pnlToolMenu_Base = gui.Create("EditablePanel", nil, {
+        "dock_fill", "popup"
+    }, "Tool Menu Settings")
+
+    local pnlModeSelect = gui.Create("EditablePanel", map_edit.pnlToolMenu_Base, {
+        wide = 50, "dock_left"
+    })
+    pnlModeSelect.Paint = function(self, w, h)
         draw.Box(0,0,w,h,COLOR.BLACK)
     end
 
-    local layout = gui.Create("DIconLayout", map_edit.pnlToolMode, {"dock_fill"})
+    local pnlModeSettins = gui.Create("EditablePanel", map_edit.pnlToolMenu_Base, {
+        wide = 300, "dock_left"
+    })
+
+    local layout = gui.Create("DIconLayout", pnlModeSelect, {"dock_fill"})
     layout:SetSpaceY( 5 )
     layout:SetSpaceX( 5 )
 
 
-    local function CreateMode(name, icon, DoClick)
-        local newBtn = layout:Add("DButton")
-        map_edit.tToolMode_PanelList[name] = newBtn
-        newBtn:SetImage(icon)
-        newBtn:SetText("")
-        newBtn:SetCursor("hand")
-        newBtn.Paint = function (self, w, h)
-            -- draw.Box(0,0,w,h,COLOR.)
+    local function CreateNode(name, icon)
+        local new_node = layout:Add("DButton")
+        new_node:SetImage(icon)
+        new_node:SetText("")
+        new_node:SetCursor("hand")
+        new_node.Paint = function (self, w, h)
             if self:IsHovered() then
                 draw.BoxOutlined(2,0,0,w,h,COLOR.W)
             end
         end
-
         local tsArray = {}
         local function AddInfo(data) table.insert(tsArray, data) end
-
         AddInfo{name, 10, 0, 0, COLOR.W}
+        new_node:zen_SetHelpTextArray(tsArray)
+        new_node:SetSize(50,50)
 
+        return new_node
+    end
 
-        newBtn:zen_SetHelpTextArray(tsArray)
-        -- newBtn:SetTex
-        newBtn.DoClick = function ()
-            map_edit.SetSelectedMode(name)
+    local last_node, last_list
+    local function CreateMode(name, icon)
+        local new_node = CreateNode(name, icon)
+        local new_list = gui.Create("EditablePanel", pnlModeSettins, {"dock_fill", visible = false})
+        local new_layout = gui.Create("DIconLayout", new_list, {"dock_fill"})
 
-            if DoClick then
-                DoClick()
+        map_edit.tToolMode_PanelList[name] = {
+            node = new_node,
+            list = new_list,
+            layout = new_layout
+        }
+
+        new_node.DoClick = function()
+            if last_node and last_list then
+                last_node:SetSelected(false)
+                last_list:SetVisible(false)
             end
+
+            new_node:SetSelected(true)
+            new_list:SetVisible(true)
+
+            last_node = new_node
+            last_list = new_list
         end
-        newBtn:SetSize(50,50)
+
+        return new_node, new_list, new_layout
     end
 
     CreateMode("Create Entity", "zen/map_edit/ent_create.png")

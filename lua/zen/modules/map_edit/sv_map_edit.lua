@@ -83,3 +83,13 @@ nt.RegisterChannel("map_edit.SpawnProp", nil, {
         end
     end,
 })
+
+
+nt.RegisterChannel("map_edit.FirstAction", nil, {
+    types = {"uint16", "table"},
+    OnRead = function(self, ply, model, tool_mode, data)
+        if not ply:zen_HasPerm("map_edit") then return end
+
+        
+    end,
+})

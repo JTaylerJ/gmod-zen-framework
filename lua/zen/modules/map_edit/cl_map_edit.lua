@@ -31,6 +31,14 @@ function map_edit.GetViewAngles()
 	return vw.lastAngles
 end
 
+function map_edit.GetViewTrace()
+	return vw.lastTrace_Cursor
+end
+
+function map_edit.GetViewTraceNoCursor()
+	return vw.lastTrace_NoCursor
+end
+
 function map_edit.GetViewHitPos()
 	return vw.lastTrace_Cursor.HitPos
 end

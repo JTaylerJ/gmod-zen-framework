@@ -41,6 +41,26 @@ function map_edit.GetSelectedMode()
     return map_edit.SelectedToolMode
 end
 
+function map_edit.SetSelectedToolMode(mode, TOOL)
+    map_edit.SelectedToolMode = mode
+    map_edit.SelectedToolMode_TOOL = TOOL
+end
+
+function map_edit.GetActiveTool()
+    return map_edit.SelectedToolMode_TOOL
+end
+
+function map_edit.SendActiveToolAction(key, ...)
+    local TOOL = map_edit.GetActiveTool()
+    if !TOOL then return false end
+
+    -- Assert is function
+    local func = TOOL[key]
+    assertFunction(func, "func")
+
+    return func(TOOL,...)
+end
+
 
 function map_edit.LoadToolMode()
     if IsValid(map_edit.pnlToolMenu_Base) then map_edit.pnlToolMenu_Base:Remove() end
@@ -85,7 +105,7 @@ function map_edit.LoadToolMode()
     end
 
     local last_node, last_list
-    local function CreateMode(name, icon)
+    local function CreateMode(name, icon, TOOL)
         local new_node = CreateNode(name, icon)
         local new_list = gui.Create("EditablePanel", pnlModeSettins, {"dock_fill", visible = false})
         local new_layout = gui.Create("DIconLayout", new_list, {"dock_fill"})
@@ -107,16 +127,45 @@ function map_edit.LoadToolMode()
 
             last_node = new_node
             last_list = new_list
+
+            ihook.Run("zen.map_edit.OnToolModeSelect", name, TOOL)
         end
 
         return new_node, new_list, new_layout
     end
 
-    CreateMode("Create Entity", "zen/map_edit/ent_create.png")
-    CreateMode("Delete Entity", "zen/map_edit/delete.png")
-    CreateMode("Create Box", "zen/map_edit/3d_cube.png")
-    CreateMode("Hand", "zen/map_edit/hand.png")
-    CreateMode("Zone", "zen/map_edit/activity_zone.png")
-    CreateMode("Invisible Physics Zone", "zen/map_edit/frame_source.png")
-    CreateMode("Perma Props", "zen/map_edit/save_as.png")
+    for k, TOOL in pairs(map_edit.tool_mode.mt_tool_list)  do
+        CreateMode(TOOL.Name, TOOL.Icon, TOOL)
+    end
 end
+
+ihook.Listen("zen.map_edit.OnToolModeSelect", "engine:Setup", function(name, TOOL)
+    ihook.Remove("zen.map_edit.Render", "engine:toool_mode:Draw")
+
+    if TOOL.HUDDraw then
+        local func = TOOL.HUDDraw
+        ihook.Listen("zen.map_edit.Render", "engine:toool_mode:Draw", function(rendermode, priority, vw)
+            if priority == RENDER_POST then
+                func(TOOL)
+            end
+        end)
+
+        print("Setup draw function for toolmode: ", TOOL.Name)
+    end
+end)
+
+ihook.Handler("zen.map_edit.OnButtonUnPress", "menu.Toggle", function (ply, but, in_key, bind_name, vw)
+    if bind_name == "+attack" then
+        local prevent = map_edit.SendActiveToolAction("LeftClick")
+        if prevent then return true end
+    end
+    if bind_name == "+attack2" then
+        local prevent = map_edit.SendActiveToolAction("RightClick")
+        if prevent then return true end
+    end
+
+    if bind_name == "+reload" then
+        local prevent = map_edit.SendActiveToolAction("RightClick")
+        if prevent then return true end
+    end
+end)

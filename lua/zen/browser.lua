@@ -76,7 +76,12 @@ zen.IncludeCL("zen/modules/map_edit/modules/var_edit/vgui/iproperties.lua")
 zen.IncludeCL("zen/modules/map_edit/menu/menu.lua")
 zen.IncludeCL("zen/modules/map_edit/menu/sheets/props.lua")
 
+zen.IncludeSH("zen/modules/map_edit/tool_mode/sh_tool.lua")
 zen.IncludeCL("zen/modules/map_edit/tool_mode/tool_mode.lua")
+
+-- DELETE Tool
+zen.IncludeCL("zen/modules/map_edit/tool_mode/tools/delete/cl_delete.lua")
+zen.IncludeSV("zen/modules/map_edit/tool_mode/tools/delete/sv_delete.lua")
 
 zen.IncludeCL("zen/modules/fast_command/cl_fast_command.lua")
 

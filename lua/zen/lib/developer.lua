@@ -98,15 +98,15 @@ do
 end
 
 if CLIENT then
-    cvars.Register("zen_developer", 0, FCVAR_ARCHIVE + FCVAR_UNLOGGED + FCVAR_SERVER_CAN_EXECUTE + FCVAR_NEVER_AS_STRING + FCVAR_DONTRECORD + FCVAR_CLIENTCMD_CAN_EXECUTE,
+    cvars.Register("zen_developer", 0, FCVAR_ARCHIVE + FCVAR_UNLOGGED + FCVAR_SERVER_CAN_EXECUTE + FCVAR_DONTRECORD + FCVAR_CLIENTCMD_CAN_EXECUTE,
     TYPE.NUMBER,
     function(cvar_name, old_value, new_value)
         if (isnumber(new_value) and new_value > 0) then
             _CFG.bZen_Developer = true
-            warn("Developer mode is ", COLOR.GREEN, "enabled")
+            print("Developer mode is ", COLOR.GREEN, "enabled")
         else
             _CFG.bZen_Developer = false
-            warn("Developer mode is ", COLOR.RED ,"disabled")
+            print("Developer mode is ", COLOR.RED ,"disabled")
         end
     end)
 end

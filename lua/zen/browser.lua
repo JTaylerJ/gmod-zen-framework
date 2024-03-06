@@ -80,6 +80,9 @@ zen.IncludeSH("zen/modules/map_edit/tool_mode/sh_tool.lua")
 zen.IncludeCL("zen/modules/map_edit/tool_mode/cl_tool.lua")
 zen.IncludeSV("zen/modules/map_edit/tool_mode/sv_tool.lua")
 
+-- HAND Tool
+zen.IncludeCL("zen/modules/map_edit/tool_mode/tools/hand/cl_hand.lua")
+
 -- DELETE Tool
 zen.IncludeCL("zen/modules/map_edit/tool_mode/tools/delete/cl_delete.lua")
 zen.IncludeSV("zen/modules/map_edit/tool_mode/tools/delete/sv_delete.lua")

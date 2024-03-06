@@ -1,6 +1,6 @@
 module("zen", package.seeall)
 
-local zone = zen.Init("zone")
+zone = _GET("zone")
 
 zone.t_Zones = zone.t_Zones or {}
 zone.t_ZonesBoxes = zone.t_ZonesBoxes or {}

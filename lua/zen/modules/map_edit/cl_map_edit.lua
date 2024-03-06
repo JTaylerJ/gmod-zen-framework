@@ -1,10 +1,8 @@
 module("zen", package.seeall)
 
-local map_edit = zen.Init("map_edit")
-map_edit.t_Panels = map_edit.t_Panels or {}
+map_edit = _GET("map_edit")
 
-local ui, draw, draw3d, draw3d2d = zen.Import("ui", "ui.draw", "ui.draw3d", "ui.draw3d2d")
-local gui = zen.Import("gui")
+map_edit.t_Panels = map_edit.t_Panels or {}
 
 map_edit.hookName = "zen.map_edit"
 

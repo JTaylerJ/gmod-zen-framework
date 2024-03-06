@@ -1,6 +1,6 @@
 module("zen", package.seeall)
 
-local sh_hooks = zen.Init("shared_hooks")
+sh_hooks = _GET("sh_hooks")
 
 local unpack = unpack
 nt.RegisterChannel("shared.hooks", nil, {

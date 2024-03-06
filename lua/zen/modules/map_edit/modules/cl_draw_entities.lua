@@ -1,8 +1,5 @@
 module("zen", package.seeall)
 
-local map_edit = zen.Init("map_edit")
-
-local ui, draw, draw3d, draw3d2d = zen.Import("ui", "ui.draw", "ui.draw3d", "ui.draw3d2d")
 local mat_user = Material("icon16/user_suit.png")
 local mat_wireframe = Material("models/debug/debugwhite")
 local mat_wireframe2 = Material("phoenix_storms/stripes")

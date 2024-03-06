@@ -1,6 +1,6 @@
 module("zen", package.seeall)
 
-local ui, draw, draw3d = zen.Init("ui", "ui.draw", "ui.draw3d")
+draw3d = _GET("draw3d")
 
 function draw3d.GetScreenPosition(vec)
     local sc = vec:ToScreen()

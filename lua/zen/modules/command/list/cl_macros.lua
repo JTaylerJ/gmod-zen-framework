@@ -1,7 +1,5 @@
 module("zen", package.seeall)
 
-local icmd = zen.Import("command")
-
 local alias_help = [[
 Example:
     alias godmode sv "lua_run_sv me:GodEnable()"

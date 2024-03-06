@@ -1,7 +1,5 @@
 module("zen", package.seeall)
 
-local icmd = zen.Import("command")
-
 icmd.Register("auth", function(QCMD, who)
     if who:zen_GetVar("auth") then
         return "You already authed"

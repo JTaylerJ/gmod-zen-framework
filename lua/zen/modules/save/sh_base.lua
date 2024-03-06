@@ -1,6 +1,6 @@
 module("zen", package.seeall)
 
-local save = zen.Init("zen.Save")
+save = _GET("save")
 
 local F = string.InterpolateSQL
 local F_TYPE = string.InterpolateSQL_Type

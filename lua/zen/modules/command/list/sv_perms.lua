@@ -1,7 +1,5 @@
 module("zen", package.seeall)
 
-local icmd = zen.Import("command")
-
 local I = string.Interpolate
 
 icmd.Register("perm.set", function(QCMD, who, tar_sid64, perm_name, avaliable, target_flags, unique_flags)

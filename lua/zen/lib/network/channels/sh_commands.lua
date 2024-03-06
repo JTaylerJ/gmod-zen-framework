@@ -1,6 +1,6 @@
 module("zen", package.seeall)
 
-local clicmd = zen.Init("client_commands")
+clicmd = _GET("clicmd")
 
 local unpack = unpack
 nt.RegisterChannel("client_commands", nil, {

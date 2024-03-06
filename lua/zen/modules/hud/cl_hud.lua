@@ -33,7 +33,6 @@ ihook.Listen("PostRender", "zen.hud", function()
     cam.End2D()
 end)
 
-local draw, draw3d2d = zen.Import("ui.draw", "ui.draw3d2d")
 
 ihook.Listen("PostDrawOpaqueRenderables", "zen.hud", function()
     local view = render.GetViewSetup()

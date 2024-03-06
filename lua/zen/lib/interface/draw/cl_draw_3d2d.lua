@@ -1,6 +1,6 @@
 module("zen", package.seeall)
 
-local ui, draw, draw3d2d = zen.Init("ui", "ui.draw", "ui.draw3d2d")
+draw3d2d = _GET("draw3d2d")
 
 local cam_Start3D2D = cam.Start3D2D
 local cam_End3D2D = cam.End3D2D

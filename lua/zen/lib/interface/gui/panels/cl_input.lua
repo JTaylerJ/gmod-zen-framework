@@ -1,8 +1,5 @@
 module("zen", package.seeall)
 
-local ui, gui, draw = zen.Import("ui", "gui", "ui.draw")
-
-
 local color_disable = Color(100,100,100,255)
 local color_focus = Color(150,255,150,255)
 local color_nofocus = Color(150,150,150,200)

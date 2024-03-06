@@ -1,6 +1,6 @@
 module("zen", package.seeall)
 
-ihook = ihook or {}
+ihook = _GET("ihook")
 
 local ErrorNoHaltWithStack = ErrorNoHaltWithStack
 

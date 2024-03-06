@@ -1,7 +1,5 @@
 module("zen", package.seeall)
 
-local zone = zen.Init("zone")
-
 zone.t_ZonesPlayers = zone.t_ZonesPlayers or {}
 zone.t_ZonesPlayers_Name = zone.t_ZonesPlayers_Name or {}
 zone.t_ZonesPlayers_UniqueIDs = zone.t_ZonesPlayers_UniqueIDs or {}

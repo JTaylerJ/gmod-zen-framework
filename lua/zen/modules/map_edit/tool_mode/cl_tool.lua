@@ -1,7 +1,5 @@
 module("zen", package.seeall)
 
-local ui, gui, draw, map_edit = zen.Init("ui", "gui", "ui.draw", "map_edit")
-
 
 ihook.Handler("zen.map_edit.OnButtonPress", "toolmode.Toggle", function(ply, but, in_key, bind_name, vw)
     if bind_name == "+menu_context" then

@@ -1,6 +1,5 @@
 module("zen", package.seeall)
 
-local save = zen.Init("zen.Save")
 save.t_CachedPlayerValues = {}
 
 local getSteamID64 = function(PID)

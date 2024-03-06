@@ -1,6 +1,7 @@
 module("zen", package.seeall)
 
-local ui, draw = zen.Init("ui", "ui.draw")
+_draw = _draw or table.Copy(draw)
+draw = _GET("draw", _draw)
 
 local s_SetDrawColor = surface.SetDrawColor
 local s_DrawRect = surface.DrawRect

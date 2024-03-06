@@ -1,7 +1,8 @@
 module("zen", package.seeall)
 
-local basegui = gui
-local ui, gui = zen.Init("ui", "gui")
+_gui = _gui or table.Copy(gui)
+gui = _GET("gui", _gui)
+
 local sub = string.sub
 
 gui.t_StylePanels =gui.t_StylePanels or {}
@@ -15,10 +16,6 @@ gui.proxySkip = gui.proxySkip or newproxy(true)
 
 debug.setmetatable(gui.proxyEmpty, {__tostring = function() return "<gui.proxyEmpty>" end})
 debug.setmetatable(gui.proxySkip, {__tostring = function() return "<gui.proxySkip>" end})
-
-setmetatable(gui, {
-    __index = basegui
-})
 
 
 

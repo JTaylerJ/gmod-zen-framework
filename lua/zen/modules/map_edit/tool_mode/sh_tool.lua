@@ -1,7 +1,5 @@
 module("zen", package.seeall)
 
-local map_edit = zen.Init("map_edit")
-
 map_edit.tool_mode = map_edit.tool_mode or {}
 
 -- Table with all registered map edit tools.

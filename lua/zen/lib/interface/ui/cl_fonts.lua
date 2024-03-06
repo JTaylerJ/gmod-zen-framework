@@ -1,6 +1,6 @@
 module("zen", package.seeall)
 
-local ui = zen.Init("ui")
+ui = _GET("ui")
 
 ui.t_FontList = ui.t_FontList or {}
 ui.t_FastFontList = ui.t_FastFontList or {}

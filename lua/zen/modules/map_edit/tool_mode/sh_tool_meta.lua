@@ -1,7 +1,5 @@
 module("zen", package.seeall)
 
-local ui, gui, draw, map_edit = zen.Init("ui", "gui", "ui.draw", "map_edit")
-
 ---@class zen_TOOL
 ---@field id string
 ---@field Name string

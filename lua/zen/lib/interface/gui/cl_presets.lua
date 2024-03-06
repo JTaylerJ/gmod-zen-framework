@@ -1,7 +1,5 @@
 module("zen", package.seeall)
 
-local ui, gui = zen.Init("ui", "gui")
-
 gui.RegisterPreset("base", nil, {})
 
 gui.RegisterPreset("header", "base", {

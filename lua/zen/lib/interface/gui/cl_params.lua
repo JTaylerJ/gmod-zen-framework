@@ -1,7 +1,5 @@
 module("zen", package.seeall)
 
-local ui, gui = zen.Init("ui", "gui")
-
 gui.RegisterParam("tPanel", function(pnl, value)
     for k, v in pairs(value) do
         pnl[k] = v

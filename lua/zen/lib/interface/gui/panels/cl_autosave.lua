@@ -1,7 +1,5 @@
 module("zen", package.seeall)
 
-local ui, gui = zen.Import("ui", "gui")
-
 gui.RegisterStylePanel("func_save_pos", {
     iNextSave = CurTime(),
     iOwnerLastX = 0,

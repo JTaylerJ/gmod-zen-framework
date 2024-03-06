@@ -1,8 +1,5 @@
 module("zen", package.seeall)
 
-local icmd = zen.Import("command")
-local save = zen.Init("zen.Save")
-
 local map = game.GetMap()
 
 icmd.Register("go", function(QCMD, who, cmd, args, tags)

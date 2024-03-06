@@ -5,7 +5,7 @@ nt.RegisterChannel("map_edit.status")
 nt.RegisterChannel("map_edit.update.pos")
 nt.RegisterChannel("map_edit.set.view.entity")
 
-local map_edit = zen.Init("map_edit")
+map_edit = _GET("map_edit")
 
 map_edit.t_Players = map_edit.t_Players or {}
 local t_Players = map_edit.t_Players

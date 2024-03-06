@@ -42,8 +42,11 @@ function print(...)
     MsgC("\n", COLOR.WHITE)
 end
 
-function zen.module(name)
-    if !_MODULE[name] then _MODULE[name] = {} end
+---@param name string
+---@param default? any
+---@return table
+function zen.module(name, default)
+    if !_MODULE[name] then _MODULE[name] = default or {} end
     return _MODULE[name]
 end
 _GET = zen.module

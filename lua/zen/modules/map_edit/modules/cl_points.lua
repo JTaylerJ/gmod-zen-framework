@@ -2,7 +2,6 @@ module("zen", package.seeall)
 
 local GetVectorString, GetAngleString = map_edit.GetVectorString, map_edit.GetVectorString
 
-local MODE_DEFAULT = map_edit.RegisterMode("Default")
 local MODE_EDIT_POINT = map_edit.RegisterMode("Edit Points")
 
 local clr_white_alpha = Color(255,255,255,100)

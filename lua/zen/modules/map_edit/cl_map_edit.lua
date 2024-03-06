@@ -2,21 +2,8 @@ module("zen", package.seeall)
 
 map_edit = _GET("map_edit")
 
-map_edit.t_Panels = map_edit.t_Panels or {}
-
 map_edit.hookName = "zen.map_edit"
 
-map_edit.t_Mods = map_edit.t_Mods or {}
-map_edit.t_ModsNames = map_edit.t_ModsNames or {}
-function map_edit.RegisterMode(mode_name)
-	if map_edit.t_Mods[mode_name] then return map_edit.t_Mods[mode_name] end
-	local new_id = table.Count(map_edit.t_Mods) + 1
-	map_edit.t_Mods[mode_name] = new_id
-	map_edit.t_ModsNames[new_id] = mode_name
-	return new_id
-end
-
-local MODE_DEFAULT = map_edit.RegisterMode("Default")
 
 map_edit.ViewData = map_edit.ViewData or {}
 local vw = map_edit.ViewData
@@ -46,18 +33,9 @@ function map_edit.GetViewHitPosNoCursor()
 end
 
 
-
-function map_edit.SetMode(mode)
-	local old_mode = vw.mode
-	vw.mode = mode
-	ihook.Run("zen.map_edit.OnModeChange", vw, old_mode, mode)
-end
-
 function map_edit.SetupViewData()
 	table.Empty(map_edit.ViewData)
 
-	vw.t_Positions = {}
-	vw.BindPressed = {}
 	vw.nextOriginUpdate = CurTime()
 
 	local view = render.GetViewSetup()
@@ -65,12 +43,8 @@ function map_edit.SetupViewData()
 	vw.angles = view.angles
 	vw.origin = view.origin
 	vw.StartAngles = Angle(vw.angles)
-
-	map_edit.SetMode(MODE_DEFAULT)
 end
 
-
-ui.CreateFont("map_edit.Button", 6, "Roboto", {underline = true, extended = 300})
 
 function map_edit.GetAngleString(ang)
 	return table.concat({math.Round(ang.p, 2), math.Round(ang.y, 2), math.Round(ang.r, 2)}, " ")
@@ -94,79 +68,6 @@ function map_edit.Render(rendermode, priority)
 	return true
 end
 
-function map_edit.GenerateGUI(mark_panels)
-
-	if IsValid(map_edit.pnl_Context) then
-		map_edit.pnl_Context:Remove()
-	end
-
-	map_edit.pnl_Context = vgui.Create("EditablePanel")
-	map_edit.pnl_Context:SetSize(ScrW(), ScrH())
-	map_edit.pnl_Context:zen_MakePopup(true)
-	map_edit.pnl_Context:SetVisible(false)
-
-
-	local nav = gui.SuperCreate(
-	{
-		{
-			{"main", "frame"};
-			{size = {300, 400}, "center", sizable = true, parent = map_edit.pnl_Context, "focus", "save_pos"};
-			{};
-			{
-				{"content", "content"};
-				{"dock_fill", "focus"};
-				{};
-				{
-					{
-						{"mode_status", "text"};
-						{"dock_top", "auto_size", text = "--Mode Status--"};
-					};
-					{
-						{"config", "mass_input"};
-						{"auto_size", "dock_top"}
-					},
-					{
-						{"items", "list"};
-						{"dock_fill"};
-						{};
-						{}
-					};
-					{
-						{"instructions", "text"};
-						{"dock_bottom", "auto_size", text = "instructions"};
-					};
-				}
-			}
-		}
-	}, "map_edit")
-
-	nav.config:Setup({
-		{name = "Draw Nearby", value = "cfg_draw_nearbly", type = TYPE.BOOL, default = false},
-		{name = "Draw Players", value = "cfg_draw_player", type = TYPE.BOOL, default = false},
-	}, function(name, value, isDefault)
-		vw[name] = value
-	end)
-	--nav.config:SizeToChildren(false, true)
-
-	function nav.mode_status:SetMode(mode)
-		mode = mode or vw.mode
-		local mode_name = map_edit.t_ModsNames[mode] or "unknown"
-		nav.mode_status:SetText("--- " .. tostring(mode_name) .. " ---")
-	end
-	nav.mode_status:SetMode()
-
-	nav.instructions:SetText([[IN_RELOAD - Default Mode]])
-	nav.instructions:SizeToContents()
-	
-	ihook.Listen("zen.map_edit.OnModeChange", "zen.map_edit.setmode", function(vw, _, new)
-		if not IsValid(nav.mode_status) then return end
-		nav.mode_status:SetMode(new)
-	end)
-
-
-	ihook.Run("zen.map_edit.GenerateGUI", nav, map_edit.pnl_Context, vw)
-end
-
 
 local HookStateMent = {
 	["HUDPaint"] = true,
@@ -177,9 +78,7 @@ local HookStateMent = {
 	["PlayerSwitchWeapon"] = true,
 	["CreateMove"] = true,
 	["PlayerBindPress"] = true,
-
 }
-
 
 function map_edit.Toggle()
 	map_edit.IsActive = not map_edit.IsActive
@@ -189,12 +88,10 @@ function map_edit.Toggle()
 			ihook.Remove(k, map_edit.hookName)
 		end
 
-
 		ihook.Remove("CalcView", map_edit.hookName)
 		ihook.Remove("StartCommand", map_edit.hookName)
 		ihook.Remove("Render", map_edit.hookName)
 
-		if IsValid(map_edit.pnl_Context) then map_edit.pnl_Context:Remove() end
 		nt.Send("map_edit.status", {"bool"}, {false})
 		return
 	end
@@ -202,8 +99,6 @@ function map_edit.Toggle()
 	if not LocalPlayer():zen_HasPerm("map_edit") then return end
 
 	map_edit.SetupViewData()
-
-	map_edit.GenerateGUI()
 
 	for k, val in pairs(HookStateMent) do
 		local func = val and map_edit.ReturnTrue or map_edit.ReturnFalse
@@ -313,39 +208,12 @@ ihook.Handler("PlayerButtonPress", "zen.map_edit", function(ply, but, in_key, bi
 		map_edit.Toggle()
 	end
 	if not map_edit.IsActive then return end
-
-	if bind_name == "+menu_context" then
-		if IsValid(map_edit.pnl_Context) and not map_edit.pnl_Context:zen_ChildrenHasKeyboardFocus() then
-			map_edit.pnl_Context:SetVisible(true)
-			vw.IsContextActive = true
-			vw.ContextHoverEntity = vw.hoverEntity
-			vw.ContextHoverOrigin = vw.hoverOrigin
-		end
-	end
-
-
-	if in_key == IN_RELOAD then
-		map_edit.SetMode(MODE_DEFAULT)
-		return
-	end
-
 	ihook.Run("zen.map_edit.OnButtonPress", ply, but, in_key, bind_name, vw)
 	return true
 end)
 
 ihook.Handler("PlayerButtonUnPress", "zen.map_edit", function(ply, but, in_key, bind_name)
 	if not map_edit.IsActive then return end
-
-	if bind_name == "+menu_context" then
-		if IsValid(map_edit.pnl_Context) and not map_edit.pnl_Context:zen_ChildrenHasKeyboardFocus() then
-			map_edit.pnl_Context:SetVisible(false)
-		end
-		vw.IsContextActive = false
-		vw.ContextHoverEntity = nil
-		vw.ContextHoverOrigin = nil
-	end
-
-	if in_key == IN_RELOAD then return end
 
 	ihook.Run("zen.map_edit.OnButtonUnPress", ply, but, in_key, bind_name, vw)
 	return true

@@ -89,4 +89,7 @@ zen.IncludeCL("zen/modules/fast_command/cl_fast_command.lua")
 zen.IncludeSH("zen/modules/zone/sh_base.lua")
 zen.IncludeSH("zen/modules/zone/sh_player.lua")
 
-zen.IncludeSH("zen_sub/browser.lua")
+
+if file.Exists("zen_sub/browser.lua", "LUA") then
+    zen.IncludeSH("zen_sub/browser.lua")
+end

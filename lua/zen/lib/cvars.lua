@@ -5,7 +5,7 @@ CVARS_VALUES = CVARS_VALUES or {}
 CVARS = CVARS or {}
 
 _cvars = _cvars or cvars
-cvars = _GET("cvars")
+cvars = _GET("cvars", _cvars)
 
 local meta = {
     __newindex = function(self, key, value)

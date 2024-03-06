@@ -3,7 +3,7 @@ module("zen", package.seeall)
 map_edit.tool_mode = map_edit.tool_mode or {}
 
 -- Table with all registered map edit tools.
-map_edit.tool_mode.mt_tool_list = {}
+map_edit.tool_mode.mt_tool_list = map_edit.tool_mode.mt_tool_list or {}
 
 ---@param TOOL zen_TOOL
 function map_edit.tool_mode.Register(TOOL)

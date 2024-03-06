@@ -76,7 +76,7 @@ nt.mt_listReader["string_id"] = function()
         if isString then
             word = net.ReadString()
             if _CFG.bZen_Developer then
-                MsgC(COLOR.WARN, "[NT-Predicted-Warn] Please register string_id: ", word, "\n")
+                warn("[Network] Please register string_id: ", word)
             end
         else
             local word_id = net.ReadUInt(16)

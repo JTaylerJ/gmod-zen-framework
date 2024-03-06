@@ -125,3 +125,22 @@ function ui.GetTextSize(text, font)
 	local w, h = s_GetTextSize( text )
 	return w, h
 end
+
+
+local ScrW = ScrW
+function ui_x(num)
+	if num >= 0 then
+		return num
+	else
+		return ScrW() + num
+	end
+end
+
+local ScrH = ScrH
+function ui_y(num)
+	if num >= 0 then
+		return num
+	else
+		return ScrH() + num
+	end
+end

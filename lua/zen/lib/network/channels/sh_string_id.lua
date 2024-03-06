@@ -83,7 +83,7 @@ nt.mt_listReader["string_id"] = function()
             local tWord = nt.mt_StringNumbers[word_id]
             if not tWord then
                 if _CFG.bZen_Developer then
-                    MsgC(COLOR.ERROR, "[NT-Predicted-Error] READ: Word id not exists: ", word_id, "\n")
+                    log_error("[Network] READ: Word id not exists: ", word_id)
                 end
                 return
             end

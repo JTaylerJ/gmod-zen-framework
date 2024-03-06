@@ -46,6 +46,7 @@ function zen.module(name)
     if !_MODULE[name] then _MODULE[name] = {} end
     return _MODULE[name]
 end
+_GET = zen.module
 
 
 function zen.Init(...)

@@ -39,26 +39,31 @@ function map_edit.GetSelectedMode()
     return map_edit.SelectedToolMode
 end
 
-function map_edit.SetSelectedToolMode(mode, TOOL)
-    map_edit.SelectedToolMode = mode
-    map_edit.SelectedToolMode_TOOL = TOOL
+function map_edit.SetSelectedToolMode(tool_id)
+    map_edit.SelectedToolMode = tool_id
+
+    local TOOL = map_edit.tool_mode.Get(tool_id)
 
     if !TOOL.bInitialized then
         TOOL:Init()
         TOOL.bInitialized = true
     end
 
-    ihook.Run("zen.map_edit.OnToolModeSelect", mode, TOOL)
+    ihook.Run("zen.map_edit.OnToolModeSelect", tool_id, TOOL)
 end
 
 function map_edit.GetActiveTool()
-    return map_edit.SelectedToolMode_TOOL
+    local tool_id = map_edit.SelectedToolMode
+    if !tool_id then return end
+    local TOOL = map_edit.tool_mode.Get(tool_id)
+
+    return TOOL
 end
 
 function map_edit.SendActiveToolAction(key, ...)
     local TOOL = map_edit.GetActiveTool()
-    print("Active Tool: ", TOOL.id, " action: ", key)
     if !TOOL then return false end
+    warn("Active Tool: ", TOOL.id, " action: ", key)
 
     -- Assert is function
     local func = TOOL[key]
@@ -113,12 +118,15 @@ function map_edit.LoadToolMode()
     end
 
     local last_node, last_list
-    local function CreateMode(name, icon, TOOL)
+    local function CreateMode(tool_id)
+        local TOOL = map_edit.tool_mode.Get(tool_id)
+        local name = TOOL.Name
+        local icon = TOOL.Icon
         local new_node = CreateNode(name, icon)
         local new_list = gui.Create("EditablePanel", pnlModeSettins, {"dock_fill", visible = false})
         local new_layout = gui.Create("DIconLayout", new_list, {"dock_fill"})
 
-        map_edit.tToolMode_PanelList[name] = {
+        map_edit.tToolMode_PanelList[tool_id] = {
             node = new_node,
             list = new_list,
             layout = new_layout
@@ -136,14 +144,14 @@ function map_edit.LoadToolMode()
             last_node = new_node
             last_list = new_list
 
-            map_edit.SetSelectedToolMode(name, TOOL)
+            map_edit.SetSelectedToolMode(tool_id)
         end
 
         return new_node, new_list, new_layout
     end
 
-    for k, TOOL in pairs(map_edit.tool_mode.mt_tool_list)  do
-        CreateMode(TOOL.Name, TOOL.Icon, TOOL)
+    for k, TOOL in pairs(map_edit.tool_mode.GetAll())  do
+        CreateMode(TOOL.id)
     end
 end
 

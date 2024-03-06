@@ -88,13 +88,15 @@ nt.RegisterChannel("map_edit.SpawnProp", nil, {
 nt.RegisterChannel("map_edit.tool_mode.ServerAction", nil, {
     types = {"string", "table"},
     OnRead = function(self, ply, tool_id, data)
-        if not ply:zen_HasPerm("map_edit") then return end
+        if not ply:zen_HasPerm("map_edit") then return false, "no has permission" end
 
         local TOOL = map_edit.tool_mode.Get(tool_id)
-        if !TOOL then return end
+        if !TOOL then return false, "TOOL Don't exists" end
 
-        if TOOL.ServerAction then
-            TOOL.ServerAction(ply, data)
-        end
+        if !TOOL.ServerAction then return false, "TOOL Don't have ServerAction" end
+
+        data.ply = ply
+
+        TOOL:ServerAction(data)
     end,
 })

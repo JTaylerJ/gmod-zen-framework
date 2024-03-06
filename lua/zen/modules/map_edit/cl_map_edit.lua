@@ -32,6 +32,10 @@ function map_edit.GetViewHitPosNoCursor()
 	return vw.lastTrace_NoCursor.HitPos
 end
 
+function map_edit.GetHoverEntity()
+	return vw.hoverEntity
+end
+
 
 function map_edit.SetupViewData()
 	table.Empty(map_edit.ViewData)
@@ -79,15 +83,16 @@ local function RenderHitPoint()
 	local ent = vw.lastTrace_Cursor.Entity
 
 	if IsValid(ent) then
+		local ent_id = ent:EntIndex()
 
 		y = y - 35
-		draw3d2d.Text(vw.lastTrace_Cursor.HitPos, nil, 0.1, true, tostring(ent:GetClass()), 20, 0, y, COLOR.WHITE, 1, 1, COLOR.BLACK)
+		draw3d2d.Text(vw.lastTrace_Cursor.HitPos, nil, 0.1, true, tostring(ent:GetClass()) .. "[" .. ent_id .. "]", 10, 0, y, COLOR.WHITE, 1, 1, COLOR.BLACK)
 
 		local name = ent.GetName and ent:GetName()
 
 		if name then
 			y = y - 35
-			draw3d2d.Text(vw.lastTrace_Cursor.HitPos, nil, 0.1, true, tostring(ent:GetName()), 20, 0, y, COLOR.WHITE, 1, 1, COLOR.BLACK)
+			draw3d2d.Text(vw.lastTrace_Cursor.HitPos, nil, 0.1, true, tostring(ent:GetName()), 10, 0, y, COLOR.WHITE, 1, 1, COLOR.BLACK)
 		end
 	end
 end

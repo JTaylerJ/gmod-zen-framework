@@ -29,6 +29,7 @@ function map_edit.tool_mode.Register(TOOL)
 end
 
 -- Function getting the tool with the given id.
+---@return zen_TOOL
 function map_edit.tool_mode.Get(id)
     return map_edit.tool_mode.mt_tool_list[id]
 end

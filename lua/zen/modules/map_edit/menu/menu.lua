@@ -23,7 +23,7 @@ end)
 function map_edit.OpenMenu()
     map_edit.IsMenuEnabled = true
 
-    if icfg.bZen_Developer and IsValid(map_edit.pnlMenu) then
+    if _CFG.bZen_Developer and IsValid(map_edit.pnlMenu) then
         map_edit.pnlMenu:SetVisible(true)
         return
     end
@@ -34,7 +34,7 @@ end
 function map_edit.CloseMenu()
     map_edit.IsMenuEnabled = false
 
-    if icfg.bZen_Developer then
+    if _CFG.bZen_Developer then
         map_edit.pnlMenu:Remove()
     else
         map_edit.pnlMenu:SetVisible(false)
@@ -42,7 +42,7 @@ function map_edit.CloseMenu()
 end
 
 function map_edit.LoadMenu()
-    if icfg.bZen_Developer and IsValid(map_edit.pnlMenu) then map_edit.pnlMenu:Remove() end
+    if _CFG.bZen_Developer and IsValid(map_edit.pnlMenu) then map_edit.pnlMenu:Remove() end
 
 
     map_edit.pnlMenu = gui.Create("DFrame", nil, {

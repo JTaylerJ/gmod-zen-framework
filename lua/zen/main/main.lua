@@ -1,20 +1,25 @@
 module("zen", package.seeall)
 
--- Stable
+-- Initialize global variables
 
-zen = (istable(zen) and zen.__zenLOADED) and zen or {}
-zen.__zenLOADED = true
+_L = getfenv()
+zen = _L.zen or {}
+
+-- Initialize zen submodules
 zen.config = {}
 zen.modules = {}
-imodules = zen.modules
-icfg = zen.config
-icfg.colors = icfg.colors or {}
-iclr = icfg.colors
+
+-- Alises
+_MODULE = zen.modules
+_CFG = zen.config
+
+_CFG.colors = _CFG.colors or {}
+iclr = _CFG.colors
 
 iclr.main = Color(0, 255, 0, 255)
 iclr.console_default = Color(200, 200, 200)
 
-icfg.console_space = " "
+_CFG.console_space = " "
 
 local string_Split = string.Split
 

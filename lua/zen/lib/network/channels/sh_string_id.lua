@@ -75,14 +75,14 @@ nt.mt_listReader["string_id"] = function()
         local word
         if isString then
             word = net.ReadString()
-            if icfg.bZen_Developer then
+            if _CFG.bZen_Developer then
                 MsgC(COLOR.WARN, "[NT-Predicted-Warn] Please register string_id: ", word, "\n")
             end
         else
             local word_id = net.ReadUInt(16)
             local tWord = nt.mt_StringNumbers[word_id]
             if not tWord then
-                if icfg.bZen_Developer then
+                if _CFG.bZen_Developer then
                     MsgC(COLOR.ERROR, "[NT-Predicted-Error] READ: Word id not exists: ", word_id, "\n")
                 end
                 return
@@ -116,7 +116,7 @@ nt.mt_listWriter["string_id"] = function(var)
     if isValidString then
         net.WriteBool(isString)
         if isString then
-            if icfg.bZen_Developer then
+            if _CFG.bZen_Developer then
                 MsgC(COLOR.WARN, "[NT-Predicted-Warn] Please register string_id: ", var, "\n")
             end
             net.WriteString(var)

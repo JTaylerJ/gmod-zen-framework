@@ -5,10 +5,10 @@ if CLIENT then
     TYPE.NUMBER,
     function(cvar_name, old_value, new_value)
         if (isnumber(new_value) and new_value > 0) then
-            icfg.bZen_Developer = true
+            _CFG.bZen_Developer = true
             MsgC(COLOR.WARN, "[NT-Predicted-Warn] Developer mode is ", COLOR.GREEN, "enabled \n")
         else
-            icfg.bZen_Developer = false
+            _CFG.bZen_Developer = false
             MsgC(COLOR.WARN, "[NT-Predicted-Warn] Developer mode is ", COLOR.RED ,"disabled \n")
         end
     end)

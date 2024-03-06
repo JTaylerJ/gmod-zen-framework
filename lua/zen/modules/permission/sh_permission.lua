@@ -25,7 +25,7 @@ iperm.unique_flags.SILENT = 2 ^ 2 -- Can use silent mode
 iperm.unique_flags.FUN_ONLY = 2 ^ 3 -- Command avaliable only in fun time
 iperm.unique_flags.ABSOLUTE = 2 ^ 4 -- No limits
 
-icfg.net_permUpdate = "iperm.UpdatePlayer"
+_CFG.net_permUpdate = "iperm.UpdatePlayer"
 
 iperm.mt_PlayerPermissions = iperm.mt_PlayerPermissions or {}
 iperm.mt_Permissions = iperm.mt_Permissions or {}
@@ -48,7 +48,7 @@ function iperm.PlayerGetPermission(sid64, perm_name)
 end
 
 function iperm.PlayerCanTargetOffline(w_sid64, t_sid64)
-    if icfg.Admins[w_sid64] then return true end
+    if _CFG.Admins[w_sid64] then return true end
     return false
 end
 
@@ -100,7 +100,7 @@ function iperm.PlayerHasPermission(sid64, perm_name, target, isSilent)
     local sError = "unknown"
 
     if perm_name == "public" then goto success end
-    if icfg.Admins[sid64] then goto success end
+    if _CFG.Admins[sid64] then goto success end
 
     do -- Advanced Check
         local tPlayerPerm = iperm.PlayerGetPermission(sid64, perm_name)

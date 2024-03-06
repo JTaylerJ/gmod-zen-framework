@@ -19,6 +19,8 @@ function map_edit.tool_mode.Register(TOOL)
     if TOOL.ServerAction then assertFunction(TOOL.ServerAction, "No FirstAction specified for tool.") end
     if TOOL.Reload then assertFunction(TOOL.Reload, "No Reload specified for tool.") end
     if TOOL.HUDDraw then assertFunction(TOOL.HUDDraw, "No HUDDraw specified for tool.") end
+    if TOOL.OnButtonPress then assertFunction(TOOL.OnButtonPress, "No OnButtonPress specified for tool.") end
+    if TOOL.OnButtonUnPress then assertFunction(TOOL.OnButtonUnPress, "No OnButtonUnPress specified for tool.") end
 
     setmetatable(TOOL, map_edit.TOOL_META)
     map_edit.tool_mode.mt_tool_list[TOOL.id] = TOOL

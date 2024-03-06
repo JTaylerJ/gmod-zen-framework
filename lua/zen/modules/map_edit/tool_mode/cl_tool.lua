@@ -43,6 +43,11 @@ function map_edit.SetSelectedToolMode(mode, TOOL)
     map_edit.SelectedToolMode = mode
     map_edit.SelectedToolMode_TOOL = TOOL
 
+    if !TOOL.bInitialized then
+        TOOL:Init()
+        TOOL.bInitialized = true
+    end
+
     ihook.Run("zen.map_edit.OnToolModeSelect", mode, TOOL)
 end
 
@@ -57,6 +62,8 @@ function map_edit.SendActiveToolAction(key, ...)
 
     -- Assert is function
     local func = TOOL[key]
+    if !func then return false end
+
     assertFunction(func, "func")
 
     return func(TOOL,...)
@@ -143,30 +150,22 @@ end
 ihook.Listen("zen.map_edit.OnToolModeSelect", "engine:Setup", function(name, TOOL)
     ihook.Remove("zen.map_edit.Render", "engine:toool_mode:Draw")
 
-    if TOOL.HUDDraw then
-        local func = TOOL.HUDDraw
+    if TOOL.Render then
+        local func = TOOL.Render
         ihook.Listen("zen.map_edit.Render", "engine:toool_mode:Draw", function(rendermode, priority, vw)
-            if priority == RENDER_POST then
-                func(TOOL)
-            end
+            func(TOOL, rendermode, priority, vw)
         end)
 
         print("Setup draw function for toolmode: ", TOOL.Name)
     end
 end)
 
-ihook.Handler("zen.map_edit.OnButtonUnPress", "menu.Toggle", function (ply, but, in_key, bind_name, vw)
-    if bind_name == "+attack" then
-        local prevent = map_edit.SendActiveToolAction("LeftClick")
-        if prevent then return true end
-    end
-    if bind_name == "+attack2" then
-        local prevent = map_edit.SendActiveToolAction("RightClick")
-        if prevent then return true end
-    end
+ihook.Handler("zen.map_edit.OnButtonPress", "menu.Toggle", function (ply, but, in_key, bind_name, vw)
+    local prevent = map_edit.SendActiveToolAction("OnButtonPress", but, in_key, bind_name, vw)
+    if prevent then return true end
+end)
 
-    if bind_name == "+reload" then
-        local prevent = map_edit.SendActiveToolAction("RightClick")
-        if prevent then return true end
-    end
+ihook.Handler("zen.map_edit.OnButtonUnPress", "menu.Toggle", function (ply, but, in_key, bind_name, vw)
+    local prevent = map_edit.SendActiveToolAction("OnButtonUnPress", but, in_key, bind_name, vw)
+    if prevent then return true end
 end)

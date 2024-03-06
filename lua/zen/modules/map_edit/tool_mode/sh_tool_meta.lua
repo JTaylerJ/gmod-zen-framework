@@ -6,12 +6,12 @@ module("zen", package.seeall)
 ---@field Description? string
 ---@field Icon? string
 ---@field ServerAction? fun(self:zen_TOOL, data:table)
----@field LeftClick? fun(self:zen_TOOL)
----@field RightClick? fun(self:zen_TOOL)
 ---@field Reload? fun(self:zen_TOOL)
 ---@field Init fun(self:zen_TOOL)
----@field HUDDraw? fun(self:zen_TOOL)
+---@field Render? fun(self:zen_TOOL, rendermode:number, priority:number, vw:table)
 ---@field CallServerAction? fun(self:zen_TOOL, data:table)
+---@field OnButtonPress? fun(self:zen_TOOL, data:table)
+---@field OnButtonUnPress? fun(self:zen_TOOL, data:table)
 
 map_edit.TOOL_META = map_edit.TOOL_META or {}
 

@@ -49,12 +49,14 @@ end
 function map_edit.GetAngleString(ang)
 	return table.concat({math.Round(ang.p, 2), math.Round(ang.y, 2), math.Round(ang.r, 2)}, " ")
 end
+local GetAngleString = map_edit.GetAngleString
 
 function map_edit.GetVectorString(vec)
 	return table.concat({math.Round(vec.x, 2), math.Round(vec.y, 2), math.Round(vec.z, 2)}, " ")
 end
+local GetVectorString = map_edit.GetVectorString
 
-function map_edit.Render(rendermode, priority)
+local function UpdateView()
 	local cursor_origin, cursor_normal = util.GetPlayerTraceSource(nil)
 	vw.lastTrace_Cursor = util.TraceLine({start = cursor_origin, endpos = cursor_origin + cursor_normal * 1024})
 
@@ -63,6 +65,37 @@ function map_edit.Render(rendermode, priority)
 
 	vw.hoverEntity = vw.lastTrace_Cursor.Entity
 	vw.hoverOrigin = vw.lastTrace_Cursor.HitPos
+end
+
+
+local function RenderHitPoint()
+	local y = 0
+	y = y - 5
+	draw3d2d.Text(vw.lastTrace_Cursor.HitPos, nil, 0.01, true, "v", 100, 0, y, COLOR.WHITE, 1, 1, COLOR.BLACK)
+
+	y = y - 35
+	draw3d2d.Text(vw.lastTrace_Cursor.HitPos, nil, 0.1, true, GetVectorString(vw.lastTrace_Cursor.HitPos), 10, 0, y, COLOR.WHITE, 1, 1, COLOR.BLACK)
+
+	local ent = vw.lastTrace_Cursor.Entity
+
+	if IsValid(ent) then
+
+		y = y - 35
+		draw3d2d.Text(vw.lastTrace_Cursor.HitPos, nil, 0.1, true, tostring(ent:GetClass()), 20, 0, y, COLOR.WHITE, 1, 1, COLOR.BLACK)
+
+		local name = ent.GetName and ent:GetName()
+
+		if name then
+			y = y - 35
+			draw3d2d.Text(vw.lastTrace_Cursor.HitPos, nil, 0.1, true, tostring(ent:GetName()), 20, 0, y, COLOR.WHITE, 1, 1, COLOR.BLACK)
+		end
+	end
+end
+
+function map_edit.Render(rendermode, priority)
+	UpdateView()
+
+	RenderHitPoint()
 
 	ihook.Run("zen.map_edit.Render", rendermode, priority, vw)
 	return true

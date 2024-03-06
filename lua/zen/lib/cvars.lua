@@ -4,6 +4,9 @@ CVARS_VALUES = CVARS_VALUES or {}
 
 CVARS = CVARS or {}
 
+_cvars = _cvars or cvars
+cvars = _GET("cvars")
+
 local meta = {
     __newindex = function(self, key, value)
         cvars.OnChange(key, value, true)
@@ -86,7 +89,7 @@ function cvars.GetValue(cvar_name, typen)
     if value != nil then return value end
 
     local value = GetConVar(cvar_name):GetString()
-    
+
     return util.StringToTYPE(value, typen)
 end
 

@@ -24,22 +24,35 @@ _CFG.console_space = " "
 local string_Split = string.Split
 
 _print = _print or print
+do
+    local i, lastcolor
+    local MsgC = MsgC
+    local IsColor = IsColor
+    function print(...)
+        local args = {...}
+        local count = #args
 
-local i
-function print(...)
-    local args = {...}
-    local count = #args
+        i = 0
 
-    i = 0
-
-    MsgC(_COLOR.main, "z> ", _COLOR.console_default)
-    if count > 0 then
-        while i < count do
-            i = i + 1
-            MsgC(args[i])
+        MsgC(_COLOR.main, "z> ", _COLOR.console_default)
+        if count > 0 then
+            while i < count do
+                i = i + 1
+                local dat = args[i]
+                if IsColor(dat) then
+                    lastcolor = dat
+                    continue
+                end
+                if lastcolor then
+                    MsgC(lastcolor, dat)
+                    lastcolor = nil
+                else
+                    MsgC(dat)
+                end
+            end
         end
+        MsgC("\n", COLOR.WHITE)
     end
-    MsgC("\n", COLOR.WHITE)
 end
 
 ---@param name string

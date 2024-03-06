@@ -42,6 +42,11 @@ function print(...)
     MsgC("\n", COLOR.WHITE)
 end
 
+function zen.module(name)
+    if !_MODULE[name] then _MODULE[name] = {} end
+    return _MODULE[name]
+end
+
 
 function zen.Init(...)
     local to_init = {...}

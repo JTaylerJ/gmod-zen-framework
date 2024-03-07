@@ -14,6 +14,25 @@ ihook.Handler("zen.map_edit.OnButtonUnPress", "toolmode.Toggle", function(ply, b
     end
 end)
 
+
+local function RenderHUD()
+    local text_level = ui_y(-20)
+
+    local TOOL = map_edit.GetActiveTool()
+
+    if TOOL and !vgui.CursorVisible() then
+        draw.Text("Tool: ".. TOOL.Name, 8, 10, text_level, COLOR.W, TEXT_ALIGN_LEFT, TEXT_ALIGN_CENTER, COLOR.BLACK)
+        text_level = text_level - 10
+    end
+end
+
+ihook.Listen("zen.map_edit.Render", "engine:tool:HUDInfo", function(rendermode, priority)
+    if rendermode != RENDER_2D then return end
+    if priority != RENDER_POST then return end
+
+    RenderHUD()
+end)
+
 function map_edit.OpenToolMode()
     map_edit.IsToolModeEnabled = true
 

@@ -40,7 +40,7 @@ function map_edit.GetSelectedMode()
     return map_edit.SelectedToolMode
 end
 
--- 
+--
 
 function map_edit.tool_mode.GetInitializedTool(tool_id)
     if !map_edit.t_ToolModeCache[tool_id] then
@@ -50,10 +50,29 @@ function map_edit.tool_mode.GetInitializedTool(tool_id)
     return map_edit.t_ToolModeCache[tool_id]
 end
 
+function map_edit.tool_mode.ActivateLastTool()
+    -- Activating last active tools
+    local tool_id = map_edit.GetSelectedMode()
+    if tool_id then
+        map_edit.SetSelectedToolMode(tool_id)
+    end
+end
+
+function map_edit.tool_mode.DeactivateLastTool()
+    local TOOL = map_edit.GetActiveTool()
+    if TOOL then
+        TOOL:_Die()
+    end
+end
+
 function map_edit.tool_mode.ClearInitializedTool(tool_id)
-    if map_edit.t_ToolModeCache[tool_id] then
+    local TOOL = map_edit.t_ToolModeCache[tool_id]
+    if TOOL then
+        if TOOL._Die then TOOL:_Die() end
         map_edit.t_ToolModeCache[tool_id] = nil
     end
+
+    map_edit.tool_mode.ActivateLastTool()
 end
 
 ihook.Listen("map_edit.tool_mode.Register", "engine:ClearPlayerTOOLCache", function(tool_id, TOOL)
@@ -61,14 +80,15 @@ ihook.Listen("map_edit.tool_mode.Register", "engine:ClearPlayerTOOLCache", funct
 end)
 
 function map_edit.SetSelectedToolMode(tool_id)
+    local ACTIVE_TOOL = map_edit.GetActiveTool()
+    if ACTIVE_TOOL and ACTIVE_TOOL.id != tool_id then
+        if ACTIVE_TOOL._UnSelected then ACTIVE_TOOL:_UnSelected() end
+    end
+
     map_edit.SelectedToolMode = tool_id
 
     local TOOL = map_edit.tool_mode.GetInitializedTool(tool_id)
-
-    if !TOOL.bInitialized then
-        TOOL:Init()
-        TOOL.bInitialized = true
-    end
+    if TOOL._Selected then TOOL:_Selected() end
 
     ihook.Run("zen.map_edit.OnToolModeSelect", tool_id, TOOL)
 end
@@ -202,7 +222,13 @@ end)
 ihook.Listen("zen.map_edit.OnDisabled", "engine:tools:StopHooks", function ()
     ihook.Remove("zen.map_edit.Render", "engine:toool_mode:Draw")
     ihook.Remove("Think", "zen.map_edit.engine:toool_mode:Think")
+    map_edit.tool_mode.DeactivateLastTool()
 end)
+
+ihook.Listen("zen.map_edit.OnEnabled", "engine:tools:StopHooks", function ()
+    map_edit.tool_mode.ActivateLastTool()
+end)
+
 
 ihook.Handler("zen.map_edit.OnButtonPress", "menu.Toggle", function (ply, but, in_key, bind_name, vw)
     local prevent = map_edit.SendActiveToolAction("OnButtonPress", but, in_key, bind_name, vw)

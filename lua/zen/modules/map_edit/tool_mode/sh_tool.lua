@@ -9,7 +9,6 @@ map_edit.tool_mode.mt_tool_list = map_edit.tool_mode.mt_tool_list or {}
 function map_edit.tool_mode.Register(TOOL)
     assertStringNice(TOOL.id, "No ID specified for tool.")
     assertStringNice(TOOL.Name, "No Name specified for tool.")
-    assertFunction(TOOL.Init, "No Init specified for tool.")
 
     -- Check if all strings are set.
     if TOOL.Description then assertStringNice(TOOL.Description, "No Description specified for tool.") end
@@ -41,6 +40,11 @@ function map_edit.tool_mode.GetCopy(id)
     assertTable(BASE_TOOL, "BASE_TOOL")
     local BASE_META = getmetatable(BASE_TOOL)
     local USER_TOOL = setmetatable(table.Copy(BASE_TOOL), BASE_META)
+
+    if USER_TOOL._Created then
+        USER_TOOL:_Created()
+    end
+
     return USER_TOOL
 end
 

@@ -49,6 +49,23 @@ function map_edit.SetupViewData()
 
 	local view = render.GetViewSetup()
 
+	vw.aspect = view.aspect
+	vw.bloomtone = view.bloomtone
+	vw.fov = view.fov
+	vw.fov_unscaled = view.fov_unscaled
+	vw.fovviewmodel = view.fovviewmodel
+	vw.fovviewmodel_unscaled = view.fovviewmodel_unscaled
+	vw.height = view.height
+	vw.subrect = view.subrect
+	vw.width = view.width
+	vw.x = view.x
+	vw.y = view.y
+	vw.zfar = view.zfar
+	vw.zfarviewmodel = view.zfarviewmodel
+	vw.znear = view.znear
+	vw.znearviewmodel = view.znearviewmodel
+
+
 	vw.angles = view.angles
 	vw.origin = view.origin
 	vw.StartAngles = Angle(vw.angles)
@@ -66,10 +83,10 @@ end
 local GetVectorString = map_edit.GetVectorString
 
 local function UpdateView()
-	local cursor_origin, cursor_normal = util.GetPlayerTraceSource(nil)
+	local cursor_origin, cursor_normal = util.GetPlayerTraceSource(nil, false, vw)
 	vw.lastTrace_Cursor = util.TraceLine({start = cursor_origin, endpos = cursor_origin + cursor_normal * 1024})
 
-	local nocursor_origin, nocursor_normal = util.GetPlayerTraceSource(nil, true)
+	local nocursor_origin, nocursor_normal = util.GetPlayerTraceSource(nil, true, vw)
 	vw.lastTrace_NoCursor = util.TraceLine({start = nocursor_origin, endpos = nocursor_origin + nocursor_normal * 1024})
 
 	vw.hoverEntity = vw.lastTrace_Cursor.Entity
@@ -179,21 +196,27 @@ function map_edit.StartCommand(ply, cmd)
 
 	local isMoveActive = !vgui.CursorVisible()
 
-	if add_x != 0 then
-		if vw.angles.p < -90 or vw.angles.p > 90 then
-			vw.angles.y = vw.angles.y - add_x
-		else
-			vw.angles.y = vw.angles.y + add_x
+	do -- MouseMove
+		local prevent_screen_move = ihook.Run("map_edit.MouseMove", add_x, add_y)
+		if !prevent_screen_move then
+
+			if add_x != 0 then
+				if vw.angles.p < -90 or vw.angles.p > 90 then
+					vw.angles.y = vw.angles.y - add_x
+				else
+					vw.angles.y = vw.angles.y + add_x
+				end
+			end
+
+			if add_y != 0 then
+				vw.angles.p = vw.angles.p - add_y
+			end
+
+
+			vw.angles:Normalize()
+			vw.angles.r = 0
 		end
 	end
-
-	if add_y != 0 then
-		vw.angles.p = vw.angles.p - add_y
-	end
-
-
-	vw.angles:Normalize()
-	vw.angles.r = 0
 
 	if isMoveActive then
 

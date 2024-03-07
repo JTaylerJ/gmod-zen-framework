@@ -14,7 +14,9 @@ end
 
 ihook.Listen("map_edit.tool_mode.Register", "engine:ClearPlayerTOOLCache", function(tool_id, TOOL)
     for ply, tools in pairs(P_TOOLS) do
-        if tools[tool_id] then
+        local TOOL = tools[tool_id]
+        if TOOL then
+            if TOOL._Die then TOOL:_Die() end
             tools[tool_id] = nil
         end
     end

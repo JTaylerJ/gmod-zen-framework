@@ -1629,9 +1629,9 @@ function util.GetFlagsTable(flags_table, flags)
     return tResult
 end
 
-function util.GetPlayerTraceSource(ply, noCursor)
+function util.GetPlayerTraceSource(ply, noCursor, custom_view_data)
     if CLIENT and (ply == nil or ply == LocalPlayer()) then
-        local view_data = render.GetViewSetup()
+        local view_data = custom_view_data or render.GetViewSetup()
         local origin = view_data.origin
         local normal
 

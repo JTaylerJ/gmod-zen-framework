@@ -272,12 +272,13 @@ local function playerButtonDown(ply, but)
 		ihook.Run("PlayerButtonPress.vgui_input", ply, but, in_key, bind_name, char)
 	end
 
-	if gameui_enabled != true and isCursorVisible != true and vgui_input != true then
+	local isKeyFree = gameui_enabled != true and isCursorVisible != true and vgui_input != true
+	if isKeyFree then
 		KeyPressed_Normal[but] = true
 		ihook.Run("PlayerButtonPress.normal", ply, but, in_key, bind_name, char)
 	end
 
-	ihook.Run("PlayerButtonPress", ply, but, in_key, bind_name, char)
+	ihook.Run("PlayerButtonPress", ply, but, in_key, bind_name, char, isKeyFree)
 end
 
 -- Main hook to check press button or no. Ignore when player in menu and others

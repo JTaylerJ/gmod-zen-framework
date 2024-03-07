@@ -2,13 +2,14 @@ module("zen", package.seeall)
 
 map_edit.t_ToolModeCache = map_edit.t_ToolModeCache or {}
 
-ihook.Handler("zen.map_edit.OnButtonPress", "toolmode.Toggle", function(ply, but, in_key, bind_name, vw)
-    if bind_name == "+menu_context" then
+ihook.Listen("zen.map_edit.OnButtonPress", "zen:map_edit:tool:engine:OpenContextMenu", function(ply, but, in_key, bind_name, char, isKeyFree)
+    if isKeyFree and bind_name == "+menu_context" then
         map_edit.OpenToolMode()
+        return true
     end
 end)
 
-ihook.Handler("zen.map_edit.OnButtonUnPress", "toolmode.Toggle", function(ply, but, in_key, bind_name, vw)
+ihook.Listen("zen.map_edit.OnButtonUnPress", "zen:map_edit:tool:engine:CloseContextMenu", function(ply, but, in_key, bind_name, char, isKeyFree)
     if bind_name == "+menu_context" then
         map_edit.CloseToolMode()
     end
@@ -122,12 +123,12 @@ end
 
 function map_edit.SendActiveToolAction(key, ...)
     local TOOL = map_edit.GetActiveTool()
-    if !TOOL then return false end
+    if !TOOL then return end
     warn("Active Tool: ", TOOL.id, " action: ", key)
 
     -- Assert is function
     local func = TOOL[key]
-    if !func then return false end
+    if !func then return end
 
     assertFunction(func, "func")
 
@@ -249,12 +250,10 @@ ihook.Listen("zen.map_edit.OnEnabled", "engine:tools:StopHooks", function ()
 end)
 
 
-ihook.Handler("zen.map_edit.OnButtonPress", "menu.Toggle", function (ply, but, in_key, bind_name, vw)
-    local prevent = map_edit.SendActiveToolAction("OnButtonPress", but, in_key, bind_name, vw)
-    if prevent then return true end
+ihook.Listen("zen.map_edit.OnButtonPress", "zen:map_edit:tool:engine:TOOL:RunButtonPress", function (ply, but, in_key, bind_name, vw)
+    map_edit.SendActiveToolAction("OnButtonPress", but, in_key, bind_name, vw)
 end)
 
-ihook.Handler("zen.map_edit.OnButtonUnPress", "menu.Toggle", function (ply, but, in_key, bind_name, vw)
-    local prevent = map_edit.SendActiveToolAction("OnButtonUnPress", but, in_key, bind_name, vw)
-    if prevent then return true end
+ihook.Listen("zen.map_edit.OnButtonUnPress", "zen:map_edit:tool:engine:TOOL:RunButtonUnPress", function (ply, but, in_key, bind_name, vw)
+    map_edit.SendActiveToolAction("OnButtonUnPress", but, in_key, bind_name, vw)
 end)

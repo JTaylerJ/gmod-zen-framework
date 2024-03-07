@@ -10,12 +10,16 @@ function map_edit.ToggleMenu()
     end
 end
 
-ihook.Handler("zen.map_edit.OnButtonUnPress", "menu.Toggle", function (ply, but, in_key, bind_name, vw)
+ihook.Handler("zen.map_edit.OnButtonPress", "engine:map_edit_spawnmenu:menu:OnButtonPress:ToogleMenu", function (ply, but, in_key, bind_name, char, isKeyFree)
     if bind_name == "+menu" then
-        map_edit.ToggleMenu()
-        return true
+        if isKeyFree then
+            map_edit.OpenMenu()
+            return true
+        else
+            map_edit.CloseMenu()
+            return true
+        end
     end
-
 end)
 
 function map_edit.OpenMenu()

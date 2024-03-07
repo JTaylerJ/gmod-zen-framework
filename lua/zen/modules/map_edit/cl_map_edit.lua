@@ -83,7 +83,7 @@ end
 local GetVectorString = map_edit.GetVectorString
 
 local function UpdateView()
-	local cursor_origin, cursor_normal = util.GetPlayerTraceSource(nil, false, vw)
+	local cursor_origin, cursor_normal = util.GetPlayerTraceSource(nil, false)
 	vw.lastTrace_Cursor = util.TraceLine({start = cursor_origin, endpos = cursor_origin + cursor_normal * 1024})
 
 	local nocursor_origin, nocursor_normal = util.GetPlayerTraceSource(nil, true, vw)
@@ -273,18 +273,18 @@ function map_edit.StartCommand(ply, cmd)
 	return true
 end
 
-ihook.Handler("PlayerButtonPress", "zen.map_edit", function(ply, but, in_key, bind_name)
+ihook.Handler("PlayerButtonPress", "zen.map_edit", function(ply, but, in_key, bind_name, char, isKeyFree)
 	if input.IsKeyDown(KEY_LCONTROL) and input.IsKeyDown(KEY_LALT) and but == KEY_APOSTROPHE then
 		map_edit.Toggle()
 	end
 	if not map_edit.IsActive then return end
-	ihook.Run("zen.map_edit.OnButtonPress", ply, but, in_key, bind_name, vw)
+	ihook.Run("zen.map_edit.OnButtonPress", ply, but, in_key, bind_name, char, isKeyFree)
 	return true
 end)
 
-ihook.Handler("PlayerButtonUnPress", "zen.map_edit", function(ply, but, in_key, bind_name)
+ihook.Handler("PlayerButtonUnPress", "zen.map_edit", function(ply, but, in_key, bind_name, char, isKeyFree)
 	if not map_edit.IsActive then return end
 
-	ihook.Run("zen.map_edit.OnButtonUnPress", ply, but, in_key, bind_name, vw)
+	ihook.Run("zen.map_edit.OnButtonUnPress", ply, but, in_key, bind_name, char, isKeyFree)
 	return true
 end)

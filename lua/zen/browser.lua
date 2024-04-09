@@ -11,17 +11,20 @@ zen.IncludeCL("zen/lib/cl_input.lua")
 zen.IncludeCL("zen/lib/cvars.lua")
 zen.IncludeCL("zen/lib/developer.lua")
 
--- zen.IncludeSH("zen/lib/interface/sh_xml_gui_watch.lua")
-
 zen.IncludeCL("zen/lib/interface/ui/cl_fonts.lua")
 zen.IncludeCL("zen/lib/interface/draw/cl_draw.lua")
 zen.IncludeCL("zen/lib/interface/draw/cl_draw_3d.lua")
 zen.IncludeCL("zen/lib/interface/draw/cl_draw_3d2d.lua")
 zen.IncludeCL("zen/lib/interface/gui/cl_gui.lua")
+zen.IncludeCL("zen/lib/interface/gui/cl_skin.lua")
 zen.IncludeCL("zen/lib/interface/gui/cl_params.lua")
 zen.IncludeCL("zen/lib/interface/gui/cl_presets.lua")
 zen.IncludeCL("zen/lib/interface/gui/cl_panels.lua")
 
+zen.IncludeCL("zen/lib/interface/gui/skin/cl_main.lua")
+
+zen.IncludeCL("zen/lib/interface/gui/panels/cl_button.lua")
+zen.IncludeCL("zen/lib/interface/gui/panels/cl_frame.lua")
 zen.IncludeCL("zen/lib/interface/gui/panels/cl_input.lua")
 zen.IncludeCL("zen/lib/interface/gui/panels/cl_autosave.lua")
 zen.IncludeCL("zen/lib/interface/gui/panels/cl_help.lua")

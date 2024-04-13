@@ -8,7 +8,7 @@ module("zen", package.seeall)
 -- Your code
 ```
 
-Framework includes libraries:
+#### Framework includes libraries:
 - interface
     - draw (draw, draw3d, draw3d2d)
     - gui (panels, skins, params)
@@ -38,7 +38,7 @@ Framework includes libraries:
     - utf8 lower and upper
     - Mesh Model Bounds Calculator
     - IcoSphere Vertex Generator
-Where are modules:
+#### Where are modules:
 - Internal console
     - AutoComplete Engine
     - Command send strict checker

@@ -28,6 +28,7 @@ zen.IncludeCL("zen/lib/interface/gui/panels/cl_frame.lua")
 zen.IncludeCL("zen/lib/interface/gui/panels/cl_input.lua")
 zen.IncludeCL("zen/lib/interface/gui/panels/cl_autosave.lua")
 zen.IncludeCL("zen/lib/interface/gui/panels/cl_help.lua")
+zen.IncludeCL("zen/lib/interface/gui/panels/cl_layout.lua")
 
 zen.IncludeSH("zen/lib/network/sh_nt.lua")
 zen.IncludeSV("zen/lib/network/sv_nt.lua")

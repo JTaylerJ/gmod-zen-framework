@@ -2,12 +2,12 @@ module("zen", package.seeall)
 
 icmd.Register("auth", function(QCMD, who)
     if who:zen_GetVar("auth") then
-        return "You already authed"
+        return false, "You already authed"
     end
 
     who:zen_SetVar("auth", true)
 
-    return true
+    return true, "Successful auth"
 end, {}, {
     perm = "public",
     help = "auth - Authorize access"
@@ -27,7 +27,15 @@ end, {}, {
 })
 
 icmd.Register("sudo", function(QCMD, who, cmd, args, tags)
-    game.ConsoleCommand(args[1] .. "\n")
+    local command = QCMD:Get("command")
+
+    if !command or command == "" then
+        return false, "No 'command' exists!"
+    end
+
+    game.ConsoleCommand(command .. "\n")
+
+    return true, {"sudo: ", command}
 end, {
     {type="string", name="command"}
 }, {

@@ -72,7 +72,9 @@ zen.IncludeCL("zen/modules/fast_command/cl_fast_command.lua")
 zen.IncludeSH("zen/modules/zone/sh_base.lua")
 zen.IncludeSH("zen/modules/zone/sh_player.lua")
 
--- zen.IncludeGUI("example")
+
+zen.IncludeCL("zen/menu/permission/cl_menu.lua")
+
 
 zen.IncludePlugins()
 

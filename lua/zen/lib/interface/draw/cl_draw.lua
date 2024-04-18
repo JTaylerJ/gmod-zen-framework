@@ -60,6 +60,20 @@ function draw.Texture(mat, x, y, w, h, clr)
     s_DrawTexturedRect(x, y, w, h)
 end
 
+
+local mat_pp_blue = Material("pp/motionblur")
+function draw.Blur(x, y, w, h, alpha)
+    s_SetDrawColor(255, 255, 255, alpha or 255)
+    s_SetMaterial(mat_pp_blue)
+    s_DrawTexturedRect(x, y, w, h)
+end
+
+function draw.WhiteBGAlpha(x, y, w, h, alpha)
+    draw.NoTexture()
+    s_SetDrawColor(255, 255, 255, alpha or 255)
+    s_DrawTexturedRect(x, y, w, h)
+end
+
 function draw.TextureRotated(mat, rotate, x, y, w, h, clr)
     if clr then
         s_SetDrawColor(clr.r, clr.g, clr.b, clr.a)

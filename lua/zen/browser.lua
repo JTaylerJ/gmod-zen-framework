@@ -10,6 +10,7 @@ zen.IncludeSH("zen/lib/sql.lua")
 zen.IncludeCL("zen/lib/cl_input.lua")
 zen.IncludeCL("zen/lib/cvars.lua")
 zen.IncludeCL("zen/lib/developer.lua")
+zen.IncludeSH("zen/lib/material.lua")
 
 zen.IncludeCL("zen/lib/interface/ui/cl_fonts.lua")
 zen.IncludeCL("zen/lib/interface/ui/cl_debug.lua")

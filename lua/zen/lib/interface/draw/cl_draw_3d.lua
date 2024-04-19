@@ -47,6 +47,16 @@ function draw3d.Text(pos, text, font, x, y, clr, xalign, yalign, clrbg)
     end
 end
 
+
+function draw3d.TextN(pos, text, font, x, y, clr, xalign, yalign, clrbg)
+    local succ, nx, ny = draw3d.GetScreenPosition(pos)
+    if succ then
+        draw.TextN(text, font, nx+x, ny+y, clr, xalign, yalign, clrbg)
+    end
+end
+
+
+
 function draw3d.Circle(pos, radius, seg, clr, mat)
     local succ, nx, ny = draw3d.GetScreenPosition(pos)
     if succ then

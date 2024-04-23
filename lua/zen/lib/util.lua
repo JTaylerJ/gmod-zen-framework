@@ -2072,3 +2072,108 @@ function util.CalculateCirclePolugon(x, y, radius, seg, degress, offset)
 
     return cir
 end
+
+
+_L.t_SpawnIconRenderGroups = _L.t_SpawnIconRenderGroups or {}
+local t_RenderGroups = _L.t_SpawnIconRenderGroups
+
+---@param mdl string
+---@param width number
+---@param height number
+---@return string|false pngData
+function util.CreateSpawnIcon(mdl, width, height)
+    local render_group_name = (width .. "/" .. height)
+    local rendergroup = t_RenderGroups[render_group_name]
+    if !rendergroup then
+        t_RenderGroups[render_group_name] = GetRenderTarget("zen_lib_gui_cl_model_icon", width, height)
+        rendergroup = t_RenderGroups[render_group_name]
+    end
+
+    if IsUselessModel(mdl) then return false end
+
+    local mins, maxs = util.GetModelMeshBounds(mdl)
+    if !mins or !maxs then return false end
+    local center = util.GetModelCenter(mdl)
+
+    local FOV = 17
+
+    local CSEnt = ClientsideModel(mdl, RENDERGROUP_OTHER)
+    CSEnt:SetNoDraw(true)
+
+    local Center = Vector(0,0,0)
+    local Size = mins - maxs
+    local Radius = Size:Length() * 0.5
+    local CamDist = Radius / math.sin( math.rad( FOV ) / 2 ) -- Works out how far the camera has to be away based on radius + fov!
+    -- local Center = LerpVector( 0.5, mins, maxs )
+    local CamPos = Center + Vector( -1, 0, 0.5 ):GetNormalized() * CamDist
+    local EyeAng = ( Center - CamPos ):GetNormal():Angle()
+
+    local view = {
+        x = 0,
+        y = 0,
+        w = width,
+        h = height,
+        type = "3D",
+        origin = CamPos,
+        angles = EyeAng,
+        fov = FOV,
+        aspect = 1,
+    }
+
+
+    render.PushRenderTarget(rendergroup)
+
+
+        --
+    -- DRAW THE BLUE BACKGROUND
+    -- render.SetMaterial( Material( "gui/dupe_bg.png" ) )
+    -- render.DrawScreenQuadEx( 0, 0, width, height )
+    -- render.UpdateRefractTexture()
+
+
+    render.ClearDepth(false)
+    render.Clear(0,0,0,0)
+
+    render.SetWriteDepthToDestAlpha( false )
+    render.OverrideAlphaWriteEnable(true, true)
+
+
+    cam.Start(view)
+        render.SuppressEngineLighting( true )
+
+        render.SetModelLighting( 0, 0, 0, 0 )
+        render.SetModelLighting( 1, 2, 2, 2 )
+        render.SetModelLighting( 2, 3, 2, 0 )
+        render.SetModelLighting( 3, 0.5, 2.0, 2.5 )
+        render.SetModelLighting( 4, 3, 3, 3 ) -- top
+        render.SetModelLighting( 5, 0, 0, 0 )
+        render.MaterialOverride( nil )
+
+        render.Model({
+            model = mdl,
+            pos = -center,
+            angle = Angle(0,90+45,0)
+        },  CSEnt)
+
+        render.SuppressEngineLighting( false )
+    cam.End()
+
+    ---===--- Capture
+    local jpegdata = render.Capture( {
+        format		=	"png",
+        x			=	0,
+        y			=	0,
+        w			=	width,
+        h			=	height,
+        quality		=	95,
+    } )
+
+    CSEnt:Remove()
+
+    render.OverrideAlphaWriteEnable(false, false)
+    render.SetWriteDepthToDestAlpha( true  )
+
+    render.PopRenderTarget()
+
+    return jpegdata
+end

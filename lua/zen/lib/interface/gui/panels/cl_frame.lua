@@ -76,6 +76,8 @@ function PANEL:Init()
     self.pnlTitle:SetContentAlignment(5)
     self.pnlTitle:SetFont("zen.gui.frame.Title")
     self.pnlTitle:SetText("")
+
+    self.bPushNextChildrenToContent = true
 end
 
 ---@param text string
@@ -154,6 +156,13 @@ function PANEL:Think()
     end
 end
 
+function PANEL:OnChildAdded(pnlChildren)
+    if self.bPushNextChildrenToContent then
+        pnlChildren:SetParent(self.pnlContent)
+        pnlChildren:InvalidateLayout(true)
+        self.pnlContent:InvalidateLayout(true)
+    end
+end
 
 function PANEL:Paint(w, h)
 end

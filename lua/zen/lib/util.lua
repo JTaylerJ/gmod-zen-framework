@@ -2033,3 +2033,42 @@ function util.HammerKeyValuesTableToTable(source)
 
     return result
 end
+
+
+local rad = math.rad
+local cos = math.cos
+local sin = math.sin
+
+---CircleBase
+---@param x number position x
+---@param y number position y
+---@param radius number radius of (semi)circle
+---@param seg number number of segments
+---@param degress number total degrees to draw
+---@param offset number offset in degrees
+---@return table polygons
+function util.CalculateCirclePolugon(x, y, radius, seg, degress, offset)
+
+    local step = rad( degress/seg )
+
+    local offset_step = (math.pi/180) * offset
+
+	local cir = {}
+    table.insert(cir, {x=x,y=y})
+
+	for i = 0, seg do
+        local a = i * step
+
+        local x_add = cos(a + offset_step)
+        local y_add = sin(a + offset_step)
+
+		table.insert(cir, {
+			x = x + x_add * radius,
+			y = y + y_add * radius,
+            u = sin(a),
+            v = cos(a)
+		})
+	end
+
+    return cir
+end

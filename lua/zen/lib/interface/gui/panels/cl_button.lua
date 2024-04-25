@@ -3,11 +3,6 @@ module("zen", package.seeall)
 local PANEL = {}
 
 function PANEL:Init()
-    self.pnlButtonClose = gui.CreateStyled("buton", self)
-    self.pnlButtonClose.DoClick = function()
-        self:Remove()
-    end
-
     self.buttonBGColor = self:zen_GetSkinColor("buttonBGColor")
 end
 

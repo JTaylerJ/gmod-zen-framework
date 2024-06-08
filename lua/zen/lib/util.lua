@@ -2077,15 +2077,18 @@ end
 _L.t_SpawnIconRenderGroups = _L.t_SpawnIconRenderGroups or {}
 local t_RenderGroups = _L.t_SpawnIconRenderGroups
 
+
+
+--- TODO: Добавить поддержку для поворта камеры при смене угла ентити
 ---@param mdl string
 ---@param width number
 ---@param height number
 ---@return string|false pngData
 function util.CreateSpawnIcon(mdl, width, height)
-    local render_group_name = (width .. "/" .. height)
+    local render_group_name = "zen_Spawn" .. (width .. "/" .. height)
     local rendergroup = t_RenderGroups[render_group_name]
     if !rendergroup then
-        t_RenderGroups[render_group_name] = GetRenderTarget("zen_lib_gui_cl_model_icon", width, height)
+        t_RenderGroups[render_group_name] = GetRenderTarget(render_group_name, width, height)
         rendergroup = t_RenderGroups[render_group_name]
     end
 
@@ -2152,7 +2155,7 @@ function util.CreateSpawnIcon(mdl, width, height)
         render.Model({
             model = mdl,
             pos = -center,
-            angle = Angle(0,90+45,0)
+            angle = Angle(0,0,0)
         },  CSEnt)
 
         render.SuppressEngineLighting( false )

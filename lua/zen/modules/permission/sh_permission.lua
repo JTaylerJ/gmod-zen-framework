@@ -216,7 +216,11 @@ function iperm.PlayerHasPermission(sid64, perm_name, target, isSilent)
 end
 
 function iperm.RegisterPermission(perm_name, flags, description)
+    assertString(perm_name, "perm_name")
+
     flags = flags or iperm.flags.BASE
+    description = description or "base"
+
     if iperm.mt_Permissions[perm_name] and iperm.mt_Permissions[perm_name].flags == flags then return end
     local perms_point = string.Split(perm_name, ".")
 
@@ -246,6 +250,10 @@ function iperm.RegisterPermission(perm_name, flags, description)
         }
         last_perm = perm
     end
+
+    iperm.Count = table.Count(iperm.mt_Permissions)
+
+    nt.SendToChannel("permission_info", nil, perm_name, flags, description)
 end
 
 function META.PLAYER:zen_HasPerm(perm, target, noCheckAuth)
@@ -265,5 +273,38 @@ ihook.Handler("zen.icmd.CanRun", "zen.permission", function(tCommand, QCMD, cmd,
         return false, com
     end
 end)
+
+nt.RegisterChannel("permission_info", nt.t_ChannelFlags.PUBLIC, {
+    types = {"string", "uint32", "string"},
+    OnRead = function(self, target, perm_name, flags, description)
+        if CLIENT then
+            iperm.RegisterPermission(perm_name, flags, description)
+        end
+    end,
+    WritePull = function(self, target)
+        if SERVER then
+            local count = iperm.Count
+            net.WriteUInt(count, 16)
+
+            for perm_name, PERM in pairs(iperm.mt_Permissions) do
+                net.WriteString(perm_name)
+                net.WriteUInt(PERM.flags, 32)
+                net.WriteString(PERM.description)
+            end
+        end
+    end,
+    ReadPull = function(self, addResult)
+        if CLIENT then
+            self.iCounter = net.ReadUInt(16)
+            for k = 1, self.iCounter do
+                local perm_name = net.ReadString()
+                local flags = net.ReadUInt(32)
+                local description = net.ReadString()
+
+                addResult(perm_name, flags, description)
+            end
+        end
+    end,
+})
 
 iperm.RegisterPermission("zen.view")

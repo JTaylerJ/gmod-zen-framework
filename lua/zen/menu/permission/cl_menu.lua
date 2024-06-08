@@ -59,7 +59,7 @@ function iperm.CreatePlayerPermissionMenu(SteamID64)
         })
 
         gui.Create("DLabel", pnlItem, {
-            "dock_left", margin = {5,0,0,0}, wide = 150, text = PERM.name, font = ui.ffont(8), text_color = color_white
+            "dock_fill", margin = {5,0,0,0}, text = PERM.name, font = ui.ffont(8), text_color = color_white
         })
 
         local pnlCheckBox = gui.Create("DButton", pnlItem, {

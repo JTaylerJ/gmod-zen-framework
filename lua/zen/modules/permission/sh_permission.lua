@@ -239,6 +239,7 @@ function iperm.RegisterPermission(perm_name, flags, description)
         local new_flags = (perm_name == perm) and (flags) or (iperm.flags.BASE)
 
         iperm.mt_Permissions[perm] = {
+            name = perm_name,
             parent = (last_perm == "") and perm or last_perm,
             flags = new_flags,
             description = description,

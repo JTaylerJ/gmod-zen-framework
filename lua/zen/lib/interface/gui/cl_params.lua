@@ -73,7 +73,6 @@ gui.RegisterParam("size_children", function(pnl, value)
     pnl:SizeToChildren(true, true)
 end, {
     "children_size",
-    "size",
 })
 
 gui.RegisterParam("set_size", function(pnl, value)
@@ -228,7 +227,7 @@ gui.RegisterParam("dock_padding", function(pnl, value)
     pnl:DockPadding(unpack(value))
     pnl:InvalidateParent(true)
 end, {
-    "dock_margin",
+    "dock_padding",
     "padding",
 })
 
@@ -289,7 +288,6 @@ end, {
     "bg_color",
     "background_color",
     "color_bg",
-    "background_color",
 })
 
 gui.RegisterParam("set_caret_pos", function(pnl, value)
@@ -649,7 +647,6 @@ gui.RegisterParam("set_term", function(pnl, value)
 end, {
     "set_term",
     "term",
-    "tab_pos",
 })
 
 gui.RegisterParam("set_text_inset", function(pnl, value)
@@ -682,7 +679,6 @@ gui.RegisterParam("set_tooltip_panel", function(pnl, value)
     pnl:SetTooltipPanel(value)
 end, {
     "set_tooltip_panel",
-    "set_tooltip",
     "tooltip_panel",
     "panel_tooltip",
 })

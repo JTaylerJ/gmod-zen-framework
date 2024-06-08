@@ -167,6 +167,8 @@ local ParamsFirst = { -- 1, 2, 3
     "dock_top",
     "dock_right",
     "dock_left",
+    "dock_padding",
+    "dock_margin",
     "set_pos",
     "set_x",
     "set_y",
@@ -377,6 +379,13 @@ function gui.RegisterParam(param, func, aliases)
     gui.t_CommandsAliases[param] = param
     if aliases then
         for k, alias in ipairs(aliases) do
+            if param == alias then continue end
+
+            local ownerParam = gui.t_CommandsAliases[alias]
+            if ownerParam and ownerParam != param then
+                error("Alias already exists: " ..  tostring(alias))
+            end
+
             gui.t_CommandsAliases[alias] = param
         end
     end

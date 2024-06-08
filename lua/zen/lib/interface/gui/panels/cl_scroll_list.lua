@@ -42,7 +42,7 @@ function PANEL:Init()
         end
     end
     self.pnlVBar:SetCursor("hand")
-    self.pnlVBar.OnMousePressed = function(_, code)
+    self.pnlVBar.OnMousePressed = function(self, code)
         if code == MOUSE_LEFT then
             self.moveStartX = self:GetX()
             self.moveStartY = self:GetY()
@@ -77,7 +77,8 @@ end
 
 ---comment
 ---@param fScroll number
-function PANEL:SetScroll(fScroll)
+---@param no_updateVBar? boolean
+function PANEL:SetScroll(fScroll, no_updateVBar)
     local base_w, base_h = self:GetSize()
     self.fScroll = fScroll
 
@@ -95,7 +96,9 @@ function PANEL:SetScroll(fScroll)
 
     self.iPercentageScroll = self.fScroll / self.iCanvasFullTall + self.iPercentageTake
 
-    self.pnlVBar:SetY( (self.iPercentageScroll - self.iPercentageTake) * base_h )
+    if !no_updateVBar then
+        self.pnlVBar:SetY( (self.iPercentageScroll - self.iPercentageTake) * base_h )
+    end
 end
 
 function PANEL:SetScrollPercantage(iPercentage)
@@ -103,6 +106,17 @@ function PANEL:SetScrollPercantage(iPercentage)
 
     local percentage_left = 1 - self.iPercentageTake
     self:SetScroll( ( (  iPercentage * percentage_left  )  *  self.iCanvasFullTall) )
+end
+
+function PANEL:ParseScrollFromVBarPos()
+    local _, vbar_h = self:GetVBarSize()
+
+    local w, h = self:GetSize()
+    local x, y = self.pnlVBar:GetPos()
+
+    local percent_vbar_y = h/vbar_h
+
+    self:SetScroll( percent_vbar_y * self.iCanvasFullTall, true )
 end
 
 function PANEL:GetScroll()
@@ -174,6 +188,39 @@ function PANEL:OnChildAdded(pnlItem)
     end
 end
 
+function PANEL:Think()
+
+    local pnlVBar = self.pnlVBar
+    if pnlVBar and pnlVBar.bMoveEnabled then
+
+
+        if not input.IsMouseDown(MOUSE_LEFT) then
+            pnlVBar.bMoveEnabled = false
+            return
+        end
+
+        local _, screen_h = self:GetSize()
+        local _, panel_h = self:GetVBarSize()
+
+        local start_y = pnlVBar.moveStartY
+        local start_cursor_y = pnlVBar.moveStartCursorY
+
+        local _, now_cursor_y = input.GetCursorPos()
+
+        local y_offset = now_cursor_y - start_cursor_y
+
+        local new_y = start_y + y_offset
+
+        new_y = math.Clamp(new_y, 0, screen_h - panel_h)
+
+
+        pnlVBar:SetY(new_y)
+
+        self:ParseScrollFromVBarPos()
+    end
+end
+
+
 
 gui.RegisterStylePanel("scroll_list", PANEL, "EditablePanel")
 
@@ -227,4 +274,4 @@ local function CreatePanel()
     -- end
 
 end
-CreatePanel()
+-- CreatePanel()

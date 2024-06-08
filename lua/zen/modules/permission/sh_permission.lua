@@ -215,6 +215,15 @@ function iperm.PlayerHasPermission(sid64, perm_name, target, isSilent)
     do return false, sError end
 end
 
+---@param perm_name string
+function iperm.IsPermissionExists(perm_name)
+    return iperm.mt_Permissions[perm_name] != nil
+end
+
+
+---@param perm_name string
+---@param flags number
+---@param description string
 function iperm.RegisterPermission(perm_name, flags, description)
     assertString(perm_name, "perm_name")
 

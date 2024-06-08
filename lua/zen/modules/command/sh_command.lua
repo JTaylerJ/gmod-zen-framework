@@ -491,6 +491,12 @@ function icmd.RegisterData(tCommand)
 
     icmd.t_Commands[tCommand.name] = tCommand
 
+    if tCommand.data and tCommand.data.perm then
+        if !iperm.IsPermissionExists(tCommand.data.perm) then
+            iperm.RegisterPermission(tCommand.data.perm, 0, "Access to command: " .. tostring(tCommand.name))
+        end
+    end
+
     ihook.Run("zen.icmd.Register", tCommand.name, tCommand)
 
     return tCommand

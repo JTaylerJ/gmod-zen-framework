@@ -1,6 +1,6 @@
 module("zen", package.seeall)
 
-iperm.RegisterPermission("supermode", "Supermode command")
+iperm.RegisterPermission("supermode", 0, "Supermode command")
 
 icmd.Register("supermode", function(QCMD, who)
     who.bZen_SuperMode = true

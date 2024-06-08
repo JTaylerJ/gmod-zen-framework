@@ -2,7 +2,10 @@ module("zen", package.seeall)
 
 local string_find = string.find
 
+function iperm.RequestToChangePlayerPermission(SteamID64, perm_name, bAllow)
 
+
+end
 
 
 function iperm.CreatePlayerPermissionMenu(SteamID64)
@@ -86,7 +89,7 @@ function iperm.CreatePlayerPermissionMenu(SteamID64)
         end
 
         pnlCheckBox.DoClick = function()
-            SetValue(!bStatus)
+            iperm.RequestToChangePlayerPermission(SteamID64, PERM.name, !bStatus)
         end
 
         local bPermExists = iperm.PlayerHasPermission(SteamID64, PERM.name)

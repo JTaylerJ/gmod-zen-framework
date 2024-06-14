@@ -12,6 +12,7 @@ function ihook.Handler(hook_name, hook_id, func, level)
         hook.Add(hook_name, hook_id, func, level)
     end
 end
+_HANDLER = ihook.Handler
 
 -- Add new hook receiver with no return access
 function ihook.Listen(hook_name, hook_id, func, level)
@@ -22,6 +23,8 @@ function ihook.Listen(hook_name, hook_id, func, level)
         hook.Add(hook_name, hook_id, no_return_func, level)
     end
 end
+_LISTEN = ihook.Listen
+
 
 -- Run hook with
 function ihook.Run(hook_name, ...)

@@ -68,7 +68,7 @@ end
 --- -  Use `nq_`ArgsKey for disable auto SQLStr
 --- @param query string
 --- @param args table<number,string>
---- @return boolean result, string query
+--- @return boolean|table result, string query
 function sql.QueryErrorLogInterpolate(query, args)
 	if not args then args = {} end
     local new_qe = string.InterpolateSQL(query, args)

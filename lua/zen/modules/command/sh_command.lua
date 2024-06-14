@@ -11,6 +11,15 @@ module("zen", package.seeall)
     }
 */
 
+---@class zen.command.QCMD_QUERY
+---@field who Player
+---@field tags_clear table<string, true>
+---@field name string command name
+---@field args table<number, string>
+---@field tags table<number, string>
+---@field args_by_name table<string, any>
+---@field args_converted table<string, any>
+---@field Get fun(self, key:number|string): any Get values from args, by name or index
 
 ---@class zen.command.QCMD.type
 ---@field type zen.network.type
@@ -506,7 +515,7 @@ end
 
 ---Register command for zen-framework
 ---@param name string
----@param callback function
+---@param callback fun(QCMD:zen.command.QCMD_QUERY, who:Player, cmd:string, args:table<number, string>, tags:tabe<number, string>): boolean, string?
 ---@param types zen.command.QCMD.type[]
 ---@param data zen.command.QCMD.ExtraData
 ---@return zen.command.QCMD.Data

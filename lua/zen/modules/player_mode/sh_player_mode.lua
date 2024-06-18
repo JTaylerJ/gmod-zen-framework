@@ -89,7 +89,7 @@ function player_mode.SetMode(ply, mode_name)
     ---@diagnostic disable-next-line: assign-type-mismatch
     MODE = table.Copy(MODE)
 
-    MODE.uniqueID = tostring("zen.player_mode."  ..  MODE.id .. "." .. ply:SteamID64())
+    MODE.uniqueID = tostring("zen.player_mode."  ..  MODE.id)
 
     if !PLAYER_MODE[ply] then
         player_mode.iPlayerCounter = player_mode.iPlayerCounter + 1

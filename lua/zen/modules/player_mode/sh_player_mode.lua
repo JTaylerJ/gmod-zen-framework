@@ -8,12 +8,60 @@ player_mode.mt_ModeList = player_mode.mt_ModeList or {}
 ---@type table<Player, zen.player_mode>
 player_mode.mt_PlayerMode = player_mode.mt_PlayerMode or {}
 player_mode.iPlayerCounter = player_mode.iPlayerCounter or 0
+
+---@type table<string, table<string, zen.player_mode>
+player_mode.mt_TeamsPlayer = player_mode.mt_TeamsPlayer or {}
+
+---@type table<string, table<string, true>
+player_mode.mt_ModeHooks = player_mode.mt_ModeHooks or {}
+
 local MODE_LIST = player_mode.mt_ModeList
 local PLAYER_MODE = player_mode.mt_PlayerMode
+local TEAM_LIST = player_mode.mt_TeamsPlayer
+local MODE_HOOKS = player_mode.mt_ModeHooks
+
+
+---@param ply Player
+function player_mode.ClearPlayerMode(ply)
+    local MODE = PLAYER_MODE[ply]
+    if !MODE then return end
+
+    if MODE.OnExit then
+        MODE:OnExit(ply)
+    end
+
+    if MODE.mt_Hooks then
+        for hook_name in pairs(MODE.mt_Hooks) do
+            ihook.Remove(hook_name, MODE.hookID_unique)
+            MODE.mt_Hooks[hook_name] = nil
+        end
+    end
+
+    PLAYER_MODE[ply] = nil
+
+    if TEAM_LIST[MODE.id] then
+        TEAM_LIST[MODE.id][ply] = nil
+
+        if !next(TEAM_LIST[MODE.id]) then
+            player_mode.ClearTeamHooks(MODE.id)
+        end
+    end
+end
+
+function player_mode.ClearTeamHooks(mode_name)
+    if MODE_HOOKS[mode_name] then
+        for hook_name, hook_uid in pairs(MODE_HOOKS[mode_name]) do
+            ihook.Remove(hook_name, hook_uid)
+        end
+        MODE_HOOKS[mode_name] = nil
+    end
+end
+
 
 ---@class zen.player_mode: table
 ---@field id string
----@field package uniqueID string uniqueID for hooks
+---@field package hookID string
+---@field package hookID_unique string hookID_unique for hooks
 ---@field package mt_Hooks table<string, boolean>
 ---@field StartCommand? fun(self, ply:Player, cmd:CUserCmd)
 ---@field SetupMove? fun(self, ply:Player, mv:CMoveData, cmd:CUserCmd)
@@ -24,22 +72,31 @@ local PLAYER_MODE = player_mode.mt_PlayerMode
 ---@field OnSpawn? fun(self, ply:Player)
 ---@field OnJoin? fun(self, ply:Player) -- Called when player switch player_mode to this
 ---@field OnExit? fun(self, ply:Player) -- Called when player switch player_mode from this
----@field AddHandler? fun(self, hook_name:string, callback:function) -- Add hook for listen. Auto-remove after change player mode. BE CERAFUL. Use LocalPlayer() == ply for only-single-owner hook
----@field RemoveHandler? fun(self, hook_name:string) -- Remove hook for listen
+---@field AddPersonalHandler? fun(self, hook_name:string, callback:function) -- hook.Handler (personal). Auto-remove after player exit
+---@field RemovePersonalHandler? fun(self, hook_name:string) -- Remove hook for listen
+---@field Handler? fun(self, hook_name:string, callback:function) -- hook.Handler (team). Auto-remove after player with this class will exit
 
 ---@param MODE zen.player_mode
 function player_mode.Register(MODE)
     MODE_LIST[MODE.id] = MODE
 
     MODE.mt_Hooks = {}
-    function MODE:AddHandler(hook_name, callback)
+    function MODE:AddPersonalHandler(hook_name, callback)
         self.mt_Hooks[hook_name] = true
-        ihook.Handler(hook_name, self.uniqueID, callback)
+        ihook.Handler(hook_name, self.hookID_unique, callback)
     end
 
-    function MODE:RemoveHandler(hook_name)
+    function MODE:RemovePersonalHandler(hook_name)
         self.mt_Hooks[hook_name] = nil
-        ihook.Remove(hook_name, self.uniqueID)
+        ihook.Remove(hook_name, self.hookID_unique)
+    end
+
+    ---
+
+    function MODE:Handler(hook_name, callback)
+        if !MODE_HOOKS[MODE.id] then MODE_HOOKS[MODE.id] = {} end
+        MODE_HOOKS[MODE.id][hook_name] = self.hookID
+        ihook.Handler(hook_name, self.hookID, callback)
     end
 
 
@@ -57,22 +114,15 @@ end
 ---@param mode_name string|nil|"default"
 function player_mode.SetMode(ply, mode_name)
     if mode_name == nil or mode_name == "default" then
+
+
         if PLAYER_MODE[ply] then
             player_mode.iPlayerCounter = player_mode.iPlayerCounter - 1
-
-            local OLD_MODE = PLAYER_MODE[ply]
-
-            if OLD_MODE.OnExit then
-                OLD_MODE.OnExit(OLD_MODE, ply)
-            end
-
-            if OLD_MODE.mt_Hooks then
-                for hook_name in pairs(OLD_MODE.mt_Hooks) do
-                    ihook.Remove(hook_name, OLD_MODE.uniqueID)
-                end
-            end
         end
-        PLAYER_MODE[ply] = nil
+
+        if PLAYER_MODE[ply] then
+            player_mode.ClearPlayerMode(ply)
+        end
 
         if SERVER then
             nt.SendToChannel("player_mode.UpdatePlayerMode", nil, ply, "default")
@@ -89,17 +139,15 @@ function player_mode.SetMode(ply, mode_name)
     ---@diagnostic disable-next-line: assign-type-mismatch
     MODE = table.Copy(MODE)
 
-    MODE.uniqueID = tostring("zen.player_mode."  ..  MODE.id)
+    MODE.hookID = tostring("zen.player_mode."  ..  MODE.id)
+    MODE.hookID_unique = tostring("zen.player_mode."  ..  MODE.id .. "." .. ply:SteamID64())
 
     if !PLAYER_MODE[ply] then
         player_mode.iPlayerCounter = player_mode.iPlayerCounter + 1
     end
 
-    local OLD_MODE = PLAYER_MODE[ply]
-    if OLD_MODE then
-        if OLD_MODE.OnExit then
-            OLD_MODE:OnExit(ply)
-        end
+    if PLAYER_MODE[ply] then
+        player_mode.ClearPlayerMode(ply)
     end
 
     PLAYER_MODE[ply] = MODE
@@ -107,6 +155,9 @@ function player_mode.SetMode(ply, mode_name)
     if MODE.OnJoin then
         MODE.OnJoin(MODE, ply)
     end
+
+    if !TEAM_LIST[MODE.id] then TEAM_LIST[MODE.id] = {} end
+    TEAM_LIST[MODE.id][ply] = true
 
     if SERVER then
         nt.SendToChannel("player_mode.UpdatePlayerMode", nil, ply, mode_name)
@@ -197,3 +248,6 @@ _HANDLER("Think", "zen.player_mode", function(ply)
         end
     end
 end)
+
+
+-- player_mode.SetMode(Player(4), "zombie")

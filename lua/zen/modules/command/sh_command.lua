@@ -524,7 +524,7 @@ function icmd.Register(name, callback, types, data)
     ---@type zen.command.QCMD.Data
     local tCommand = {
         callback = callback,
-        types = types,
+        types = types or {},
         data = data or {},
         types_clear = {},
         types_names = {},

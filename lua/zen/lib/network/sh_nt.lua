@@ -161,10 +161,6 @@ function nt.SendToChannel(channel_name, target, ...)
 
     local data = {...}
 
-    if tChannel.OnWrite then
-        tChannel.OnWrite(tChannel, target, unpack(data))
-    end
-
     if tChannel.types then
         nt.Send(channel_name, tChannel.types, data)
     elseif tChannel.fWriter then
@@ -195,6 +191,10 @@ function nt.SendToChannel(channel_name, target, ...)
             end
         else
             net.SendToServer()
+        end
+
+        if tChannel.OnWrite then
+            tChannel.OnWrite(tChannel, target, unpack(data))
         end
 
         if nt.i_debug_lvl >= 2 then

@@ -83,6 +83,10 @@ zen.IncludeCL("zen/modules/hud/cl_hud.lua")
 
 zen.IncludeCL("zen/modules/fast_command/cl_fast_command.lua")
 
+zen.IncludeSH("zen/modules/player_mode/sh_player_mode.lua")
+zen.IncludeSH("zen/modules/player_mode/sh_network.lua")
+
+
 zen.IncludeSH("zen/modules/zone/sh_base.lua")
 zen.IncludeSH("zen/modules/zone/sh_player.lua")
 

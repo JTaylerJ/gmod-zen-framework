@@ -36,6 +36,7 @@ META.mt_Hooks = {}
 
 ---@type table<string, string>
 META.mt_OwnerHooks_Activated = {}
+META.mt_PlayerCooldown       = {}
 
 ---@package
 ---@param hook_name string
@@ -111,6 +112,26 @@ end
 function META:IsTeamMate(ply)
     return TEAM_LIST[self.id][ply]
 end
+
+---@param ply Player
+---@param uniqueID string
+---@param cooldown number
+---@return boolean
+function META:PlayerCooldown(ply,  uniqueID, cooldown)
+    if !self.mt_PlayerCooldown[ply] then
+        self.mt_PlayerCooldown[ply] = {}
+    end
+
+    local t_CoolDown = self.mt_PlayerCooldown[ply]
+
+    local last_use = t_CoolDown[uniqueID]
+    if last_use and (last_use + cooldown) > CurTime() then return false end
+
+    t_CoolDown[uniqueID] = CurTime()
+
+    return true
+end
+
 
 ---@param ply Player
 function player_mode.SetupHooks(ply)

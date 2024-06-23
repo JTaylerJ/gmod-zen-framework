@@ -1,7 +1,7 @@
 module("zen", package.seeall)
 
 if SERVER then
-    resource.AddWorkshop("3267517036") -- zen framework content
+    resource.AddWorkshop("3273398690") -- zen framework content
 end
 
 -- Lua include list

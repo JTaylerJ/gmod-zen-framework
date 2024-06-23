@@ -193,6 +193,14 @@ function player_mode.ClearTeamHooks(mode_name)
     end
 end
 
+---@class CamData
+---@field origin Vector
+---@field angeles Angle
+---@field fov number
+---@field znear number
+---@field zfar number
+---@field drawviewer? boolean|false
+---@field ortho {[1]:number,[2]:number,[3]:number,[4]:number} -- {left, right, top, bottom} -- (left+right) and (top+bottom) should equal 0
 
 
 ---@class zen.player_mode: zen.player_mode_meta
@@ -204,6 +212,7 @@ end
 ---@field SetupMove? fun(self, ply:Player, mv:CMoveData, cmd:CUserCmd)
 ---@field Move? fun(self, ply:Player, mv:CMoveData): boolean? predict
 ---@field FinishMove? fun(self, ply:Player, mv:CMoveData): boolean? predict
+---@field CalcView? fun(self, ply:Player, origin:Vector,  angles:Angle, fov:number, znear:number, zfar:number): CamData?
 ---@field CalcMainActivity? fun(self, ply:Player, vel:Vector): number, number
 ---@field OnDeath? fun(self, victim:Player, inflictor:Player, attacker:Entity)
 ---@field OnSpawn? fun(self, ply:Player)
@@ -268,7 +277,6 @@ end
 ---@param ply Player
 ---@param mode_name string|nil|"default"
 function player_mode.SetMode(ply, mode_name)
-    print("SetupPlayerMode", mode_name)
     if mode_name == nil or mode_name == "default" then
         if PLAYER_MODE[ply] then
             player_mode.ClearPlayerMode(ply)
@@ -338,6 +346,7 @@ function player_mode.DisableHooks()
     ihook.Remove("CalcMainActivity", "zen.player_mode")
     ihook.Remove("shared.PlayerDeath", "zen.player_mode")
     ihook.Remove("shared.PlayerSpawn", "zen.player_mode")
+    ihook.Remove("CalcView", "zen.player_mode")
 end
 
 function player_mode.ActivateHooks()
@@ -391,8 +400,14 @@ function player_mode.ActivateHooks()
 
         return MODE:OnSpawn(victim)
     end)
-end
 
+    _HANDLER("CalcView", "zen.player_mode", function(ply, origin, angles, fov, znear, zfar)
+        local MODE = PLAYER_MODE[ply]
+        if !MODE or !MODE.CalcView then return end
+
+        return MODE:CalcView(ply, origin, angles, fov, znear, zfar)
+    end)
+end
 
 -- PlayerDisconnected is shared
 _HANDLER("shared.PlayerDisconnected", "zen.player_mode", function(ply)

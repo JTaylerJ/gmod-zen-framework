@@ -56,7 +56,7 @@ function META:__AddHook(hook_name, hook_unique, callback, canApply, tag)
 end
 
 ---@param hook_name string
----@param callback fun(self, ...): any?
+---@param callback fun(self: zen.player_mode, ...): any?
 function META:Hook(hook_name, callback)
     self:__AddHook(
         hook_name,
@@ -69,7 +69,7 @@ end
 
 --- Create hook for server only
 ---@param hook_name string
----@param callback fun(self, ...): any?
+---@param callback fun(self: zen.player_mode, ...): any?
 function META:HookServer(hook_name, callback)
     self:__AddHook(
         hook_name,
@@ -82,7 +82,7 @@ end
 
 --- Create hook for all clients
 ---@param hook_name string
----@param callback fun(self, ...): any?
+---@param callback fun(self: zen.player_mode, ...): any?
 function META:HookClient(hook_name, callback)
     self:__AddHook(
         hook_name,
@@ -95,7 +95,7 @@ end
 
 --- Create hook for client owner only
 ---@param hook_name string
----@param callback fun(self, ...): any?
+---@param callback fun(self: zen.player_mode, ...): any?
 function META:HookOwner(hook_name, callback)
     self:__AddHook(
         hook_name,
@@ -104,6 +104,12 @@ function META:HookOwner(hook_name, callback)
         function(self, ply) return CLIENT and ply == LocalPlayer() end,
         "client_owner"
     )
+end
+
+---@param ply Player
+---@return boolean
+function META:IsTeamMate(ply)
+    return TEAM_LIST[self.id][ply]
 end
 
 ---@param ply Player
@@ -135,6 +141,8 @@ function player_mode.ClearPlayerMode(ply)
     local MODE = PLAYER_MODE[ply]
     if !MODE then return end
 
+    PLAYER_MODE[ply] = nil
+
     if MODE.OnExit then
         MODE:OnExit(ply)
     end
@@ -145,8 +153,6 @@ function player_mode.ClearPlayerMode(ply)
             MODE.mt_OwnerHooks_Activated[name] = nil
         end
     end
-
-    PLAYER_MODE[ply] = nil
 
     if TEAM_LIST[MODE.id] then
         TEAM_LIST[MODE.id][ply] = nil
@@ -193,8 +199,12 @@ function player_mode.GetClass(mode_name)
     if !MODE_LIST[mode_name] then MODE_LIST[mode_name] = table.Copy(META) end
     local MODE = MODE_LIST[mode_name]
 
+    table.Merge(MODE, META)
+
     MODE.id = mode_name
     MODE.hookID = tostring("zen.player_mode."  ..  MODE.id)
+
+    if !TEAM_LIST[MODE.id] then TEAM_LIST[MODE.id] = {} end
 
     return MODE
 end
@@ -237,16 +247,16 @@ end
 ---@param ply Player
 ---@param mode_name string|nil|"default"
 function player_mode.SetMode(ply, mode_name)
+    print("SetupPlayerMode", mode_name)
     if mode_name == nil or mode_name == "default" then
-        if PLAYER_MODE[ply] then
-            player_mode.iPlayerCounter = player_mode.iPlayerCounter - 1
-        end
-
         if PLAYER_MODE[ply] then
             player_mode.ClearPlayerMode(ply)
         end
 
+
         if SERVER then
+            player_mode.iPlayerCounter = table.Count(PLAYER_MODE)
+
             nt.SendToChannel("player_mode.UpdatePlayerMode", nil, ply, "default")
         end
 
@@ -278,11 +288,11 @@ function player_mode.SetMode(ply, mode_name)
 
     MODE.hookID_unique = tostring("zen.player_mode."  ..  MODE.id .. "." .. ply:SteamID64())
 
-    if !PLAYER_MODE[ply] then
-        player_mode.iPlayerCounter = player_mode.iPlayerCounter + 1
-    end
-
     PLAYER_MODE[ply] = MODE
+
+    if SERVER then
+        player_mode.iPlayerCounter = table.Count(PLAYER_MODE)
+    end
 
     player_mode.SetupHooks(ply)
 
@@ -290,7 +300,6 @@ function player_mode.SetMode(ply, mode_name)
         MODE.OnJoin(MODE, ply)
     end
 
-    if !TEAM_LIST[MODE.id] then TEAM_LIST[MODE.id] = {} end
     TEAM_LIST[MODE.id][ply] = true
 
     if SERVER then

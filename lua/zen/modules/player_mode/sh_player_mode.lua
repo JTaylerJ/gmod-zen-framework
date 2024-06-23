@@ -12,7 +12,7 @@ player_mode.iPlayerCounter = player_mode.iPlayerCounter or 0
 ---@type table<string, table<string, zen.player_mode>
 player_mode.mt_TeamsPlayer = player_mode.mt_TeamsPlayer or {}
 
----@type table<string, table<string, true>
+---@type table<string, table<string, string>
 player_mode.mt_ModeHooks = player_mode.mt_ModeHooks or {}
 
 local MODE_LIST = player_mode.mt_ModeList
@@ -20,6 +20,115 @@ local PLAYER_MODE = player_mode.mt_PlayerMode
 local TEAM_LIST = player_mode.mt_TeamsPlayer
 local MODE_HOOKS = player_mode.mt_ModeHooks
 
+
+---@class zen.player_mode_meta: table
+local META = {}
+
+---@class zen.player_mode_meta.hook_data
+---@field name string
+---@field unique string
+---@field callback fun(self, ...): any?
+---@field canApply? fun(self, ply): boolean
+---@field tag string
+
+---@type table<string, zen.player_mode_meta.hook_data>
+META.mt_Hooks = {}
+
+---@type table<string, string>
+META.mt_OwnerHooks_Activated = {}
+
+---@package
+---@param hook_name string
+---@param hook_unique string
+---@param callback fun(self, ...): any?
+---@param canApply? fun(self, ply?: Player): boolean
+---@param tag? string
+function META:__AddHook(hook_name, hook_unique, callback, canApply, tag)
+    local hook_hash = hook_name  .. "." .. hook_unique
+
+    self.mt_Hooks[hook_hash] = {
+        name = hook_name,
+        unique = hook_unique,
+        callback = callback,
+        canApply = canApply,
+        tag = tag,
+    }
+end
+
+---@param hook_name string
+---@param callback fun(self, ...): any?
+function META:Hook(hook_name, callback)
+    self:__AddHook(
+        hook_name,
+        self.hookID,
+        function(...) return callback(self, ...) end,
+        nil,
+        "shared"
+    )
+end
+
+--- Create hook for server only
+---@param hook_name string
+---@param callback fun(self, ...): any?
+function META:HookServer(hook_name, callback)
+    self:__AddHook(
+        hook_name,
+        self.hookID,
+        function(...) return callback(self, ...) end,
+        function() return SERVER end,
+        "server"
+    )
+end
+
+--- Create hook for all clients
+---@param hook_name string
+---@param callback fun(self, ...): any?
+function META:HookClient(hook_name, callback)
+    self:__AddHook(
+        hook_name,
+        self.hookID,
+        function(...) return callback(self, ...) end,
+        function() return CLIENT end,
+        "client"
+    )
+end
+
+--- Create hook for client owner only
+---@param hook_name string
+---@param callback fun(self, ...): any?
+function META:HookOwner(hook_name, callback)
+    self:__AddHook(
+        hook_name,
+        self.hookID,
+        function(...) return callback(self, ...) end,
+        function(self, ply) return CLIENT and ply == LocalPlayer() end,
+        "client_owner"
+    )
+end
+
+---@param ply Player
+function player_mode.SetupHooks(ply)
+    local MODE = PLAYER_MODE[ply]
+
+    if !MODE_HOOKS[MODE.id] then MODE_HOOKS[MODE.id] = {} end
+    local TEAM_HOOKS = MODE_HOOKS[MODE.id]
+
+    if MODE.mt_Hooks then
+        for hook_hash, hook_data in pairs(MODE.mt_Hooks) do
+            if hook_data.canApply then
+                if hook_data.canApply(MODE, ply) != true then continue end
+            end
+
+            if hook_data.tag == "client_owner" then
+                MODE.mt_OwnerHooks_Activated[hook_data.name] = hook_data.unique
+            else
+                TEAM_HOOKS[hook_data.name] = hook_data.unique
+            end
+
+            ihook.Handler(hook_data.name, hook_data.unique, hook_data.callback)
+        end
+    end
+end
 
 ---@param ply Player
 function player_mode.ClearPlayerMode(ply)
@@ -30,10 +139,10 @@ function player_mode.ClearPlayerMode(ply)
         MODE:OnExit(ply)
     end
 
-    if MODE.mt_Hooks then
-        for hook_name in pairs(MODE.mt_Hooks) do
-            ihook.Remove(hook_name, MODE.hookID_unique)
-            MODE.mt_Hooks[hook_name] = nil
+    if MODE.mt_OwnerHooks_Activated then
+        for name, unique in pairs(MODE.mt_OwnerHooks_Activated) do
+            ihook.Remove(name, unique)
+            MODE.mt_OwnerHooks_Activated[name] = nil
         end
     end
 
@@ -58,11 +167,12 @@ function player_mode.ClearTeamHooks(mode_name)
 end
 
 
----@class zen.player_mode: table
+
+---@class zen.player_mode: zen.player_mode_meta
 ---@field id string
 ---@field package hookID string
 ---@field package hookID_unique string hookID_unique for hooks
----@field package mt_Hooks table<string, boolean>
+---@field Owner Player
 ---@field StartCommand? fun(self, ply:Player, cmd:CUserCmd)
 ---@field SetupMove? fun(self, ply:Player, mv:CMoveData, cmd:CUserCmd)
 ---@field Move? fun(self, ply:Player, mv:CMoveData): boolean? predict
@@ -76,29 +186,43 @@ end
 ---@field RemovePersonalHandler? fun(self, hook_name:string) -- Remove hook for listen
 ---@field Handler? fun(self, hook_name:string, callback:function) -- hook.Handler (team). Auto-remove after player with this class will exit
 
+
+---@param mode_name string
+---@return zen.player_mode
+function player_mode.GetClass(mode_name)
+    if !MODE_LIST[mode_name] then MODE_LIST[mode_name] = table.Copy(META) end
+    local MODE = MODE_LIST[mode_name]
+
+    MODE.id = mode_name
+    MODE.hookID = tostring("zen.player_mode."  ..  MODE.id)
+
+    return MODE
+end
+
+---@param ply Player
+---@return string|nil
+function player_mode.GetPlayerModeName(ply)
+    local MODE = PLAYER_MODE[ply]
+    if !MODE then return end
+    return MODE.id
+end
+
+---@param ply Player
+---@param mode_name string
+---@return boolean
+function player_mode.IsPlayerMode(ply, mode_name)
+    local TEAM_MATES = TEAM_LIST[mode_name]
+    if !TEAM_MATES then return false end
+
+    return TEAM_MATES[ply]
+end
+
+
 ---@param MODE zen.player_mode
 function player_mode.Register(MODE)
+    assert(MODE.id, "MODE.id not exists")
+
     MODE_LIST[MODE.id] = MODE
-
-    MODE.mt_Hooks = {}
-    function MODE:AddPersonalHandler(hook_name, callback)
-        self.mt_Hooks[hook_name] = true
-        ihook.Handler(hook_name, self.hookID_unique, callback)
-    end
-
-    function MODE:RemovePersonalHandler(hook_name)
-        self.mt_Hooks[hook_name] = nil
-        ihook.Remove(hook_name, self.hookID_unique)
-    end
-
-    ---
-
-    function MODE:Handler(hook_name, callback)
-        if !MODE_HOOKS[MODE.id] then MODE_HOOKS[MODE.id] = {} end
-        MODE_HOOKS[MODE.id][hook_name] = self.hookID
-        ihook.Handler(hook_name, self.hookID, callback)
-    end
-
 
     ---Auto-refresh for lua-refresh
     for ply, OLD_MODE in pairs(PLAYER_MODE) do
@@ -114,8 +238,6 @@ end
 ---@param mode_name string|nil|"default"
 function player_mode.SetMode(ply, mode_name)
     if mode_name == nil or mode_name == "default" then
-
-
         if PLAYER_MODE[ply] then
             player_mode.iPlayerCounter = player_mode.iPlayerCounter - 1
         end
@@ -131,6 +253,19 @@ function player_mode.SetMode(ply, mode_name)
         return
     end
 
+    ---------------------------
+    ----- REMOVE LAST MODE ----
+    ---------------------------
+
+    if PLAYER_MODE[ply] then
+        player_mode.ClearPlayerMode(ply)
+    end
+
+    ----------------------------
+    ------ SETUP NEW MODE ------
+    ----------------------------
+
+
     local MODE = MODE_LIST[mode_name]
     assert(MODE, "MODE not exists")
 
@@ -139,18 +274,17 @@ function player_mode.SetMode(ply, mode_name)
     ---@diagnostic disable-next-line: assign-type-mismatch
     MODE = table.Copy(MODE)
 
-    MODE.hookID = tostring("zen.player_mode."  ..  MODE.id)
+    MODE.Owner = ply
+
     MODE.hookID_unique = tostring("zen.player_mode."  ..  MODE.id .. "." .. ply:SteamID64())
 
     if !PLAYER_MODE[ply] then
         player_mode.iPlayerCounter = player_mode.iPlayerCounter + 1
     end
 
-    if PLAYER_MODE[ply] then
-        player_mode.ClearPlayerMode(ply)
-    end
-
     PLAYER_MODE[ply] = MODE
+
+    player_mode.SetupHooks(ply)
 
     if MODE.OnJoin then
         MODE.OnJoin(MODE, ply)

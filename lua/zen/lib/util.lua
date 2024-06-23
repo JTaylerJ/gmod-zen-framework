@@ -486,7 +486,10 @@ end
 _R = debug.getregistry()
 META = META or {}
 META.ENTITY                 = _R.Entity or {}
+
+---@class Player
 META.PLAYER                 = _R.Player or {}
+
 META.WEAPON                 = _R.Weapon or {}
 META.VEHICLE                = _R.Vehicle or {}
 META.NPC                    = _R.NPC or {}

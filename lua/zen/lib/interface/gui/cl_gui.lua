@@ -397,6 +397,16 @@ META.PANEL.zen_AddStyled = function(self, styleName, extraData, extraPresets)
     return gui.CreateStyled(styleName, self, nil, extraData, extraPresets, true)
 end
 
+---@param uniqueName string
+---@param beautifulName string
+---@return Panel
+function gui.CreateFrame(uniqueName, beautifulName)
+    local pnlFrame = gui.CreateStyled("frame", nil, uniqueName)
+    pnlFrame:SetTitle(beautifulName)
+
+    return pnlFrame
+end
+
 function gui.CreateStyled(styleName, pnlParent, uniqueName, extraData, extraPresets, isAdd)
     assertStringNice(styleName, "styleName")
     local tStylePanel = gui.t_StylePanels[styleName]

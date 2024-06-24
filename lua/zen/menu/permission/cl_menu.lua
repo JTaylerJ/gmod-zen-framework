@@ -46,7 +46,7 @@ function iperm.CreatePlayerPermissionMenu(SteamID64)
     end)
 
 
-    local pnlList = gui.Create("DScrollPanel", pnlFrame, {
+    local pnlList = gui.CreateStyled("scroll_list", pnlFrame, nil,  {
         "dock_fill"
     })
 
@@ -105,8 +105,8 @@ function iperm.CreatePlayerPermissionMenu(SteamID64)
 end
 
 icmd.Register("menu_permissions", function(QCMD, who, cmd, args, tags)
-    local pnlFrame = gui.CreateStyled("frame", nil, "menu_permissions")
-    pnlFrame:SetTitle("Permissions")
+    local pnlFrame = gui.CreateFrame("menu_permissions", "Permissions")
+
 
     local FEATURES = {}
 
@@ -119,7 +119,7 @@ icmd.Register("menu_permissions", function(QCMD, who, cmd, args, tags)
             "dock_top",
         })
 
-        local pnlPlayers = gui.Create("DScrollPanel", pnlFrame, {
+        local pnlPlayers = gui.CreateStyled("scroll_list", pnlFrame, nil, {
             "dock_fill"
         })
 
@@ -202,7 +202,9 @@ icmd.Register("menu_permissions", function(QCMD, who, cmd, args, tags)
         end
 
         for k, ply in player.Iterator() do
-            FEATURES.CreatePlayer(ply:SteamID64(), ply:Nick())
+            for k = 1, 30 do
+                FEATURES.CreatePlayer(ply:SteamID64(), ply:Nick())
+            end
         end
 
         pnlEntry.pnl_Value:SetPlaceholderText("Nick / SteamID / SteamID64")

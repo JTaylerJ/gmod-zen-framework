@@ -58,6 +58,8 @@ zen.IncludeCL("zen/lib/interface/gui/panels/cl_image.lua")
 zen.IncludeCL("zen/lib/interface/gui/panels/cl_scroll_list.lua")
 zen.IncludeCL("zen/lib/interface/gui/panels/cl_scroll_vbar.lua")
 zen.IncludeCL("zen/lib/interface/gui/panels/cl_content.lua")
+zen.IncludeCL("zen/lib/interface/gui/panels/cl_check_box.lua")
+zen.IncludeCL("zen/lib/interface/gui/panels/cl_check_box_label.lua")
 
 zen.IncludeSH("zen/modules/save/sh_base.lua")
 zen.IncludeSH("zen/modules/save/sh_player.lua")

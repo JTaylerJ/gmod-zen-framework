@@ -459,6 +459,11 @@ function gui.CreateStyled(styleName, pnlParent, extraData, extraPresets, isAdd)
     return pnl
 end
 
+---@param styleName string
+---@param tPanel table
+---@param vguiBase string
+---@param data table?
+---@param presets table?
 function gui.RegisterStylePanel(styleName, tPanel, vguiBase, data, presets)
     assertStringNice(styleName, "styleName")
     assert(istable(tPanel) or tPanel == nil, "tPanel presets should be table|nil")

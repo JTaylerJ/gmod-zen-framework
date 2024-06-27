@@ -983,6 +983,13 @@ COLOR.R, COLOR.G, COLOR.B = COLOR.RED, COLOR.GREEN, COLOR.BLUE
 COLOR.ERROR = Color(255,0,0)
 COLOR.WARN = Color(255,125,0)
 
+COLOR.FILL_10 = Color(10,10,10,255)
+COLOR.FILL_20 = Color(20,20,20,255)
+COLOR.FILL_30 = Color(30,30,30,255)
+COLOR.FILL_40 = Color(40,40,40,255)
+COLOR.FILL_50 = Color(50,50,50,255)
+COLOR.FILL_60 = Color(60,60,60,255)
+
 ---@param value string
 ---@return boolean IsSteamID64
 function util.IsSteamID64(value)

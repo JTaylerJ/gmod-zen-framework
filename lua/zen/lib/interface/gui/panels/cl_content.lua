@@ -16,8 +16,16 @@ function PANEL:AutoSize(updateWide, updateTall)
     self.bChangeTall = updateTall
 end
 
-function PANEL:Think()
-    _SizeToChildren(self, self.bChangeWide, self.bChangeTall)
+-- function PANEL:Think()
+--     _SizeToChildren(self, self.bChangeWide, self.bChangeTall)
+-- end
+
+function PANEL:PerformLayout(w, h)
+    local cw, ch = self:ChildrenSize()
+
+    if (self.bChangeWide and w < cw) or (self.bChangeTall and h < ch) then
+        _SizeToChildren(self, self.bChangeWide, self.bChangeTall)
+    end
 end
 
 gui.RegisterStylePanel("content", PANEL, "EditablePanel")

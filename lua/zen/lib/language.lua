@@ -40,6 +40,7 @@ module("zen", package.seeall)
     Info:
     - If language is not found, it will use default language
     - if interpolated key is string and value not found, it will use key index(number) and try to find value with tab[index]
+        !!!! Different schemas use local index_counter !!!!!
         -- Register example:
         P["player_info"] = "Player ${who} has joined the server"
         P["player_info"] = "Player ${s:who} has joined the server"
@@ -88,71 +89,86 @@ local phrase_alias = {
     ["time"] = function() return os.date("!%H:%M %m.%d.%y", os.time()) end,
 }
 
+local _sub = string.sub
 local _concat = table.concat
 local _match = string.match
 local _gsub = string.gsub
 local _tostring = tostring
 local _tonumber = tonumber
+local _find = string.find
 
+local CHECK_SIMPLE_INTERPOLATE_PATTERN = "$"
+local SIMPLE_INTERPOLATE_PATTERN = "($[%w_-]+)"
+
+local CHECK_ADVANCED_INTERPOLATE_PATTERN = "${"
+local ADVANCED_INTERPOLATE_PATTERN = "($%b{})"
 local function InterpolateConfig(message, read_types, phrase_alias, tab, onlyText)
     tab = tab or {}
 
-    local iInterpolateCounter = 0
-    -- Simple interpolation
-    message = _gsub(message, "($[%w_-]+)", function(w)
-        iInterpolateCounter = iInterpolateCounter + 1
-
-        local value = w:sub(2)
-
-        if tab[value] then
-            return _tostring(tab[value])
-        else
-            local counter_value = tab[iInterpolateCounter]
-            if counter_value then
-                return _tostring(counter_value)
-            end
-        end
-    end)
+    local iSharedCounter = 0
 
     -- Advanced interpolation
-    message = _gsub(message, '($%b{})', function(w)
-        iInterpolateCounter = iInterpolateCounter + 1
+    if _find(message, CHECK_ADVANCED_INTERPOLATE_PATTERN, 1, true) then
+        local iLocalCounter = 0
+        message = _gsub(message, ADVANCED_INTERPOLATE_PATTERN, function(w)
+            iLocalCounter = iLocalCounter + 1
+            iSharedCounter = iSharedCounter + 1
+            local value = _sub(w, 3, -2)
 
-        local value = w:sub(3, -2)
-
-        if phrase_alias[value] then
-            return phrase_alias[value]()
-        end
-
-        local strict_type, tab_key = _match(value, "(%a+):(.+)")
-
-        if strict_type and tab_key then
-            local isNumberic
-            local number_value = _tonumber(tab_key)
-            if number_value then
-                tab_key = number_value
-                isNumberic = true
+            if phrase_alias[value] then
+                return phrase_alias[value]()
             end
 
-            local value = tab[tab_key]
+            local strict_type, tab_key = _match(value, "(%a+):(.+)")
 
-            if !value and !isNumberic then
-                value = tab[iInterpolateCounter]
+            if strict_type and tab_key then
+                local isNumberic
+                local number_value = _tonumber(tab_key)
+                if number_value then
+                    tab_key = number_value
+                    isNumberic = true
+                end
+
+                local value = tab[tab_key]
+
+                if !value and !isNumberic then
+                    value = tab[iLocalCounter]
+                end
+
+                if read_types[strict_type] then
+                    value = read_types[strict_type](value, onlyText)
+                end
+
+                if !value then
+                    return _concat{"${",strict_type, ':"', tostring(tab_key), '"}'}
+                end
+
+                return value
             end
 
-            if read_types[strict_type] then
-                value = read_types[strict_type](value, onlyText)
+            return w
+        end)
+    end
+
+
+    -- Simple interpolation
+    if _find(message, CHECK_SIMPLE_INTERPOLATE_PATTERN, 1, true) then
+        local iLocalCounter = 0
+        message = _gsub(message, SIMPLE_INTERPOLATE_PATTERN, function(w)
+            iLocalCounter = iLocalCounter + 1
+
+            local value = _sub(w, 2)
+
+            if tab[value] then
+                return _tostring(tab[value])
+            else
+                local counter_value = tab[iLocalCounter]
+                if counter_value then
+                    return _tostring(counter_value)
+                end
             end
-
-            if !value then
-                return _concat{"${",strict_type, ':"', tostring(tab_key), '"}'}
-            end
-
-            return value
-        end
-
-        return w
-    end)
+        end)
+    end
 
     return message
 end
@@ -222,8 +238,28 @@ end
 function lang.GetTranslatedPhraseInterpolate(phrase, tab, onlyText)
     local translated = lang.GetTranslatedPhrase(phrase)
 
-    local interpolated = InterpolateConfig(translated, read_types, phrase_alias, tab, onlyText)
+    if _find(translated, "$", 1, true) then
+        if !tab then
+            return translated .. "-[ERROR: NO TAB]"
+        end
 
-    return interpolated
+        return InterpolateConfig(translated, read_types, phrase_alias, tab, onlyText)
+    else
+        return translated
+    end
 end
 lang.L = lang.GetTranslatedPhraseInterpolate
+
+-- Check CPU time
+/*
+local SysTime = SysTime
+local _L = lang.L
+local start = SysTime()
+
+for i = 1, 1000000 do
+    _L("welcome_player", {text = "player1"})
+end
+
+print("Time:", SysTime() - start)
+*/
+

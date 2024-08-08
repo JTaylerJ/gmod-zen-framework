@@ -181,6 +181,21 @@ function lang.GetLanguageForEdit(lang_id)
         lang.mt_Langauges[lang_id] = {}
     end
 
+    local mPhrases = lang.mt_Langauges[lang_id]
+
+    setmetatable(mPhrases, {
+        __index = function(t, k)
+            return k
+        end,
+        __newindex = function(t, k, v)
+            rawset(t, k, v)
+
+            if lang_id == lang.GetLanguage() then
+                language.Add(k, v)
+            end
+        end
+    })
+
     return lang.mt_Langauges[lang_id]
 end
 
@@ -194,6 +209,30 @@ function lang.GetLanguage()
 
     return lang.DEFAULT_LANG
 end
+
+function lang.Update()
+    local phrases = lang.mt_Langauges[lang.GetLanguage()]
+
+    print("Update language", lang.GetLanguage())
+
+    if phrases then
+        for k, v in pairs(phrases) do
+            language.Add(k, v)
+        end
+    end
+end
+
+if CLIENT then
+    cvars.AddChangeCallback("gmod_language", function(_, _, value)
+        print("Language changed to", value)
+        timer.Simple(0.1, function()
+            lang.Update()
+        end)
+    end, "language.update")
+    hook.Add("InitPostEntity", "language.update", lang.Update)
+end
+
+
 
 ---@param lang_id string
 ---@param phrase string

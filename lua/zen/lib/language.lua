@@ -192,7 +192,7 @@ function lang.GetLanguageForEdit(lang_id)
         __newindex = function(t, k, v)
             rawset(t, k, v)
 
-            if lang_id == lang.GetLanguage() then
+            if CLIENT and lang_id == lang.GetLanguage() then
                 language.Add(k, v)
             end
         end

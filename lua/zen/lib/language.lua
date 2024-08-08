@@ -1,5 +1,6 @@
 module("zen", package.seeall)
 
+lang = _GET("lang")
 /*
     Language module
 
@@ -64,8 +65,6 @@ module("zen", package.seeall)
     - language.GetTranslatedPhraseInterpolate(phrase, tab, onlyText) - Get translated phrase with interpolation
 
 */
-
-lang = _GET("lang")
 
 lang.mt_Langauges = lang.mt_Langauges or {}
 local LL = lang.mt_Langauges
@@ -213,6 +212,13 @@ function lang.Update()
         for k, v in pairs(phrases) do
             language.Add(k, v)
         end
+    else
+        local default_phrases = lang.mt_Langauges[lang.DEFAULT_LANG]
+        if default_phrases then
+            for k, v in pairs(default_phrases) do
+                language.Add(k, v)
+            end
+        end
     end
 end
 
@@ -299,4 +305,3 @@ end
 
 print("Time:", SysTime() - start)
 */
-

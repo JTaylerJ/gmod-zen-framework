@@ -24,7 +24,7 @@ function module.error(...)
     local ActiveProvider = module.GetActiveProvider() or "No Provider"
 
     local errorStr = table.concat({"[DB][", ActiveProvider, "] ", ...})
-    error(errorStr, 0)
+    return error(errorStr, 0)
 end
 
 ---@return string
@@ -32,7 +32,7 @@ function module.GetActiveProvider()
     return module.mP_active_provider
 end
 
----@param provider string
+---@param provider? string
 function module.SetActiveProvider(provider)
     module.mP_active_provider = provider
 end
@@ -44,7 +44,7 @@ function module.Query(query, callback, onError)
     local ActiveProvider = module.GetActiveProvider()
 
     if ActiveProvider == "tmysql4" then
-        local db, err = tmysql.initialize(
+        local db, err = module.tmysql.initialize(
             zen.db.config.host,
             zen.db.config.username,
             zen.db.config.password,
@@ -69,7 +69,7 @@ function module.Query(query, callback, onError)
     end
 
     if ActiveProvider == "mysqloo" then
-        local db = mysqloo.connect(
+        local db = module.mysqloo.connect(
             zen.db.config.host,
             zen.db.config.username,
             zen.db.config.password,
@@ -114,7 +114,18 @@ function module.Query(query, callback, onError)
     module.error("No active provider found")
 end
 
-function module.Start(provider)
+---@class db.host_data
+---@field host string
+---@field username string
+---@field password string
+---@field database string
+---@field port number
+
+---@param provider string
+---@param host_data? db.host_data
+function module.Start(provider, host_data)
+    module.SetActiveProvider()
+
     if provider == "mysqloo" then
         if !module.IsModuleExists("mysqloo") then
             module.error("try to start mysqloo provider, but module not found")
@@ -153,7 +164,13 @@ function module.Start(provider)
 end
 
 
-module.Start("sqlite")
+module.Start("mysqloo", {
+    host = "localhost",
+    username = "root",
+    password = "root",
+    port = 3306,
+    database = "gmod"
+})
 
 
 function module.SQLEscape(str)

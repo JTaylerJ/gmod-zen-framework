@@ -21,6 +21,7 @@ zen.IncludeSH("zen/lib/player_data.lua")
 zen.IncludeSH("zen/lib/anim.lua")
 zen.IncludeSH("zen/lib/feature.lua")
 zen.IncludeSH("zen/lib/meeting.lua")
+zen.IncludeSV("zen/lib/db/db.lua")
 
 zen.IncludeSH("zen/lib/network/sh_nt.lua")
 zen.IncludeSH("zen/lib/network/sh_new.lua")

@@ -49,38 +49,28 @@ function module.SetActiveProvider(provider)
     module.mP_active_provider = provider
 end
 
+local type = type
+local tonumber = tonumber
+local pairs = pairs
 
----@class db.MultiQuery
----@field query string
----@field callback? fun(result:any, query:string)
+local function convertStringNumbers(tbl)
+    if type(tbl) ~= "table" then return end
 
----@param MultiQuery db.MultiQuery[]
----@param onFinish? fun(results:any[])
-function module.MultiQuery(MultiQuery, onFinish)
-    local ActiveProvider = module.GetActiveProvider()
-
-    if ActiveProvider == "tmysql4" then
-        local db, err = module.tmysql.initialize(
-            zen.db.config.host,
-            zen.db.config.username,
-            zen.db.config.password,
-            zen.db.config.database,
-            zen.db.config.port
-        )
-
-        if not db then
-            module.error("tmysql4: " .. err)
-            return
+    for k, v in pairs(tbl) do
+        if type(v) == "table" then
+            convertStringNumbers(v)
+        elseif type(v) == "string" and tonumber(v) then
+            tbl[k] = tonumber(v)
         end
-
-        for i, query in ipairs(MultiQuery) do
-            db:Query(query.query, function(result)
-                if query.callback then query.callback(result, query.query) end
-            end)
-        end
-
-        return
     end
+
+end
+
+
+---@param Queries string[]
+---@param onFinish? fun(results:any[])
+function module.MultiQuery(Queries, onFinish)
+    local ActiveProvider = module.GetActiveProvider()
 
     if ActiveProvider == "mysqloo" then
         local traceback = debug.traceback()
@@ -89,22 +79,23 @@ function module.MultiQuery(MultiQuery, onFinish)
 
         local transaction = module.mysqloo_db:createTransaction()
 
-        for i, query in ipairs(MultiQuery) do
-            local q = module.mysqloo_db:query(query.query)
+        for i, singleQuery in pairs(Queries) do
+            local q = module.mysqloo_db:query(singleQuery)
 
             function q:onSuccess(data)
-                if query.callback then query.callback(data, query.query) end
-                table.insert(results, data)
+                results[i] = data
             end
 
             function q:onError(err)
                 module.error(err, "\n", traceback, query)
+                return
             end
 
             transaction:addQuery(q)
         end
 
         transaction.onSuccess = function()
+            convertStringNumbers(results)
             if onFinish then onFinish(results) end
         end
 
@@ -121,21 +112,20 @@ function module.MultiQuery(MultiQuery, onFinish)
     if ActiveProvider == "sqlite" then
         local results = {}
 
-        for i, query in ipairs(MultiQuery) do
-            local data = sql.Query(query.query)
+        for i, singleQuery in pairs(Queries) do
+            local data = sql.Query(singleQuery)
+            results[i] = data
 
             if data == false then
                 local sql_error = sql.LastError()
-                local str_args = table.concat({sql_error, "\n", query.query})
+                local str_args = table.concat({sql_error, "\n", singleQuery})
 
                 module.error(str_args)
                 return
-            else
-                if query.callback then query.callback(data, query.query) end
-                table.insert(results, data)
             end
         end
 
+        convertStringNumbers(results)
         if onFinish then onFinish(results) end
 
         return
@@ -153,36 +143,12 @@ function module.Query(query, callback, onError)
     local traceback = debug.traceback()
     local ActiveProvider = module.GetActiveProvider()
 
-    if ActiveProvider == "tmysql4" then
-        local db, err = module.tmysql.initialize(
-            zen.db.config.host,
-            zen.db.config.username,
-            zen.db.config.password,
-            zen.db.config.database,
-            zen.db.config.port
-        )
-
-        if not db then
-            module.error("tmysql4: " .. err)
-            return
-        end
-
-        db:Query(query, function(result)
-            if onError and result[1].status == false then
-                onError(result[1].error)
-                return
-            end
-
-            if callback then callback(result, query) end
-        end)
-
-        return
-    end
-
     if ActiveProvider == "mysqloo" then
         local q = module.mysqloo_db:query(query)
 
         function q:onSuccess(data)
+            convertStringNumbers(data)
+
             if callback then callback(data, query) end
         end
 
@@ -199,6 +165,7 @@ function module.Query(query, callback, onError)
 
     if ActiveProvider == "sqlite" then
         local data = sql.Query(query)
+        convertStringNumbers(data)
 
         if data == false then
             local sql_error = sql.LastError()
@@ -208,7 +175,6 @@ function module.Query(query, callback, onError)
             module.error(str_args)
             return
         else
-
             if callback then callback(data, query) end
         end
 
@@ -225,6 +191,11 @@ end
 ---@field password string
 ---@field database string
 ---@field port number
+
+---@alias db.provider: string
+---| '"tmysql4"'
+---| '"mysqloo"'
+---| '"sqlite"'
 
 ---@param provider string
 ---@param host_data? db.host_data
@@ -294,6 +265,8 @@ function module.Start(provider, host_data, onConnected, onDisconnected)
 
         module.SetActiveProvider("sqlite")
         module.log("SQLite provider started")
+
+        if onConnected then onConnected() end
 
         return
     end
@@ -568,8 +541,6 @@ function module.CreateTable(tableName, tableStruct, callback)
                 return
             end
         end
-
-
     end
 
     if ActiveProvider == "tmysql4" then
@@ -690,6 +661,18 @@ function module.CreateTable(tableName, tableStruct, callback)
             local columnType = module.ConvertLuaToType(column.type)
             query = query .. "\t `" .. column.name .. "` " .. columnType
 
+            if column.autoIncrement then
+                if column.type != "INTEGER" then
+                    module.error("autoIncrement can be used only with INTEGER type")
+                    return
+                end
+
+                if !column.primaryKey then
+                    module.error("autoIncrement can be used only with primaryKey")
+                    return
+                end
+            end
+
             if column.length then
                 if columnType == "VARCHAR" then
                     query = query .. "(" .. column.length .. ")"
@@ -739,6 +722,9 @@ function module.CreateTable(tableName, tableStruct, callback)
     return
 end
 
+
+
+
 --- Get table schemas and convert this to universal format
 --- Convert NULL to nil
 ---@param tableName string
@@ -776,14 +762,9 @@ function module.GetTableStruct(tableName, callback)
     if ActiveProvider == "mysqloo" then
 
         module.MultiQuery({
-            {
-                query = "SHOW COLUMNS FROM `" .. tableName .. "`",
-            },
-            {
-                query = "SHOW INDEXES FROM `" .. tableName .. "`",
-            }
+            "SHOW COLUMNS FROM `" .. tableName .. "`",
+            "SHOW INDEXES FROM `" .. tableName .. "`",
         }, function(results)
-            -- PrintTable(results)
             local table_info = results[1]
             local indexes = results[2]
 
@@ -846,36 +827,50 @@ function module.GetTableStruct(tableName, callback)
     end
 
     if ActiveProvider == "sqlite" then
-        module.Query("PRAGMA table_info(" .. tableName .. ")", function(table_info_pragma)
+        module.MultiQuery(
+        {
+            "PRAGMA table_info(`" .. tableName .. "`)",
+            "PRAGMA index_list(`" .. tableName .. "`)",
+        },
+        function(results)
+            local table_info_pragma = results[1]
+            local index_list_pragma = results[2]
 
-            module.Query("PRAGMA index_list(" .. tableName .. ")", function(index_list_pragma)
+            local index_list = {}
 
+            if index_list_pragma then
+                for i, row in ipairs(index_list_pragma) do
+                    table.insert(index_list, "PRAGMA index_info('" .. row.name .. "')")
+                end
+            end
+
+            module.MultiQuery(index_list, function(index_info_pragma)
                 local unique_columns = {}
 
-                for i, row in ipairs(index_list_pragma) do
-                    if row.unique == "1" then
-                        unique_columns[row.seq] = true
+                if index_info_pragma then
+                    for i, indexes in ipairs(index_info_pragma) do
+                        for i2, row in ipairs(indexes) do
+                            unique_columns[row.cid] = true
+                        end
                     end
                 end
-
-                -- PrintTable(index_list_pragma)
-                -- PrintTable(table_info_pragma)
 
                 local columns = {}
 
                 for i, row in ipairs(table_info_pragma) do
+                    local ColumnType = module.ConvertTypeToLua(row.type)
 
                     local column_is_unique = unique_columns[row.cid] == true
 
                     local column = {
                         name = row.name,
-                        type = module.ConvertTypeToLua(row.type),
+                        type = ColumnType,
                         length = row.length,
                         default = row.dflt_value,
-                        primaryKey = row.pk == "1",
-                        autoIncrement = row.pk == "1",
+                        primaryKey = row.pk == 1,
+                        autoIncrement = row.pk == 1 and ColumnType == "INTEGER",
                         unique = column_is_unique,
-                        notNull = row.notnull == "1",
+                        notNull = row.notnull == 1,
                     }
 
                     if column.default == "NULL" then
@@ -904,9 +899,7 @@ function module.GetTableStruct(tableName, callback)
                 callback({
                     columns = columns
                 })
-
             end)
-
         end)
 
         return
@@ -921,63 +914,52 @@ module.Start("sqlite", {
     host = "localhost",
     username = "root",
     password = "root",
-    port = 3306,
-    database = "gmod"
+    database = "gmod",
+    port = 3306
 }, function()
-
 
     module.IsTableExists("db_test", function(bExists)
         if bExists then
-            module.log("Table exists db_test")
-
-            module.GetTableStruct("db_test", function(data)
-                PrintTable(data)
+            module.DeleteTable("db_test", function()
+                module.log("Table deleted")
             end)
-
-            -- module.DeleteTable("db_test", function()
-            --     module.log("Table db_test deleted")
-            -- end)
-        else
-            module.log("Table not exists db_test, creating...")
-
+        end
+        if !bExists then
             module.CreateTable("db_test", {
                 columns = {
                     {
                         name = "id",
                         type = "INTEGER",
-                        unique = true,
-                        -- length = 255,
-                        -- primaryKey = true,
-                        -- autoIncrement = true
-                    },
-                    {
-                        name = "steamid",
-                        type = "VARCHAR",
-                        notNull = true,
-                        length = 255,
-                        unique = true,
+                        primaryKey = true,
+                        autoIncrement = true,
                     },
                     {
                         name = "name",
-                        type = "TEXT",
-                        notNull = true
+                        type = "VARCHAR",
+                        length = 255,
                     },
                     {
-                        name = "money",
+                        name = "age",
                         type = "INTEGER",
-                        default = 0
                     },
                     {
                         name = "created_at",
                         type = "INTEGER",
+                        notNull = true,
                     }
                 }
-            }, function(res, query)
-                print("Table zen_users created", res, query)
-            end)
+            }, function()
+                module.log("Table created")
 
+                module.GetTableStruct("db_test", function(data)
+                    PrintTable(data)
+                end)
+
+            end)
         end
     end)
+
+
 
     timer.Simple(5, function()
         module.Close()

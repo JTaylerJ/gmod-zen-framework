@@ -30,13 +30,41 @@ function module.IsModuleExists(module)
     return file.Exists(path, "LUA")
 end
 
+local color_blue = Color(0, 0, 255)
+local color_green = Color(0, 255, 0)
+local color_red = Color(255, 0, 0)
 function module.log(...)
     local ActiveProvider = module.GetActiveProvider() or "No Provider"
+    
+    local prefix_text = "[DB][" .. ActiveProvider .. "] "
+    
+    if system.IsLinux() then
+        local args = {...}
+        local text = ""
+
+        -- Add blue '|' sumbol and next white color
+        text = text .. "\27[38;2;0;0;255m" .. prefix_text .. " \27[38;2;255;255;255m"
+
+        for k, v in pairs(args) do
+            if istable(v) then
+                text = text .. string.format("\27[38;2;%s;%s;%sm", v.r, v.g, v.b)
+            else
+                text = text .. tostring(v)
+            end
+        end
+
+        text = text .. "\27[0m"
+
+        print(text)
+    else
+        MsgC(color_blue, prefix_text)
+
+        -- Insert win32 change font string
 
 
-    MsgN()
-    local logStr = table.concat({"[DB][", ActiveProvider, "] ", ...})
-    print(logStr)
+        MsgC(color_white, ...)
+        MsgN()
+    end
 end
 
 local color_error = Color(255, 0, 0)
@@ -891,12 +919,16 @@ STORAGE.__index = STORAGE
 function STORAGE:Start()
     self.bStarted = true
 
+    self:Log("Starting storage")
+
     module.Start(self.provider, self.host_data, function()
+        self:Log("Storage started, checking table")
+
         module.IsTableExists(self.table_name, function(bExists)
             if !bExists then
-                module.log("Storage table not exists, creating: ", self.table_name)
+                self:Log("Storage table not exists, creating: ")
                 module.CreateTable(self.table_name, self.table_struct, function()
-                    module.log("Storage table created: ", self.table_name)
+                    self:Log("Storage table created: ")
                 end)
             else
                 -- Check if table structure is equal
@@ -907,14 +939,12 @@ function STORAGE:Start()
 end
 
 function STORAGE:InspectStructure()
-    module.log("Storage table exists, checking structure: ", self.table_name)
+    self:Log("Inspecting table structure..")
     module.IsTableEqualStructure(self.table_name, self.table_struct, function(bSuccess, reason)
-        if !bSuccess then
-            module.error("Table structure mismatch: ", reason)
-            module.error("Table structure mismatch: ", reason)
-        else
-            module.log("Table structure is equal: ", self.table_name)
-        end
+        local tSuccess = bSuccess and "success" or "failed"
+        local tColor = bSuccess and color_green or color_red
+
+        self:Log("Table structure inspection ", tColor, tSuccess, color_white, ": ", reason)
     end)
 end
 
@@ -933,6 +963,10 @@ function STORAGE:Setup(provider, table_name, table_struct, host_data)
     if !self.bStarted then
         self:Start()
     end
+end
+
+function STORAGE:Log(...)
+    module.log(color_blue, "[", self.table_name, "] ", color_white, ...)
 end
 
 

@@ -35,9 +35,9 @@ local color_green = Color(0, 255, 0)
 local color_red = Color(255, 0, 0)
 function module.log(...)
     local ActiveProvider = module.GetActiveProvider() or "No Provider"
-    
+
     local prefix_text = "[DB][" .. ActiveProvider .. "] "
-    
+
     if system.IsLinux() then
         local args = {...}
         local text = ""
@@ -903,6 +903,33 @@ function module.IsTableEqualStructure(table_name, require_table_struct, callback
 end
 
 
+---@param table_name string
+---@param table_struct db.universal_table_struct
+---@param callback? fun()
+function module.CreateOrInspectTable(table_name, table_struct, callback)
+
+    module.IsTableExists(table_name, function(bExists)
+        if !bExists then
+            module.CreateTable(table_name, table_struct, function()
+                module.log("Table created: ", table_name)
+
+                if callback then callback() end
+            end)
+        else
+            module.IsTableEqualStructure(table_name, table_struct, function(bSuccess, reason)
+                local tSuccess = bSuccess and "success" or "failed"
+                local tColor = bSuccess and color_green or color_red
+
+                module.log("Table structure inspection ", tColor, tSuccess, color_white, ": ", reason)
+
+                if callback then callback() end
+            end)
+        end
+    end)
+
+end
+
+
 module.mt_Storages = module.mt_Storages or {}
 
 
@@ -916,8 +943,19 @@ module.mt_Storages = module.mt_Storages or {}
 local STORAGE = {}
 STORAGE.__index = STORAGE
 
+function STORAGE:Init()
+    if self.bInitialized then return end
+
+    self.bStarted = false
+    self.mP_cooldowns = {}
+
+    self.bInitialized = true
+end
+
 function STORAGE:Start()
     self.bStarted = true
+
+    self.mP_data = {}
 
     self:Log("Starting storage")
 
@@ -960,6 +998,10 @@ function STORAGE:Setup(provider, table_name, table_struct, host_data)
     self.host_data = host_data
 
 
+    if !self.bInitialized then
+        self:Init()
+    end
+
     if !self.bStarted then
         self:Start()
     end
@@ -969,6 +1011,95 @@ function STORAGE:Log(...)
     module.log(color_blue, "[", self.table_name, "] ", color_white, ...)
 end
 
+---@param delay_name string
+---@param cooldown number
+---@return boolean
+function STORAGE:LuaCooldown(delay_name, cooldown)
+    if self.mP_cooldowns[delay_name] == nil then
+        self.mP_cooldowns[delay_name] = CurTime()
+        return true
+    end
+
+    return CurTime() - self.mP_cooldowns[delay_name] > cooldown
+end
+
+function STORAGE:UniqueConcat(...)
+    local args = {...}
+
+    table.insert(args, 1, "db")
+    table.insert(args, 2, self.table_name)
+    table.insert(args, 3, self.provider)
+
+    return table.concat(args, "_")
+end
+
+---@class db.storage.table
+local STABLE = {}
+STABLE.__index = STABLE
+
+function STABLE:Init()
+    if self.bInitialized then return end
+
+    self.bReady = false
+
+    self.mP_ready_callbacks = {}
+
+    self.bInitialized = true
+end
+
+
+function STABLE:AddReadyCallback(callback)
+    if self.bReady then
+        callback()
+        return
+    end
+
+    table.insert(self.mP_ready_callbacks, callback)
+end
+
+---@param key string
+---@param value any
+---@param onDone? fun()
+function STABLE:SetKeyValue(key, value, onDone)
+    // TODO: Implement
+end
+
+---@param key string
+---@param onDone? fun(value:any)
+function STABLE:GetKeyValue(key, onDone)
+    // TODO: Implement
+end
+
+---@param bReady boolean
+function STABLE:SetReady(bReady)
+    self.bReady = bReady
+
+    if bReady == true then
+        for i, callback in ipairs(self.mP_ready_callbacks) do
+            table.remove(self.mP_ready_callbacks, i)
+            callback()
+        end
+    end
+end
+
+function STABLE:IsReady()
+    return self.bReady
+end
+
+---@param table_name string
+---@param table_struct db.universal_table_struct
+---@return db.storage.table
+function STORAGE:SetupTableStorage(table_name, table_struct)
+
+    ---@type db.storage.table
+    local STABLE = setmetatable({}, STABLE)
+
+    module.CreateOrInspectTable(table_name, table_struct, function()
+        STABLE:SetReady(true)
+    end)
+
+    return STABLE
+end
 
 ---@param provider db.provider
 ---@param host_data? db.host_data

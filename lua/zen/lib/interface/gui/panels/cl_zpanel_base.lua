@@ -14,6 +14,7 @@ module("zen", package.seeall)
 ---@field OnMouse4Release? fun(self, delta:number) Called when Release MOUSE_4, delta - time left from presse
 ---@field OnMouse5Release? fun(self, delta:number) Called when Release MOUSE_5, delta - time left from presse
 ---@field Draw? fun(self, w:number, h:number) Alias to default Paint
+---@field DrawOver? fun(self, w:number, h:number) Alias to default PaintOver
 local PANEL = {}
 
 PANEL.bPaintOnceEnabled = true
@@ -64,6 +65,10 @@ function PANEL:Paint(w, h)
 
     if self.Draw then
         self:Draw(w, h)
+    end
+
+    if self.DrawOver then
+        self:DrawOver(w, h)
     end
 end
 

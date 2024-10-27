@@ -1,5 +1,6 @@
 module("zen", package.seeall)
 
+---@class zen.util
 util = _GET("util", util)
 
 ---@class TYPE

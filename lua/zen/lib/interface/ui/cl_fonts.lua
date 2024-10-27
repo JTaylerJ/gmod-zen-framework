@@ -1,5 +1,6 @@
 module("zen", package.seeall)
 
+---@class zen.ui
 ui = _GET("ui")
 
 ui.t_FontList = ui.t_FontList or {}

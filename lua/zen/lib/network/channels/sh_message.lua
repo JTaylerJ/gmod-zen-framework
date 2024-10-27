@@ -1,5 +1,6 @@
 module("zen", package.seeall)
 
+---@class zen.msg
 msg = _GET("msg")
 
 NOTIFY_GENERIC = 0

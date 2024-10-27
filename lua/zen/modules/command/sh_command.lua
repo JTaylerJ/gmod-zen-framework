@@ -44,8 +44,10 @@ module("zen", package.seeall)
 ---@field help? string help string work with `--help` or `/?`
 
 
-
+---@class zen.icmd
 icmd = _GET("icmd")
+
+---@class zen.iconsole
 iconsole = _GET("iconsole")
 
 icmd.t_Commands = icmd.t_Commands or {}

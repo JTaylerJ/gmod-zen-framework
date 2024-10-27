@@ -4,6 +4,7 @@ CVARS_VALUES = _L.CVARS_VALUES or {}
 
 CVARS = _L.CVARS or {}
 
+---@class zen.cvars
 cvars = _GET("cvars", cvars)
 
 local meta = {

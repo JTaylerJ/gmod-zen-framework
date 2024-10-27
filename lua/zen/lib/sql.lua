@@ -1,5 +1,6 @@
 module("zen", package.seeall)
 
+---@class zen.sql
 sql = _GET("sql", sql)
 
 --- @param qe string SQL_QUERY

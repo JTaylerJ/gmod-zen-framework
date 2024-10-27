@@ -65,9 +65,10 @@ do
     end
 end
 
----@param name string
+---@generic T
+---@param name zen.`T`
 ---@param default? any
----@return table
+---@return zen.`T`
 function zen.module(name, default)
     if !_MODULE[name] then _MODULE[name] = (default) and (table.Copy(default)) or {} end
     return _MODULE[name]

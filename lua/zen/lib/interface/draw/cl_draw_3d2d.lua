@@ -1,5 +1,6 @@
 module("zen", package.seeall)
 
+---@class zen.draw3d2d
 draw3d2d = _GET("draw3d2d")
 
 local cam_Start3D2D = cam.Start3D2D

@@ -1,5 +1,6 @@
 module("zen", package.seeall)
 
+---@class zen.lang
 lang = _GET("lang")
 /*
     Language module

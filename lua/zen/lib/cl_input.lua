@@ -1,5 +1,6 @@
 module("zen", package.seeall)
 
+---@class zen.input
 _L.input = _GET("input", input)
 
 input.KeyPressedCounter = input.KeyPressedCounter or {}

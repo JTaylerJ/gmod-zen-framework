@@ -1,5 +1,6 @@
 module("zen", package.seeall)
 
+---@class zen.zone
 zone = _GET("zone")
 
 zone.t_Zones = zone.t_Zones or {}

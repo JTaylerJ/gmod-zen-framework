@@ -1,5 +1,6 @@
 module("zen", package.seeall)
 
+---@class zen.iconsole
 iconsole = _GET("iconsole")
 
 iconsole.INPUT_MODE = false

@@ -1,5 +1,6 @@
 module("zen", package.seeall)
 
+---@class zen.anim
 anim = _GET("anim")
 
 _LISTEN("nt.RegisterChannels", "anim", function()

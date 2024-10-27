@@ -1,5 +1,6 @@
 module("zen", package.seeall)
 
+---@class zen.table
 table = _GET("table", table)
 
 

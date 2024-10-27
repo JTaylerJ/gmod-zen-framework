@@ -1,5 +1,6 @@
 module("zen", package.seeall)
 
+---@class zen.player_data
 player_data = _GET("player_data")
 
 player_data.mt_PlayerSessionData = player_data.mt_PlayerSessionData or {}

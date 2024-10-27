@@ -1,5 +1,6 @@
 module("zen", package.seeall)
 
+---@class zen.player_mode
 player_mode = _GET("player_mode")
 
 ---@type table<string, zen.player_mode>

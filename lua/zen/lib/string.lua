@@ -1,5 +1,6 @@
 module("zen", package.seeall)
 
+---@class zen.string
 string = _GET("string", string)
 
 local read_types = {

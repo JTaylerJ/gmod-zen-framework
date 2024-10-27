@@ -1,5 +1,6 @@
 module("zen", package.seeall)
 
+---@class zen.stencil_cut
 stencil_cut = _GET("stencil_cut")
 
 -- Stencil Box Cut Operation

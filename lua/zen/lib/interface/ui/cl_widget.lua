@@ -1,5 +1,6 @@
 module("zen", package.seeall)
 
+---@class zen.widget
 widget = _GET("widget")
 
 local GetViewSetup = render.GetViewSetup

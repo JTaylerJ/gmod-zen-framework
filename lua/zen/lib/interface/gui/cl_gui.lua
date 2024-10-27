@@ -1,5 +1,6 @@
 module("zen", package.seeall)
 
+---@class zen.gui
 gui = _GET("gui", gui)
 
 local sub = string.sub

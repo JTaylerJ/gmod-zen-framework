@@ -1,5 +1,6 @@
 module("zen", package.seeall)
 
+---@class zen.save
 save = _GET("save")
 
 local F = string.InterpolateSQL

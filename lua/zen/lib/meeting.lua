@@ -1,5 +1,6 @@
 module("zen", package.seeall)
 
+---@class zen.meeting
 meeting = _GET("meeting")
 
 ---@type table<string, zen.Meeting>

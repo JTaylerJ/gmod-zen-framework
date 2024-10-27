@@ -1,5 +1,6 @@
 module("zen", package.seeall)
 
+---@class zen.material
 material = _GET("material")
 
 material.iCounter = material.iCounter or 0

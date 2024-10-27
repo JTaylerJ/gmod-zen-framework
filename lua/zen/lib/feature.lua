@@ -1,5 +1,6 @@
 module("zen", package.seeall)
 
+---@class zen.feature
 feature = _GET("feature")
 
 ---@package

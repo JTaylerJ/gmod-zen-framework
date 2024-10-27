@@ -1,5 +1,6 @@
 module("zen", package.seeall)
 
+---@class zen.draw3d
 draw3d = _GET("draw3d")
 
 function draw3d.GetScreenPosition(vec)

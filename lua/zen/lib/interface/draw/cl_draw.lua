@@ -1,5 +1,6 @@
 module("zen", package.seeall)
 
+---@class zen.draw
 draw = _GET("draw", draw)
 
 local s_SetDrawColor = surface.SetDrawColor

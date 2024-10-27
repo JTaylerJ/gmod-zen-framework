@@ -1,5 +1,6 @@
 module("zen", package.seeall)
 
+---@class zen.sh_hooks
 sh_hooks = _GET("sh_hooks")
 
 local unpack = unpack

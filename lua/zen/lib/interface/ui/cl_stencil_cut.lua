@@ -61,3 +61,20 @@ function stencil_cut.FilterStencil(callback, width, height)
     render.SetStencilCompareFunction( STENCILCOMPARISONFUNCTION_EQUAL )
 
 end
+
+---@param draw_func fun()
+---@param mask_func fun()
+function stencil_cut.DrawWithSimpleMask(draw_func, mask_func)
+    stencil_cut.StartStencil()
+
+    mask_func()
+
+    render.SetStencilFailOperation( STENCILOPERATION_KEEP )
+
+    ------ We want to pass (and therefore draw on) pixels that match (Are EQUAL to) the Reference Value
+    render.SetStencilCompareFunction( STENCILCOMPARISONFUNCTION_EQUAL )
+
+    draw_func()
+
+    stencil_cut.EndStencil()
+end

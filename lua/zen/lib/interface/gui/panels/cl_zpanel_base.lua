@@ -1,6 +1,10 @@
 module("zen", package.seeall)
 
+zen.iCounter_ZPanelBase = zen.iCounter_ZPanelBase or 0
+
 ---@class zen.panel.zpanelbase: Panel
+---@field uniquePanelID string Unique ID for panel, memoryID or string with panel_num_id
+---@field uniqueNumID number Unique Number ID for ZPanelBase panels
 ---@field OnMouseLeftPress? fun(self) Called when pressed MOUSE_LEFT
 ---@field OnMouseRightPress? fun(self) Called when pressed MOUSE_RIGHT
 ---@field OnMouseMiddlePress? fun(self) Called when pressed MOUSE_MIDDLE
@@ -20,6 +24,7 @@ module("zen", package.seeall)
 ---@field OnCursorExit fun(self) Called when cursor exited after exit Panel
 ---@field PaintMask fun(self, w:number, h:number) -- Mask for PaintOnce
 ---@field PaintOnce fun(self, w:number, h:number) -- Paint which called when panel: ChangeSize. (Un)Hovered. (De)Enable. (De)Blocked
+---@field PostRemove fun(self) -- Alias for OnRemove
 local PANEL = {}
 
 PANEL.bPaintOnceEnabled = true
@@ -50,6 +55,13 @@ PANEL.bBlocked = false
 PANEL.tMousesPressed = {}
 PANEL.tMousesPressTime = {}
 
+---@class zen.zpanel_base.render_target
+---@field Target ITexture
+---@field Func fun(w:number, h:number)
+
+---@type table<string, zen.zpanel_base.render_target>
+PANEL.tRenderTargets = {}
+
 --- Check is mouse pressed to panel, nil arg check any mouse is pressed
 ---@param mouse integer?
 ---@return boolean
@@ -68,6 +80,17 @@ function PANEL:IsMouse5Pressed() return self:IsMousePressed(MOUSE_5) end
 
 function PANEL:Init()
     self:SetMouseInputEnabled(true)
+
+    zen.iCounter_ZPanelBase = zen.iCounter_ZPanelBase + 1
+    self.uniqueNumID = zen.iCounter_ZPanelBase
+
+    local bMemoryIDFounded, memoryID = pcall(string.format, "%p", self)
+
+    if bMemoryIDFounded then
+        self.uniquePanelID = memoryID
+    else
+        self.uniquePanelID = "zen.zpanel_base." .. tostring(self.uniqueNumID)
+    end
 end
 
 function PANEL:IsEnabled() return self.bEnabled end
@@ -174,6 +197,12 @@ function PANEL:GetLocalCursorPos()
     return cx - x, cy - y
 end
 
+--- Return panel global position
+---@return number, number
+function PANEL:GetGlobalPos()
+    return vgui.GetWorldPanel():GetChildPosition(self)
+end
+
 --- Return is cursor in panel
 ---@return boolean
 function PANEL:IsCursorInside()
@@ -210,6 +239,12 @@ function PANEL:Paint(w, h)
 
     if self.DrawOver then
         self:DrawOver(w, h)
+    end
+
+    for _, v in pairs(self.tRenderTargets) do
+        render.PushRenderTarget(v.Target)
+            v.Func(w, h)
+        render.PopRenderTarget()
     end
 end
 
@@ -254,7 +289,6 @@ function PANEL:OnMouseReleased(mouse)
     if mouse == MOUSE_5 and type(self.OnMouse5Release) == "function" then self:OnMouse5Release(delta) end
 end
 
----@private
 ---@param width number?
 ---@param height number?
 function PANEL:CalcPaintOnce_Internal(width,  height)
@@ -303,6 +337,12 @@ function PANEL:CalcPaintOnce(width, height, bHovered)
 end
 */
 
+--- Called when panel is removed
+---@private
+function PANEL:OnRemove()
+    if type(self.PostRemove) == "function" then self:PostRemove() end
+end
+
 --- Enable Auto resize panel width to children in PerformLayout
 ---@param bState boolean
 function PANEL:SetAutoReSizeToChildrenWidth(bState)
@@ -334,6 +374,17 @@ end
 ---@private
 function PANEL:_SizeChanged(w, h)
 
+    for RenderID, v in pairs(self.tRenderTargets) do
+        v.Target = GetRenderTargetEx(RenderID,
+            w, h,
+            RT_SIZE_NO_CHANGE, -- Just no touch anything
+            MATERIAL_RT_DEPTH_SHARED, -- Alpha use multiply alpha object. If any bags then change to --> MATERIAL_RT_DEPTH_SEPARATE --> MATERIAL_RT_DEPTH_ONLY
+            1 + 256, -- Best Combo to enable high-equility screenshot
+            0, -- Dont tested
+            IMAGE_FORMAT_RGBA16161616 -- Allow use more colors in game. Default game colors is restricted!
+        )
+    end
+
     self:CalcPaintOnce_Internal(w, h)
 
     if type(self.OnSizeChanged) == "function" then
@@ -361,6 +412,29 @@ function PANEL:OnCursorEntered()
         self:OnCursorJoin()
     end
 
+end
+
+---@param uniqueID string
+---@param callback fun(w:number, h:number)
+function PANEL:AddRenderFunction(uniqueID, callback)
+    local RenderID = tostring(self.uniquePanelID) .. "_" .. tostring(uniqueID)
+
+
+    local width, height = self:GetSize()
+
+    local RenderTarget = GetRenderTargetEx(RenderID,
+        width, height,
+        RT_SIZE_NO_CHANGE, -- Just no touch anything
+        MATERIAL_RT_DEPTH_SHARED, -- Alpha use multiply alpha object. If any bags then change to --> MATERIAL_RT_DEPTH_SEPARATE --> MATERIAL_RT_DEPTH_ONLY
+        1 + 256, -- Best Combo to enable high-equility screenshot
+        0, -- Dont tested
+        IMAGE_FORMAT_RGBA16161616 -- Allow use more colors in game. Default game colors is restricted!
+    )
+
+    self.tRenderTargets[RenderID] = {
+        Target = RenderTarget,
+        Func = callback
+    }
 end
 
 ---@private

@@ -508,3 +508,13 @@ function draw.BoxRoundedEx(radius, x, y, w, h, clr, tl, tr, bl, br)
 
     surface.DrawPoly(poly)
 end
+
+---@param radius number
+---@param x number
+---@param y number
+---@param w number
+---@param h number
+---@param clr zColor?
+function draw.BoxRounded(radius, x, y, w, h, clr)
+    return draw.BoxRoundedEx(radius, x, y, w, h, clr, true, true, true, true)
+end

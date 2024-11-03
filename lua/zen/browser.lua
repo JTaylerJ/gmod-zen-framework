@@ -53,6 +53,8 @@ zen.IncludeCL("zen/lib/interface/gui/cl_panels.lua")
 zen.IncludeCL("zen/lib/interface/gui/skin/cl_main.lua")
 
 zen.IncludeCL("zen/lib/interface/gui/panels/cl_zpanel_base.lua")
+zen.IncludeCL("zen/lib/interface/gui/panels/cl_zdrop_select.lua")
+zen.IncludeCL("zen/lib/interface/gui/panels/cl_zlabel.lua")
 zen.IncludeCL("zen/lib/interface/gui/panels/cl_button.lua")
 zen.IncludeCL("zen/lib/interface/gui/panels/cl_frame.lua")
 zen.IncludeCL("zen/lib/interface/gui/panels/cl_input.lua")

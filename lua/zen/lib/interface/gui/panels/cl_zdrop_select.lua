@@ -9,6 +9,8 @@ end
 
 function PANEL:OpenSelectBox()
     self.pnlSelect = gui.Create("zpanelbase")
+    self.pnlSelect:SetAutoReSizeToChildren(true)
+    self.pnlSelect:SetLayoutScheme(true)
 
     function self.pnlSelect:PaintOnce(w, h)
         draw.BoxRounded(5 ,0, 0, w, h, "181818")
@@ -21,7 +23,6 @@ function PANEL:OpenSelectBox()
     print(h)
 
     self.pnlSelect:SetPos(x, y + h * 2)
-    self.pnlSelect:SetAutoReSizeToChildren(true)
 
     if type(self.GenerateSelectBoxContent) == "function" then
         self:GenerateSelectBoxContent(self.pnlSelect)

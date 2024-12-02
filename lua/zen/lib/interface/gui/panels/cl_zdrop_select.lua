@@ -5,13 +5,13 @@ local PANEL = {}
 
 function PANEL:Init()
     self:SetCursor("hand")
-    self:AutoRemoveAfter(10)
 end
 
 function PANEL:OpenSelectBox()
     self.pnlSelect = gui.Create("zpanelbase")
     self.pnlSelect:SetAutoReSizeToChildren(true)
     self.pnlSelect:SetLayoutScheme(true)
+    self.pnlSelect:AutoRemoveAfter(10)
 
     function self.pnlSelect:PaintOnce(w, h)
         draw.BoxRounded(5 ,0, 0, w, h, "181818")

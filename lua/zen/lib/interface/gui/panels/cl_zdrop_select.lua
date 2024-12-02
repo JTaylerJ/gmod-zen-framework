@@ -5,6 +5,7 @@ local PANEL = {}
 
 function PANEL:Init()
     self:SetCursor("hand")
+    self:AutoRemoveAfter(10)
 end
 
 function PANEL:OpenSelectBox()

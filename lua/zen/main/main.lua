@@ -46,7 +46,7 @@ do
             while i < count do
                 i = i + 1
                 local dat = args[i]
-                if type(dat) == "string" and _sub(dat, 1, 1) == "#" and lang.L then
+                if type(dat) == "string" and _sub(dat, 1, 1) == "#" and lang and lang.L then
                     dat = lang.L(dat)
                 end
                 if IsColor(dat) then
@@ -128,9 +128,19 @@ function zen.Include(fl_path)
     return include(fl_path)
 end
 
-function zen.IncludeSh(fl_path) AddCSLuaFile(fl_path) return zen.Include(fl_path) end
-function zen.IncludeSv(fl_path) if SERVER then return zen.Include(fl_path) end end
-function zen.IncludeCl(fl_path) AddCSLuaFile(fl_path) if CLIENT then return zen.Include(fl_path) end end
+function zen.IncludeSv(fl_path, bForceLoad)
+    if SERVER and (zen.SERVER_SIDE_ACTIVATED or bForceLoad) then return zen.Include(fl_path) end
+end
+
+function zen.IncludeCl(fl_path, bForceLoad)
+    if SERVER and (zen.SEND_CLIENT_FILES or bForceLoad) then AddCSLuaFile(fl_path) end
+    if CLIENT then return zen.Include(fl_path) end
+end
+
+function zen.IncludeSh(fl_path, bForceLoad)
+    zen.IncludeSv(fl_path, bForceLoad)
+    zen.IncludeCl(fl_path, bForceLoad)
+end
 zen.IncludeSH = zen.IncludeSh
 zen.IncludeSV = zen.IncludeSv
 zen.IncludeCL = zen.IncludeCl
@@ -145,7 +155,7 @@ function zen.IncludePlugins()
         if !file.Exists(fl_browser, "LUA") then continue end
 
         print("Run plugin: ", folder_name)
-        xpcall(zen.IncludeSH, ErrorNoHaltWithStack, fl_browser)
+        xpcall(zen.IncludeSH, ErrorNoHaltWithStack, fl_browser, true)
     end
 end
 
@@ -176,4 +186,4 @@ function zen.IncludeFolderRecursive(folder)
     end
 end
 
-zen.IncludeSH("zen/browser.lua")
+zen.IncludeSH("zen/browser.lua", true)

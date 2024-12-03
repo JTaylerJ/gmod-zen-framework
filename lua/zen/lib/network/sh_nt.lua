@@ -159,6 +159,11 @@ function nt.SendToChannel(channel_name, target, ...)
     assert(tChannel, "channel not exists \"" .. channel_name .. "\"")
     assert(istable(tChannel.types) or isfunction(tChannel.fWriter) , "tChannel.types should be tChannel.types || tChannel.fWriter should be function")
 
+    if !zen.SERVER_SIDE_ACTIVATED then
+        log("Ignore network request: ", channel_name, ": Network is not initialized")
+        return
+    end
+
     local data = {...}
 
     if tChannel.types then
@@ -478,6 +483,11 @@ function nt.Send(channel_name, types, data, target)
     data = data or {}
     assertTable(types, "types")
     assertTable(data, "data")
+
+    if !zen.SERVER_SIDE_ACTIVATED then
+        log("Ignore network request: ", channel_name, ": Network is not initialized")
+        return
+    end
 
     local channel_id = nt.GetChannelID(channel_name)
     local tChannel = nt.mt_Channels[channel_name]

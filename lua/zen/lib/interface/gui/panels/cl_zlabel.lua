@@ -4,15 +4,18 @@ module("zen", package.seeall)
 local PANEL = {}
 
 function PANEL:Init()
-    self.sFont = "Roboto"
+    self.sFont = "14:DejaVu Sans"
     self.sText = "ExampleText"
     self.cTextColor = color_white
     self.cTextColorBG = color_black
     self:SetCursor("hand")
 end
 
+function PANEL:GetText() return self.sText end
 function PANEL:SetText(text)
     self.sText = text
+
+    self:CalcPaintOnce_Internal()
 end
 
 function PANEL:SetFont(font)

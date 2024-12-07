@@ -1639,7 +1639,7 @@ local function index_files(global_path, source, order_folder, info)
             end
 
             if info.bFileFounded then
-                info.onFileFounded(new_path, global_path)
+                info.onFileFounded(file_name, new_path, global_path)
             end
 
             info.fileAmount = info.fileAmount + 1
@@ -1662,7 +1662,7 @@ local function index_files(global_path, source, order_folder, info)
             end
 
             if info.bFolderFounded then
-                info.onFolderFounded(new_path, global_path)
+                info.onFolderFounded(folder_name, new_path, global_path)
             end
 
             info.folderAmount = info.folderAmount + 1
@@ -1678,8 +1678,8 @@ end
 ---Index all files and folder with Accelerate timer
 ---@param folder_path string
 ---@param onFinished fun(fileList: table<number, string>, info: table)
----@param onFileFounded? fun(file_path: string, folder_path: string)
----@param onFolderFounded? fun(folder_path: string, upper_folder_path: string)
+---@param onFileFounded? fun(file_name:string, file_path: string, folder_path: string)
+---@param onFolderFounded? fun(folder_name:string, folder_path: string, parent_folder_path: string)
 ---@return table source, table info
 function util.IndexFolderFiles(folder_path, onFinished, onFileFounded, onFolderFounded)
     assert(type(folder_path) == "string", "folder_path not is string")
@@ -1704,7 +1704,7 @@ function util.IndexFolderFiles(folder_path, onFinished, onFileFounded, onFolderF
     local timer_name = string.format("index-folder-%s", folder_path)
 
     if info.bFolderFounded then
-        info.onFolderFounded(folder_path, "")
+        info.onFolderFounded(folder_path, "", "")
     end
 
     local currentID = 1

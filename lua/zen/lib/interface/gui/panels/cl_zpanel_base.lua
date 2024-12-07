@@ -317,6 +317,12 @@ end
 
 ---@private
 function PANEL:Paint(w, h)
+    if !self.bPaintInitialized then
+        self.bPaintInitialized = true
+
+        self:CalcPaintOnce_Internal()
+    end
+
     if self.bPaintOnceEnabled then
         /* Looks Like Useless! TODO: Remove later
         local bStateHovered = self:IsHovered()
@@ -392,6 +398,7 @@ end
 ---@param width number?
 ---@param height number?
 function PANEL:CalcPaintOnce_Internal(width,  height)
+    if !self.bPaintInitialized then return end
     if type(self.PaintOnce) != "function" then return end
 
     if (width == nil) then width = self:GetWide() end

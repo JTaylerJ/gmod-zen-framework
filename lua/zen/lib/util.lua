@@ -1492,6 +1492,219 @@ function util.IsBoxFree(pos, min, max, filter)
     return true
 end
 
+util.t_AccelerateTimers = util.t_AccelerateTimers or {}
+function util.CreateAccelerateTickTimer(name, delay, reps, callback)
+    local timer_name = string.format("zen-util-accelerate-timer-%s", name)
+
+    util.t_AccelerateTimers[timer_name] = {
+        delay = delay,
+        callback = callback,
+    }
+
+
+    -------------------------------
+    ------- Accelerate Tick -------
+    -------------------------------
+    local SysTime = SysTime
+    local math_floor = math.floor
+
+    local TickDelay = delay
+    local TimeStart = SysTime()
+    local TicksDone = 0
+    -------------------------------
+    -------------------------------
+    -------------------------------
+
+    local RepsAmount = reps
+    local bNeedRemove = RepsAmount > 0
+
+    local function stop()
+        hook.Remove("Tick", timer_name)
+    end
+
+    hook.Add("Tick", timer_name, function()
+        local data = util.t_AccelerateTimers[timer_name]
+
+        if !data then
+            stop()
+            return
+        end
+
+        local callback = data.callback
+
+        if !callback then
+            stop()
+            return
+        end
+
+        -------------------------------
+        ------- Accelerate Tick -------
+        -------------------------------
+        local TimeLeft = SysTime() - TimeStart
+        local TicksShouldBe =  TimeLeft / TickDelay - TicksDone
+
+        local TimeToCall = math_floor(TicksShouldBe)
+
+        if TimeToCall == 0 then return end
+
+        for k = 1, TimeToCall do
+            TicksDone = TicksDone + 1
+
+            if bNeedRemove and TicksDone > RepsAmount then
+                stop()
+                return
+            end
+
+            local res = callback()
+            if res != nil then
+                stop()
+                return
+            end
+        end
+        -------------------------------
+        -------------------------------
+        -------------------------------
+    end)
+end
+
+function util.StopAccelerateTickTimer(timer_name)
+    local timer_name = string.format("zen-util-accelerate-timer-%s", name)
+
+    hook.Remove("Tick", timer_name)
+    util.t_AccelerateTimers[timer_name] = nil
+end
+
+function util.StopAllAccelerateTimers()
+    for timer_name, v in pairs(util.t_AccelerateTimers) do
+        hook.Remove("Tick", timer_name)
+        util.t_AccelerateTimers[timer_name] = nil
+    end
+end
+
+
+local path_to_remove = {}
+path_to_remove[".."] = true
+path_to_remove["."] = true
+path_to_remove[""] = true
+
+local pairs = pairs
+local string_match = string.match
+local table_remove = table.remove
+local function concat_path(...)
+    local pathes = {...}
+
+    for k, path in pairs(pathes) do
+        if path_to_remove[path] then
+            table_remove(pathes, k) continue
+        end
+
+        path = string_match(path, "[\\]*[/]*(.*)[\\]*[/]*")
+
+        pathes[k] = path
+    end
+
+    return table.concat(pathes, "/")
+end
+
+local string_sub = string.sub
+
+local function get_search_path(path)
+    local first_sum = string_sub(path, 1, 1)
+    local last_sum = string_sub(path, -1)
+
+    if first_sum == "/" or first_sum == "\\" or last_sum == "/" or last_sum == "\\" then
+        path = string_match(path, "[\\]*[/]*(.*)[\\]*[/]*")
+    end
+
+    if path == "" then
+        return "*"
+    else
+        return path .. "/*"
+    end
+end
+
+local file_Find = file.Find
+local function index_files(global_path, source, order_folder, info)
+    local search_path = get_search_path(global_path)
+    local files, folders = file_Find(search_path, "GAME")
+
+    if type(files) == "table" then
+        for _, file_name in pairs(files) do
+            local new_path = global_path
+
+            if new_path != "" then
+                new_path = new_path .. "/" .. file_name
+            else
+                new_path = file_name
+            end
+
+            info.fileAmount = info.fileAmount + 1
+            source[info.fileAmount] = new_path
+        end
+    end
+
+    if type(folders) == "table" then
+        for _, folder_name in pairs(folders) do
+            if folder_name == ".." then continue end
+            if folder_name == "." then continue end
+            if folder_name == "/" then continue end
+
+            local new_path = global_path
+
+            if new_path != "" then
+                new_path = new_path .. "/" .. folder_name
+            else
+                new_path = folder_name
+            end
+
+            info.folderAmount = info.folderAmount + 1
+            order_folder[info.folderAmount] = new_path
+        end
+    end
+end
+
+function util.IndexAllFiles(onFinished)
+    return util.IndexFolderFiles("", onFinished)
+end
+
+function util.IndexFolderFiles(folder_path, onFinished)
+    assert(type(folder_path) == "string", "folder_path not is string")
+    assert(type(onFinished) == "function", "onFinished not is function")
+
+    local path = concat_path(folder_path)
+    local source = {}
+    local order_folder = {path}
+    local info = {}
+    info.fileAmount = 0
+    info.folderAmount = 0
+    info.StartTime = SysTime()
+
+    local timer_name = string.format("index-folder-%s", folder_path)
+
+    local currentID = 1
+    util.CreateAccelerateTickTimer(timer_name, 0.005, 0, function()
+        local currentPath = order_folder[currentID]
+        if !currentPath then
+            onFinished(source, currentID)
+            return false
+        end
+
+        -- print(currentID, " - ", currentPath)
+
+        index_files(currentPath, source, order_folder, info)
+
+        currentID = currentID + 1
+    end)
+
+    return source, info
+end
+
+-- PrintTable(util.IndexAllFiles())
+-- util.StopAllAccelerateTimers()
+-- util.IndexFolderFiles("materials", function(source, folderAmount)
+--     PrintTable(source)
+-- end)
+
 function util.GetModelBoundsFixed(ent, dropZero)
 	local min, max = ent:GetModelBounds()
 	local minn, maxx = Vector(min), Vector(max)

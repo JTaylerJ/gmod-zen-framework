@@ -4,5 +4,7 @@ if SERVER then
 end
 
 if CLIENT_DLL then
-    include("zen/main/_main.lua")
+    concommand.Add("+zen_tools", function()
+        include("zen/main/_main.lua")
+    end)
 end

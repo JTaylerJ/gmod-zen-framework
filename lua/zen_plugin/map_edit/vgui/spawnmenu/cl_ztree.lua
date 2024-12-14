@@ -1,4 +1,4 @@
-module("zen", package.seeall)
+module("zen")
 
 ---@class zen.panel.ztree: zen.panel.ztree_node
 local PANEL = {}

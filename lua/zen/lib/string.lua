@@ -1,4 +1,4 @@
-module("zen", package.seeall)
+module("zen")
 
 ---@class zen.string
 string = _GET("string", string)

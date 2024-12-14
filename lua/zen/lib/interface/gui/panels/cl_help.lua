@@ -1,4 +1,4 @@
-module("zen", package.seeall)
+module("zen")
 
 local color_nofocus = Color(150,150,150,200)
 local color_bg = Color(80,80,80,255)

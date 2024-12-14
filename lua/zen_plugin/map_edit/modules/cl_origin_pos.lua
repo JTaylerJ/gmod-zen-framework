@@ -1,4 +1,4 @@
-module("zen", package.seeall)
+module("zen")
 
 local mat_user = Material("icon16/user_suit.png")
 local mat_wireframe = Material("models/debug/debugwhite")

@@ -1,4 +1,4 @@
-module("zen", package.seeall)
+module("zen")
 
 map_edit.t_PlayersTools = map_edit.t_PlayersTools or {}
 local P_TOOLS = map_edit.t_PlayersTools

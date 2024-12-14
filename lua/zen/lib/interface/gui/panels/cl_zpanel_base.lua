@@ -1,4 +1,4 @@
-module("zen", package.seeall)
+module("zen")
 
 zen.iCounter_ZPanelBase = zen.iCounter_ZPanelBase or 0
 

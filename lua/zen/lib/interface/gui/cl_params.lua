@@ -1,4 +1,4 @@
-module("zen", package.seeall)
+module("zen")
 
 gui.RegisterParam("tPanel", function(pnl, value)
     for k, v in pairs(value) do

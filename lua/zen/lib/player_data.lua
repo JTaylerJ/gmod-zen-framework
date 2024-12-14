@@ -1,4 +1,4 @@
-module("zen", package.seeall)
+module("zen")
 
 ---@class zen.player_data
 player_data = _GET("player_data")

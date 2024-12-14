@@ -1,4 +1,4 @@
-module("zen", package.seeall)
+module("zen")
 
 ---@class zen.player_mode
 player_mode = _GET("player_mode")

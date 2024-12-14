@@ -1,4 +1,4 @@
-module("zen", package.seeall)
+module("zen")
 
 RENDER_3D = 1
 RENDER_2D = 2

@@ -1,4 +1,4 @@
-module("zen", package.seeall)
+module("zen")
 
 player_mode.mt_PlayerMode = player_mode.mt_PlayerMode or {}
 player_mode.iPlayerCounter = player_mode.iPlayerCounter or 0

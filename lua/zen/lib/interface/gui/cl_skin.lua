@@ -1,4 +1,4 @@
-module("zen", package.seeall)
+module("zen")
 
 gui.t_Skins = gui.t_Skins or {}
 

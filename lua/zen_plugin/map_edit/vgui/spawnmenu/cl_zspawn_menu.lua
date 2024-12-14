@@ -1,4 +1,4 @@
-module("zen", package.seeall)
+module("zen")
 
 ---@class zen.panel.zspawn_menu: zen.panel.zpanelbase
 local PANEL = {}

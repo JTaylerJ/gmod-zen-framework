@@ -1,4 +1,4 @@
-module("zen", package.seeall)
+module("zen")
 
 ---@class zen.panel.zdrop_select: zen.panel.zpanelbase
 local PANEL = {}

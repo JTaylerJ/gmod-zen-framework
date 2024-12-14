@@ -1,4 +1,4 @@
-module("zen", package.seeall)
+module("zen")
 
 local color_disable = Color(100,100,100,255)
 local color_focus = Color(150,255,150,255)

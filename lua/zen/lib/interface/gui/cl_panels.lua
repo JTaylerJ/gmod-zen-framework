@@ -1,4 +1,4 @@
-module("zen", package.seeall)
+module("zen")
 
 gui.RegisterStylePanel("base", {}, "EditablePanel", {}, {})
 gui.RegisterStylePanel("frame", {}, "DFrame", {title = "zen.frame", size = {300, 300}}, {"frame"})

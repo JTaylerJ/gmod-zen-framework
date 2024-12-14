@@ -1,4 +1,4 @@
-module("zen", package.seeall)
+module("zen")
 
 ---@class zen.iperm.DB_Container: zen.sql.Container
 iperm.DB = sql.GetContainer()

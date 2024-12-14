@@ -1,2 +1,2 @@
-module("zen", package.seeall)
+module("zen")
 

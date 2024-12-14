@@ -1,4 +1,4 @@
-module("zen", package.seeall)
+module("zen")
 
 local STATIC_PROP_ID = 1936749168
 

@@ -1,4 +1,4 @@
-module("zen", package.seeall)
+module("zen")
 
 local floor = math.floor
 local concat = table.concat

@@ -1,4 +1,4 @@
-module("zen", package.seeall)
+module("zen")
 
 nt.mt_EntityVars = nt.mt_EntityVars or {}
 local id, tChannel = nt.RegisterChannel("entity_var", nt.t_ChannelFlags.PUBLIC, {

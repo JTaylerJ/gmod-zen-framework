@@ -1,4 +1,4 @@
-module("zen", package.seeall)
+module("zen")
 
 zen.worldclick = zen.worldclick or {}
 local worldclick = zen.worldclick

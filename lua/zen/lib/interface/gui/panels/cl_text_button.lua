@@ -1,4 +1,4 @@
-module("zen", package.seeall)
+module("zen")
 
 surface.CreateFont("zen.gui.text_button.Main", {
     font = "Segoe UI",

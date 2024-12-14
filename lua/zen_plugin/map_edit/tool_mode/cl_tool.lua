@@ -1,4 +1,4 @@
-module("zen", package.seeall)
+module("zen")
 
 map_edit.t_ToolModeCache = map_edit.t_ToolModeCache or {}
 

@@ -1,4 +1,4 @@
-module("zen", package.seeall)
+module("zen")
 
 ---@class zen.map_reader
 map_reader = _GET("map_reader")

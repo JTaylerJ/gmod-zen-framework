@@ -1,4 +1,4 @@
-module("zen", package.seeall)
+module("zen")
 
 -- icmd.Register("menu_models", function(QCMD, who, cmd, args, tags)
 --     local pnlFrame = gui.CreateStyled("frame", nil, "menu_models")

@@ -1,4 +1,4 @@
-module("zen", package.seeall)
+module("zen")
 
 zen.IncludeSV("zen_plugin/server_model_viewer/sv_build_list.lua")
 

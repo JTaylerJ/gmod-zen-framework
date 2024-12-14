@@ -1,4 +1,4 @@
-module("zen", package.seeall)
+module("zen")
 
 do
     local i, lastcolor

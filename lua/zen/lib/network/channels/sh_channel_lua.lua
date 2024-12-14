@@ -1,4 +1,4 @@
-module("zen", package.seeall)
+module("zen")
 
 nt.RegisterChannel("channels", nt.t_ChannelFlags.PUBLIC, {
     id = 1,

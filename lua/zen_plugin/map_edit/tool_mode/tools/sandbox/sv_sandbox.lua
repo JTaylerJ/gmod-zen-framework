@@ -1,4 +1,4 @@
-module("zen", package.seeall)
+module("zen")
 
 tool.mt_PlayerToolsGuns = tool.mt_PlayerToolsGuns or {}
 tool.mt_SandBoxToolGuns = tool.mt_SandBoxToolGuns or {}

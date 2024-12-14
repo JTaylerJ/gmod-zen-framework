@@ -1,8 +1,10 @@
-module("zen", package.seeall)
+module("zen")
 
 if SERVER then
     resource.AddWorkshop("3273398690") -- zen framework content
 end
+
+print("=== START INCLUDE ===")
 
 -- Lua include list
 zen.IncludeSH("zen/config.lua")
@@ -110,12 +112,13 @@ zen.IncludeSH("zen/modules/zone/sh_player.lua")
 
 zen.IncludeCL("zen/menu/permission/cl_menu.lua")
 
-zen.IncludeFolderRecursive("zen/language")
+--== PLUGINS ==--
 
-zen.IncludePlugins()
+zen.IncludePlugin("map_edit")
+zen.IncludePlugin("panel_manager")
+zen.IncludePlugin("server_model_viewer")
+-- zen.IncludePlugin("fun") // To Fix
 
-if file.Exists("zen_sub/browser.lua", "LUA") then
-    zen.IncludeSH("zen_sub/browser.lua")
-end
 
-print("#welcome")
+
+print("=== FINISH INCLUDE ===")

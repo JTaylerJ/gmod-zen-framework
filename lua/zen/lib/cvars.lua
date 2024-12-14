@@ -1,4 +1,4 @@
-module("zen", package.seeall)
+module("zen")
 
 CVARS_VALUES = _L.CVARS_VALUES or {}
 

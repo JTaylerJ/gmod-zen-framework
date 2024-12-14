@@ -1,4 +1,4 @@
-module("zen", package.seeall)
+module("zen")
 
 if !_CFG.bFirstInitialized then
     _CFG.bFirstInitialized = nil

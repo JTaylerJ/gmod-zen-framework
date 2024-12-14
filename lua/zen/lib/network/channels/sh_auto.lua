@@ -1,3 +1,3 @@
-module("zen", package.seeall)
+module("zen")
 
 ihook.Run("nt.RegisterChannels")

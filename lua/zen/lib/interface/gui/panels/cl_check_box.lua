@@ -1,4 +1,4 @@
-module("zen", package.seeall)
+module("zen")
 
 ---@class zen.panel.check_box: Panel
 local PANEL = {}

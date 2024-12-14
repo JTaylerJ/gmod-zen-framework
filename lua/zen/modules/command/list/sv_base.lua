@@ -1,4 +1,4 @@
-module("zen", package.seeall)
+module("zen")
 
 icmd.Register("auth", function(QCMD, who)
     if who:zen_GetVar("auth") then

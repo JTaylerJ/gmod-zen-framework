@@ -1,4 +1,4 @@
-module("zen", package.seeall)
+module("zen")
 
 
 function map_reader.GetMapEntities()

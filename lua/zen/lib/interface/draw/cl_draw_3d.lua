@@ -1,4 +1,4 @@
-module("zen", package.seeall)
+module("zen")
 
 ---@class zen.draw3d
 draw3d = _GET("draw3d")

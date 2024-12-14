@@ -1,4 +1,4 @@
-module("zen", package.seeall)
+module("zen")
 
 ---@param ply Player
 ---@param impulse number

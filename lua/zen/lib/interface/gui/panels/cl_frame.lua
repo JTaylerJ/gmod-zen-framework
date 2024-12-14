@@ -1,4 +1,4 @@
-module("zen", package.seeall)
+module("zen")
 
 local s_SetDrawColor = surface.SetDrawColor
 local s_DrawRect = surface.DrawRect

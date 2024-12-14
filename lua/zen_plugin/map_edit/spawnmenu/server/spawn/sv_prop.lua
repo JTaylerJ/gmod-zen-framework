@@ -1,4 +1,4 @@
-module("zen", package.seeall)
+module("zen")
 
 function map_edit.SpawnProp(model, position, angle)
     if IsUselessModel(model) then return false, "This model is useless!" end

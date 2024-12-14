@@ -1,4 +1,4 @@
-module("zen", package.seeall)
+module("zen")
 
 local CLASS = player_mode.GetClass("infected")
 

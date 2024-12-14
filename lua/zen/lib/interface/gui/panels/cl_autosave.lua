@@ -1,4 +1,4 @@
-module("zen", package.seeall)
+module("zen")
 
 gui.RegisterStylePanel("func_save_pos", {
     iNextSave = CurTime(),

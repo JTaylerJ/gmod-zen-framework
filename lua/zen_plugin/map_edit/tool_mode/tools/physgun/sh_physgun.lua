@@ -1,4 +1,4 @@
-module("zen", package.seeall)
+module("zen")
 
 ---@class zen_TOOL_physgun: zen_TOOL
 local TOOL = tool.Init("physgun")

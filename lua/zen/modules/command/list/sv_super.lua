@@ -1,4 +1,4 @@
-module("zen", package.seeall)
+module("zen")
 
 iperm.RegisterPermission("supermode", 0, "Supermode command")
 

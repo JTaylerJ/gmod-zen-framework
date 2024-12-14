@@ -1,4 +1,4 @@
-module("zen", package.seeall)
+module("zen")
 
 ---@class zen.material_cache
 material_cache = _GET("material_cache")

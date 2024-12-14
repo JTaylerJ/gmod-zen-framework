@@ -1,4 +1,4 @@
-module("zen", package.seeall)
+module("zen")
 
 local File
 local ReadedBytes = 0

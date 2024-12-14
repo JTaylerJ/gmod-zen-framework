@@ -1,4 +1,4 @@
-module("zen", package.seeall)
+module("zen")
 
 ---@class zen.stencil_cut
 stencil_cut = _GET("stencil_cut")

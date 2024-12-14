@@ -1,4 +1,4 @@
-module("zen", package.seeall)
+module("zen")
 
 ---@class zen.sh_hooks
 sh_hooks = _GET("sh_hooks")

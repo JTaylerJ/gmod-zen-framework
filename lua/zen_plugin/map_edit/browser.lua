@@ -1,4 +1,4 @@
-module("zen", package.seeall)
+module("zen")
 
 zen.IncludeCL("zen_plugin/map_edit/lib/cl_vector.lua")
 

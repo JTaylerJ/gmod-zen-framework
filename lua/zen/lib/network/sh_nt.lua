@@ -1,4 +1,4 @@
-module("zen", package.seeall)
+module("zen")
 
 zen.network = zen.network or {}
 nt = zen.network

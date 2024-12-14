@@ -1,9 +1,4 @@
-module("zen", package.seeall)
-
--- Initialize global variables
-
-_L = getfenv()
-zen = _L.zen or {}
+module("zen")
 
 -- Initialize zen submodules
 zen.config = {}
@@ -70,6 +65,8 @@ end
 ---@param default? any
 ---@return zen.`T`
 function zen.module(name, default)
+    assert(type(default) == "table" or default == nil, "`default` not is table")
+
     if !_MODULE[name] then _MODULE[name] = (default) and (table.Copy(default)) or {} end
     return _MODULE[name]
 end
@@ -124,39 +121,24 @@ function zen.Import(...)
     return unpack(tResult)
 end
 
-function zen.Include(fl_path)
-    return include(fl_path)
-end
-
 function zen.IncludeSv(fl_path, bForceLoad)
-    if SERVER and (zen.SERVER_SIDE_ACTIVATED or bForceLoad) then return zen.Include(fl_path) end
+    if SERVER and (zen.SERVER_SIDE_ACTIVATED or bForceLoad) then return zen.INC(fl_path, SERVER) end
 end
 
 function zen.IncludeCl(fl_path, bForceLoad)
-    if SERVER and (zen.SEND_CLIENT_FILES or bForceLoad) then AddCSLuaFile(fl_path) end
-    if CLIENT then return zen.Include(fl_path) end
+    return zen.INC(fl_path, CLIENT)
 end
 
 function zen.IncludeSh(fl_path, bForceLoad)
-    zen.IncludeSv(fl_path, bForceLoad)
-    zen.IncludeCl(fl_path, bForceLoad)
+    return zen.INC(fl_path)
 end
 zen.IncludeSH = zen.IncludeSh
 zen.IncludeSV = zen.IncludeSv
 zen.IncludeCL = zen.IncludeCl
 
-function zen.IncludePlugins()
-    local _, folders = file.Find("zen_plugin/*", "LUA")
-
-    if !folders then return end
-
-    for _, folder_name in pairs(folders) do
-        local fl_browser = "zen_plugin/" .. folder_name .. "/browser.lua"
-        if !file.Exists(fl_browser, "LUA") then continue end
-
-        print("Run plugin: ", folder_name)
-        xpcall(zen.IncludeSH, ErrorNoHaltWithStack, fl_browser, true)
-    end
+function zen.IncludePlugin(plugin_name)
+    print("include plugin: ", plugin_name)
+    return zen.INC("zen_plugin/" .. plugin_name .. "/browser.lua")
 end
 
 function zen.IncludeFolderRecursive(folder)

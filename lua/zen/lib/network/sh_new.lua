@@ -1,4 +1,4 @@
-module("zen", package.seeall)
+module("zen")
 
 nt.new = nt.new or {}
 nt.unique = nt.unique or {}

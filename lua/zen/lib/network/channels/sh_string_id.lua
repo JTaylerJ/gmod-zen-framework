@@ -1,4 +1,4 @@
-module("zen", package.seeall)
+module("zen")
 
 
 nt.mt_StringNumbers_IDS = nt.mt_StringNumbers_IDS or {}

@@ -1,4 +1,4 @@
-module("zen", package.seeall)
+module("zen")
 
 nt.RegisterChannel("zen.console.command")
 nt.RegisterChannel("zen.console.message")

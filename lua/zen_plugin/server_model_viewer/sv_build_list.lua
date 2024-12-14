@@ -1,4 +1,4 @@
-module("zen", package.seeall)
+module("zen")
 
 ---@param callback? fun()
 local function BackupModels(callback)

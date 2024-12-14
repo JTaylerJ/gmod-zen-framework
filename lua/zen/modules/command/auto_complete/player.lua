@@ -1,4 +1,4 @@
-module("zen", package.seeall)
+module("zen")
 
 local find = string.find
 local concat = table.concat

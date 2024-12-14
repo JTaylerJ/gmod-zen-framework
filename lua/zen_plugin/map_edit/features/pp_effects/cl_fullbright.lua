@@ -1,4 +1,4 @@
-module("zen", package.seeall)
+module("zen")
 
 ---@class zen.map_edit.Feature.full_bright: zen.FEATURE_META
 local FEATURE = feature.GetMeta("map_edit.full_bright")

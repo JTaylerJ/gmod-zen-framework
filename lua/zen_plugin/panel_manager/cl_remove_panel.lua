@@ -1,4 +1,4 @@
-module("zen", package.seeall)
+module("zen")
 
 ---@class zen.panel_manager
 panel_manager = _GET("panel_manager")

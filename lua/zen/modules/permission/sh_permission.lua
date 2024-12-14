@@ -1,4 +1,4 @@
-module("zen", package.seeall)
+module("zen")
 
 zen.permission = zen.permission or {}
 iperm = zen.permission

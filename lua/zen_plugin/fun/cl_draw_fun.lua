@@ -1,4 +1,4 @@
-module("zen", package.seeall)
+module("zen")
 
 local color_team = Color(255,255,0)
 

@@ -1,4 +1,4 @@
-module("zen", package.seeall)
+module("zen")
 
 tool.mt_Sandbox_Tools = tool.mt_Sandbox_Tools or {}
 

@@ -1,4 +1,4 @@
-module("zen", package.seeall)
+module("zen")
 
 nt.Receive(_CFG.net_permUpdate, {"string", "bool", "string", "string"}, function(_, sid64, isAdd, permName, tags)
     if not iperm.mt_listLoadedPermissions[sid64] then iperm.mt_listLoadedPermissions[sid64] = {} end

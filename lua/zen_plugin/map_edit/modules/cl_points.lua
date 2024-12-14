@@ -1,4 +1,4 @@
-module("zen", package.seeall)
+module("zen")
 
 local GetVectorString, GetAngleString = map_edit.GetVectorString, map_edit.GetVectorString
 

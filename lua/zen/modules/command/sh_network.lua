@@ -1,4 +1,4 @@
-module("zen", package.seeall)
+module("zen")
 
 
 nt.RegisterChannel("icmd.command", nt.t_ChannelFlags.SIMPLE_NETWORK, {

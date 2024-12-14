@@ -1,4 +1,4 @@
-module("zen", package.seeall)
+module("zen")
 
 zone.t_ZonesPlayers = zone.t_ZonesPlayers or {}
 zone.t_ZonesPlayers_Name = zone.t_ZonesPlayers_Name or {}

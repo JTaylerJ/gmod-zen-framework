@@ -1,4 +1,4 @@
-module("zen", package.seeall)
+module("zen")
 
 nt.RegisterChannel("map_edit.use")
 nt.RegisterChannel("map_edit.status")

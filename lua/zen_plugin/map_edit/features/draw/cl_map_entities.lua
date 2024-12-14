@@ -1,4 +1,4 @@
-module("zen", package.seeall)
+module("zen")
 
 ---@class zen.map_edit.Feature.draw.map_entities: zen.FEATURE_META
 local FEATURE = feature.GetMeta("map_edit.draw_map_entities")

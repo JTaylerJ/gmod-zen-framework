@@ -1,4 +1,4 @@
-module("zen", package.seeall)
+module("zen")
 
 ---@param ply Player
 ---@return table<number, Entity>, Vector, Vector

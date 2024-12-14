@@ -1,4 +1,4 @@
-module("zen", package.seeall)
+module("zen")
 
 local TABLE_KEY_NUMBER = 1
 local TABLE_KEY_STRING = 2

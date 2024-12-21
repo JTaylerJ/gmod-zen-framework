@@ -94,7 +94,6 @@ end)
 concommand.Add("zen_reload_full", function(ply)
     if SERVER and IsValid(ply) then return end
 
-    nt = nil // Should be in zen
     zen = nil
     zen.IncludeSHU("zen/main/main.lua")
 end)

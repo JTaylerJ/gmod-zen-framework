@@ -1,7 +1,6 @@
 module("zen")
 
-zen.network = zen.network or {}
-nt = zen.network
+nt = _GET("nt")
 nt.t_ChannelFlags = {}
 nt.t_ChannelFlags.SIMPLE_NETWORK        = 0
 nt.t_ChannelFlags.PUBLIC                = 2 ^ 1

@@ -29,7 +29,7 @@ function map_edit.OpenMenu()
     end
     
     zen.zspawn_menu = gui.Create("zspawn_menu")
-    zen.zspawn_menu:SetSize(1800, 1000)
+    zen.zspawn_menu:SetSize(ScrW(), ScrH())
     zen.zspawn_menu:Center()
 
     -- map_edit.LoadMenu()

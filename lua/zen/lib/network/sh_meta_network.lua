@@ -33,6 +33,9 @@ meta_network = _GET("meta_network")
 
 ---@type table<string, zen.META_NETWORK>
 meta_network.mt_ListObjects = meta_network.mt_ListObjects or {}
+
+---@type table<number, zen.META_NETWORK>
+meta_network.mt_ListObjectsIndex = meta_network.mt_ListObjectsIndex or {}
 meta_network.mi_NetworkObjectCounter = meta_network.mi_NetworkObjectCounter or 0
 
 
@@ -128,7 +131,7 @@ end
 net_Receive("zen.meta_network", function(len, who)
     local NetworkID = ReadNetworkID()
 
-    local NETWORK_OBJECT = meta_network.mt_ListObjects[NetworkID]
+    local NETWORK_OBJECT = meta_network.mt_ListObjectsIndex[NetworkID]
 
     assert(type(NETWORK_OBJECT) == "table", "NETWORK_OBJECT with id `" .. tostring(NetworkID) .. "` not exists")
 
@@ -182,9 +185,9 @@ net_Receive("zen.meta_network.schema", function(len, ply)
 
     local NetworkID = ReadNetworkID()
 
-    local NETWORK_OBJECT = meta_network.mt_ListObjects[NetworkID]
+    local NETWORK_OBJECT = meta_network.mt_ListObjectsIndex[NetworkID]
 
-    assert(type(NETWORK_OBJECT) == "table", "NETWORK_OBJECT with id `" .. tostring(NetworkID) .. "` not exists")
+    assert(NETWORK_OBJECT != nil, "NETWORK_OBJECT with id `" .. tostring(NetworkID) .. "` not exists")
 
     local code_name = ReadCodeSchema()
 
@@ -202,7 +205,7 @@ end)
 local CODES_NETWORK = {
     NEW_NETWORK                          = 1,
     NETWORK_BITS                         = 2,
-    NETWORK_LIST                          = 3,
+    NETWORK_LIST                         = 3,
 }
 
 ---@type table<number, zen.meta_network.code_network>
@@ -238,10 +241,14 @@ end
 net_Receive("zen.meta_network.networks", function(_, ply)
     local code_name = ReadCodeNetwork()
 
+    print("Receive network: ", code_name, " ", ply)
+
     if SERVER then
 
         if code_name == "NETWORK_LIST" then
             net_Start("zen.meta_network.networks")
+                WriteCodeNetwork("NETWORK_LIST")
+
                 -- Networks Bytes
                 net_WriteUInt(meta_network.NetworkCountBits, 32)
 
@@ -255,34 +262,38 @@ net_Receive("zen.meta_network.networks", function(_, ply)
                 end
             net_Send(ply)
         end
+
     end
 
-    if SERVER then return end -- Players can't edit network
+    if CLIENT then
 
-    if code_name == "NETWORK_LIST" then
-        -- Networks Bytes
-        meta_network.NetworkCountBits = net_ReadUInt(32)
+        if code_name == "NETWORK_LIST" then
+            
+            print("NETWORK_LIST Reading")
+            -- Networks Bytes
+            meta_network.NetworkCountBits = net_ReadUInt(32)
 
-        local ObjectAmount = net_ReadUInt(meta_network.NetworkCountBits)
+            local ObjectAmount = net_ReadUInt(meta_network.NetworkCountBits)
 
-        for k = 1, ObjectAmount do
-            local NetworkID = net_ReadUInt(meta_network.NetworkCountBits)
+            for k = 1, ObjectAmount do
+                local NetworkID = net_ReadUInt(meta_network.NetworkCountBits)
+                local uniqueID = net_ReadString()
+
+                meta_network.GetNetworkObject(uniqueID, NetworkID)
+            end
+            for k, v in pairs(meta_network.mt_ListObjects) do
+                net_WriteUInt(v.NetworkID)
+                net_WriteString(v.uniqueID)
+            end
+        elseif code_name == "NEW_NETWORK" then
+            local networkID = net_ReadUInt(meta_network.NetworkCountBits)
             local uniqueID = net_ReadString()
 
-            meta_network.GetNetworkObject(uniqueID, NetworkID)
+            meta_network.GetNetworkObject(uniqueID, networkID)
+        elseif code_name == "NETWORK_BITS" then
+            local networkBits = net_ReadUInt(32)
+            meta_network.NetworkCountBits = networkBits
         end
-        for k, v in pairs(meta_network.mt_ListObjects) do
-            net_WriteUInt(v.NetworkID)
-            net_WriteString(v.uniqueID)
-        end
-    elseif code_name == "NEW_NETWORK" then
-        local networkID = net_ReadUInt(meta_network.NetworkCountBits)
-        local uniqueID = net_ReadString()
-
-        meta_network.GetNetworkObject(uniqueID, networkID)
-    elseif code_name == "NETWORK_BITS" then
-        local networkBits = net_ReadUInt(32)
-        meta_network.NetworkCountBits = networkBits
     end
 end)
 
@@ -593,9 +604,6 @@ function meta_network.GetNetworkObject(uniqueID, NetworkID)
             assert(NetworkID == nil, "Server meta-network cannot input NetworkID")
             meta_network.mi_NetworkObjectCounter = meta_network.mi_NetworkObjectCounter + 1
             NetworkID = meta_network.mi_NetworkObjectCounter
-        else
-            assert(type(NetworkID) == "number", "Client meta-network should have NetworkID")
-            assert(NetworkID >= 0, "Client meta-network NetworkID should be more than 0")
         end
 
         ---@diagnostic disable-next-line: missing-fields
@@ -630,40 +638,48 @@ function meta_network.GetNetworkObject(uniqueID, NetworkID)
                 net_WriteUInt(meta_network.mi_NetworkObjectCounter, meta_network.NetworkCountBits)
                 net_WriteString(uniqueID)
             end)
+
+            meta_network.mt_ListObjectsIndex[meta_network.mi_NetworkObjectCounter] = NETWORK_DATA
         end
 
         meta_network.mt_ListObjects[uniqueID] = NETWORK_DATA
 
-        if CLIENT then
-            NETWORK_DATA:SendNetworkSchema(function(self)
-                WriteCodeSchema("FULL_SCHEMA")
-            end)
-        end
-
         return NETWORK_DATA
     end
 
+    if CLIENT and NETWORK_DATA.NetworkID == nil and NetworkID != nil then
+        rawset(NETWORK_DATA, "NetworkID", NetworkID)
+        meta_network.mt_ListObjectsIndex[NetworkID] = NETWORK_DATA
+    end
 
     setmetatable(NETWORK_DATA, META)
 
     return NETWORK_DATA
 end
 
+function meta_network.InitClient()
+    net_Start("zen.meta_network.networks")
+        WriteCodeNetwork("NETWORK_LIST")
+        net_WriteBool(false)
+    net_SendToServer()
+end
 
-local SOME_OBJECT = meta_network.GetNetworkObject("Network09")
-
-if SERVER then
-    SOME_OBJECT.Var01 = 10
-else
-    print(SOME_OBJECT.Var01)
+if CLIENT then
+    meta_network.InitClient()
 end
 
 hook.Add("InitPostEntity", "meta_network", function()
     if CLIENT then
-        net.Start("zen.meta_network.networks")
-            WriteCodeNetwork("NETWORK_LIST")
-            net_WriteBool(false)
-        net.SendToServer()
+        meta_network.InitClient()
     end
+end)
 
+
+local SOME_OBJECT = meta_network.GetNetworkObject("Network09")
+SOME_OBJECT.Var01 = 1
+SOME_OBJECT.Var02 = 2
+SOME_OBJECT.Var03 = 2
+
+timer.Simple(1, function()
+    PrintTable(SOME_OBJECT.ValueVariables)
 end)

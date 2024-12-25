@@ -1,6 +1,8 @@
 module("zen")
 
 
+-- TODO: Move init network to another network
+
 local net_WriteString = net.WriteString
 local net_ReadString = net.ReadString
 local net_WriteUInt = net.WriteUInt
@@ -30,6 +32,10 @@ end
 
 ---@class zen.meta_network
 meta_network = _GET("meta_network")
+
+if CLIENT then
+    meta_network.bNetworkReady = meta_network.bNetworkReady or false
+end
 
 ---@type table<string, zen.META_NETWORK>
 meta_network.mt_ListObjects = meta_network.mt_ListObjects or {}
@@ -131,6 +137,9 @@ end
 net_Receive("zen.meta_network", function(len, who)
     local NetworkID = ReadNetworkID()
 
+    print("Receive network: ", NetworkID, " ", who)
+
+    
     local NETWORK_OBJECT = meta_network.mt_ListObjectsIndex[NetworkID]
 
     assert(type(NETWORK_OBJECT) == "table", "NETWORK_OBJECT with id `" .. tostring(NetworkID) .. "` not exists")
@@ -181,6 +190,9 @@ local function ReadCodeSchema()
 end
 
 net_Receive("zen.meta_network.schema", function(len, ply)
+
+    print("Receive schema: ", ply)
+
     if SERVER then return end -- Players can't edit schemas
 
     local NetworkID = ReadNetworkID()
@@ -268,7 +280,7 @@ net_Receive("zen.meta_network.networks", function(_, ply)
     if CLIENT then
 
         if code_name == "NETWORK_LIST" then
-            
+
             print("NETWORK_LIST Reading")
             -- Networks Bytes
             meta_network.NetworkCountBits = net_ReadUInt(32)
@@ -415,6 +427,8 @@ end
 
 ---@param func fun(self: zen.META_NETWORK|self)
 function META:SendNetwork(func, target)
+    if CLIENT and !meta_network.bNetworkReady then return end
+
     xpcall(
     function()
         net_Start("zen.meta_network")
@@ -435,6 +449,8 @@ end
 
 ---@param func fun(self: zen.META_NETWORK|self)
 function META:SendNetworkSchema(func, target)
+    if CLIENT and !meta_network.bNetworkReady then return end
+
     xpcall(
     function()
         net_Start("zen.meta_network.schema")
@@ -469,19 +485,26 @@ function META:OnMessage(CODE, who, len)
     if SERVER then
 
         if CODE == "PULL_VARIABLES" then
-            local ObjectAmount = table.Count(self.ValueVariablesIndex)
+            self:SendNetwork(function()
+                WriteCode("PULL_VARIABLES")
 
-            net_WriteUInt(ObjectAmount, self.IndexBits)
+                local ObjectAmount = table.Count(self.ValueVariablesIndex)
 
-            for IndexID, Value in pairs(self.ValueVariablesIndex) do
-                net_WriteUInt(IndexID, self.IndexBits)
-                net_WriteType(Value)
-            end
+                net_WriteUInt(ObjectAmount, self.IndexBits)
+
+                for IndexID, Value in pairs(self.ValueVariablesIndex) do
+                    net_WriteUInt(IndexID, self.IndexBits)
+                    net_WriteType(Value)
+                end
+            end)
+
         end
 
     end
 
     if CLIENT then
+
+        if !meta_network.bNetworkReady then return end
 
         if CODE == "PING" then
             self:Ping()
@@ -497,7 +520,7 @@ function META:OnMessage(CODE, who, len)
             self.ValueVariables[key] = value
             self.ValueVariablesIndex[indexKey] = value
 
-            print("GetVariable", indexKey, key, value)
+            print("GetVariable ", indexKey, " ", key, " ", value)
         elseif CODE == "EMPTY_VARIABLE" then
             --
         elseif CODE == "PING_VARIBLE" then
@@ -552,9 +575,13 @@ function META:OnMessageScheme(CODE, who, len)
     if CLIENT then
 
         if CODE == "INDEX_BITS" then
+            if !meta_network.bNetworkReady then return end
+
             local IndexBits = net_ReadUInt(32)
             rawset(self, "IndexBits", IndexBits)
         elseif CODE == "NEW_INDEX" then
+            if !meta_network.bNetworkReady then return end
+
             local IndexID = net_ReadUInt(self.IndexBits)
             local Value = net_ReadType()
 
@@ -582,6 +609,8 @@ function META:OnMessageScheme(CODE, who, len)
 
                 self.IndexRe[Value] = IndexID
             end
+
+            meta_network.bNetworkReady = true
 
             self:SendNetwork(function()
                 WriteCode("PULL_VARIABLES")
@@ -665,6 +694,7 @@ function meta_network.InitClient()
 end
 
 if CLIENT then
+    -- if meta_network.bNetworkReady then return end
     meta_network.InitClient()
 end
 
@@ -676,9 +706,14 @@ end)
 
 
 local SOME_OBJECT = meta_network.GetNetworkObject("Network09")
-SOME_OBJECT.Var01 = 1
-SOME_OBJECT.Var02 = 2
-SOME_OBJECT.Var03 = 2
+if SERVER then
+    SOME_OBJECT.Var01 = 1
+    SOME_OBJECT.Var02 = 2
+    SOME_OBJECT.Var03 = 2
+    SOME_OBJECT.Var04 = 2
+end
+
+PrintTable(SOME_OBJECT)
 
 timer.Simple(1, function()
     PrintTable(SOME_OBJECT.ValueVariables)

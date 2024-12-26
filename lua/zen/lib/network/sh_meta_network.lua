@@ -704,7 +704,7 @@ hook.Add("InitPostEntity", "meta_network", function()
     end
 end)
 
-
+/*
 local SOME_OBJECT = meta_network.GetNetworkObject("Network09")
 if SERVER then
     SOME_OBJECT.Var01 = 1
@@ -718,3 +718,4 @@ PrintTable(SOME_OBJECT)
 timer.Simple(1, function()
     PrintTable(SOME_OBJECT.ValueVariables)
 end)
+*/

@@ -3,6 +3,107 @@ module("zen")
 ---@class zen.panel.zspawn_menu: zen.panel.zpanelbase
 local PANEL = {}
 
+local file_Exists = file.Exists
+local file_Size = file.Size
+
+---Input entity name and receive path with default path exists
+---@vararg string
+local function GetValidImagePath(full_paths, single_words)
+
+    local patches = {}
+
+    local try_path = function(format, path)
+        local path = string.format(format, path)
+        table.insert(patches, path)
+    end
+
+    for _, v in pairs(full_paths) do
+        if v == nil then continue end
+
+        try_path("%s", v)
+        try_path("%s.png", v)
+        try_path("%s.vmt", v)
+    end
+
+    for _, v in pairs(single_words) do
+        if v == nil then continue end
+
+        try_path("materials/vgui/entities/%s.vmt", v)
+        try_path("materials/vgui/entities/%s.png", v)
+
+        try_path("materials/entities/%s.png", v)
+        try_path("materials/entities/%s.vmt", v)
+    end
+
+
+    for _, path in ipairs(patches) do
+        if file_Exists(path, "GAME") and file_Size(path, "GAME") > 0 then
+            path = path:gsub("materials/", "")
+            return path
+        end
+    end
+end
+
+---@return Panel?
+local function CreateItemSpawnIcon(ITEM)
+    local path = GetValidImagePath({ITEM.IconOverride},{ITEM.ClassName, ITEM._KEY, ITEM.spawnname, ITEM.Spawnname, ITEM.Name, ITEM.name})
+
+    local function SpawnPanel(classname, onSpawned)
+        local pnlImage = vgui.Create(classname)
+        if !IsValid(pnlImage) then return end
+
+        local pnlFather = pnlImage:GetParent()
+
+
+        timer.Simple(1, function()
+            if !IsValid(pnlImage) then return end
+
+            local pnlParent = pnlImage:GetParent()
+
+            if pnlParent == nil or pnlParent == pnlFather or pnlParent == vgui.GetWorldPanel() or pnlParent == GetHUDPanel() then
+                pnlImage:Remove()
+                print("Panel was autoremove ", tostring(pnlImage), " don't parented!")
+            end
+        end)
+
+        xpcall(onSpawned, function(...)
+            pnlImage:Remove()
+            error(...)
+        end, pnlImage)
+
+        return pnlImage
+    end
+
+    if path then
+        local pnlImage = SpawnPanel("DImage", function(self)
+            self:SetImage(path)
+            self:SetMouseInputEnabled(false)
+        end)
+
+        return pnlImage
+    end
+
+    local SelModel
+    if type(ITEM.WorldModel) == "string" and file.Exists(ITEM.WorldModel, "GAME") and !IsUselessModel(Model(ITEM.WorldModel)) then
+        SelModel = ITEM.WorldModel
+    elseif type(ITEM.Model) == "string" and file.Exists(ITEM.Model, "GAME") and !IsUselessModel(Model(ITEM.Model)) then
+        SelModel = ITEM.Model
+    end
+
+
+    if SelModel then
+        local pnlImage = SpawnPanel("SpawnIcon", function(self)
+            self:SetModel(SelModel)
+            self:SetMouseInputEnabled(false)
+        end)
+
+        return pnlImage
+    end
+
+end
+
+
+
 function PANEL:Init()
 
     self:zen_MakePopup()
@@ -146,7 +247,9 @@ function PANEL:LoadWorkspaceMDL(WORKSPACE)
 
                 WORKSPACE.pnlTreeContent.pnlLayout = gui.Create("zpanelbase", WORKSPACE.pnlTreeContent)
                 WORKSPACE.pnlTreeContent.pnlLayout:SDock(FILL)
-                WORKSPACE.pnlTreeContent.pnlLayout:SetLayoutScheme(true, 25, 2, 2, true)
+                local Wide = WORKSPACE.pnlTreeContent.pnlLayout:GetSize()
+                local amount = math.Round(Wide/5)
+                WORKSPACE.pnlTreeContent.pnlLayout:SetLayoutScheme(true, amount, 2, 2, true)
 
                 for _, file_path in pairs(item_list) do
                     local ext = string.GetExtensionFromFilename(file_path)
@@ -169,7 +272,7 @@ function PANEL:LoadWorkspaceMDL(WORKSPACE)
                         RunConsoleCommand("gm_spawn", file_path)
                     end
 
-                    pnlItem:SetSize(150, 150)
+                    pnlItem:SetSize(200, 200)
 
                     local pnlSpawnIcon = gui.Create("SpawnIcon", pnlItem, {dock_fill = true})
                     pnlSpawnIcon:SetModel(Model(file_path))
@@ -235,7 +338,9 @@ function PANEL:LoadWorkspaceEntity(WORKSPACE)
 
                 WORKSPACE.pnlTreeContent.pnlLayout = gui.Create("zpanelbase", WORKSPACE.pnlTreeContent)
                 WORKSPACE.pnlTreeContent.pnlLayout:SDock(FILL)
-                WORKSPACE.pnlTreeContent.pnlLayout:SetLayoutScheme(true, 25, 2, 2, true)
+                local Wide = WORKSPACE.pnlTreeContent.pnlLayout:GetSize()
+                local amount = math.Round(Wide/5)
+                WORKSPACE.pnlTreeContent.pnlLayout:SetLayoutScheme(true, amount, 2, 2, true)
 
                 for _, ITEM in pairs(item_list) do
                     local pnlItem = gui.Create("zbutton", WORKSPACE.pnlTreeContent.pnlLayout)
@@ -254,23 +359,15 @@ function PANEL:LoadWorkspaceEntity(WORKSPACE)
                         RunConsoleCommand("gm_spawnsent", ITEM.ClassName)
                     end
 
-                    pnlItem:SetSize(150, 150)
+                    pnlItem:SetSize(200, 200)
 
-                    local path = string.format("materials/entities/%s.png", ITEM.ClassName)
-
-                    if file.Exists(path, "GAME") then
-                        local mat_icon = Material(path)
-                        local pnlSpawnIcon = gui.Create("DImage", pnlItem, {dock_fill = true})
-                        pnlSpawnIcon:SetMaterial(mat_icon)
-                        pnlSpawnIcon:SetMouseInputEnabled(false)
-                    elseif ITEM.Icon or ITEM.IconOverride then
-                        local pnlSpawnIcon = gui.Create("DImage", pnlItem, {dock_fill = true})
-                        pnlSpawnIcon:SetIcon(ITEM.IconOverride or ITEM.Icon)
-                        pnlSpawnIcon:SetMouseInputEnabled(false)
-                    elseif ITEM.WorldModel or ITEM.Model then
-                        local pnlSpawnIcon = gui.Create("SpawnIcon", pnlItem, {dock_fill = true})
-                        pnlSpawnIcon:SetModel(Model(ITEM.WorldModel or ITEM.Model))
-                        pnlSpawnIcon:SetMouseInputEnabled(false)
+                    local pnlSpawnInfo = CreateItemSpawnIcon(ITEM)
+                    if pnlSpawnInfo != nil and IsValid(pnlSpawnInfo) then
+                        pnlSpawnInfo:SetParent(pnlItem)
+                        pnlSpawnInfo:SetSize(200, 200)
+                        pnlSpawnInfo:Dock(FILL)
+                        pnlSpawnInfo:InvalidateParent(true)
+                        pnlSpawnInfo:SetMouseInputEnabled(false)
                     end
                 end
             end
@@ -319,7 +416,10 @@ function PANEL:LoadWorkspaceWeapon(WORKSPACE)
 
                 WORKSPACE.pnlTreeContent.pnlLayout = gui.Create("zpanelbase", WORKSPACE.pnlTreeContent)
                 WORKSPACE.pnlTreeContent.pnlLayout:SDock(FILL)
-                WORKSPACE.pnlTreeContent.pnlLayout:SetLayoutScheme(true, 25, 2, 2, true)
+
+                local Wide = WORKSPACE.pnlTreeContent.pnlLayout:GetSize()
+                local amount = math.Round(Wide/5)
+                WORKSPACE.pnlTreeContent.pnlLayout:SetLayoutScheme(true, amount, 2, 2, true)
 
                 for _, ITEM in pairs(item_list) do
                     local pnlItem = gui.Create("zbutton", WORKSPACE.pnlTreeContent.pnlLayout)
@@ -338,24 +438,17 @@ function PANEL:LoadWorkspaceWeapon(WORKSPACE)
                         RunConsoleCommand("give", ITEM.ClassName)
                     end
 
-                    pnlItem:SetSize(150, 150)
+                    pnlItem:SetSize(200, 200)
 
-                    local path = string.format("materials/entities/%s.png", ITEM.ClassName)
-
-                    if file.Exists(path, "GAME") then
-                        local mat_icon = Material(path)
-                        local pnlSpawnIcon = gui.Create("DImage", pnlItem, {dock_fill = true})
-                        pnlSpawnIcon:SetMaterial(mat_icon)
-                        pnlSpawnIcon:SetMouseInputEnabled(false)
-                    elseif ITEM.Icon or ITEM.IconOverride then
-                        local pnlSpawnIcon = gui.Create("DImage", pnlItem, {dock_fill = true})
-                        pnlSpawnIcon:SetIcon(ITEM.IconOverride or ITEM.Icon)
-                        pnlSpawnIcon:SetMouseInputEnabled(false)
-                    elseif ITEM.WorldModel or ITEM.Model then
-                        local pnlSpawnIcon = gui.Create("SpawnIcon", pnlItem, {dock_fill = true})
-                        pnlSpawnIcon:SetModel(Model(ITEM.WorldModel or ITEM.Model))
-                        pnlSpawnIcon:SetMouseInputEnabled(false)
+                    local pnlSpawnInfo = CreateItemSpawnIcon(ITEM)
+                    if pnlSpawnInfo != nil and IsValid(pnlSpawnInfo) then
+                        pnlSpawnInfo:SetParent(pnlItem)
+                        pnlSpawnInfo:SetSize(200, 200)
+                        pnlSpawnInfo:Dock(FILL)
+                        pnlSpawnInfo:InvalidateParent(true)
+                        pnlSpawnInfo:SetMouseInputEnabled(false)
                     end
+
                 end
             end
         end
@@ -405,7 +498,9 @@ function PANEL:LoadWorkspaceNPC(WORKSPACE)
 
                 WORKSPACE.pnlTreeContent.pnlLayout = gui.Create("zpanelbase", WORKSPACE.pnlTreeContent)
                 WORKSPACE.pnlTreeContent.pnlLayout:SDock(FILL)
-                WORKSPACE.pnlTreeContent.pnlLayout:SetLayoutScheme(true, 25, 2, 2, true)
+                local Wide = WORKSPACE.pnlTreeContent.pnlLayout:GetSize()
+                local amount = math.Round(Wide/5)
+                WORKSPACE.pnlTreeContent.pnlLayout:SetLayoutScheme(true, amount, 2, 2, true)
 
                 for _, ITEM in pairs(item_list) do
                     local pnlItem = gui.Create("zbutton", WORKSPACE.pnlTreeContent.pnlLayout)
@@ -424,37 +519,15 @@ function PANEL:LoadWorkspaceNPC(WORKSPACE)
                         RunConsoleCommand("gmod_spawnnpc", ITEM._KEY)
                     end
 
-                    pnlItem:SetSize(150, 150)
+                    pnlItem:SetSize(200, 200)
 
-                    local path = string.format("materials/entities/%s.png", ITEM.ClassName)
-                    local path2 = string.format("materials/entities/%s.png", ITEM._KEY)
-
-                    if file.Exists(path, "GAME") then
-                        local mat_icon = Material(path)
-                        local pnlSpawnIcon = gui.Create("DImage", pnlItem, {dock_fill = true})
-                        pnlSpawnIcon:SetMaterial(mat_icon)
-                        pnlSpawnIcon:SetMouseInputEnabled(false)
-                    elseif file.Exists(path2, "GAME") then
-                        local mat_icon = Material(path2)
-                        local pnlSpawnIcon = gui.Create("DImage", pnlItem, {dock_fill = true})
-                        pnlSpawnIcon:SetMaterial(mat_icon)
-                        pnlSpawnIcon:SetMouseInputEnabled(false)
-                    elseif (ITEM.IconOverride and ITEM.IconOverride != "") then
-                        local pnlSpawnIcon = gui.Create("DImage", pnlItem, {dock_fill = true})
-                        pnlSpawnIcon:SetIcon(ITEM.IconOverride)
-                        pnlSpawnIcon:SetMouseInputEnabled(false)
-                    elseif (ITEM.Icon and ITEM.Icon != "") then
-                        local pnlSpawnIcon = gui.Create("DImage", pnlItem, {dock_fill = true})
-                        pnlSpawnIcon:SetIcon(ITEM.Icon)
-                        pnlSpawnIcon:SetMouseInputEnabled(false)
-                    elseif type(ITEM.WorldModel) == "string" and file.Exists(ITEM.WorldModel, "GAME") then
-                        local pnlSpawnIcon = gui.Create("SpawnIcon", pnlItem, {dock_fill = true})
-                        pnlSpawnIcon:SetModel(Model(ITEM.WorldModel))
-                        pnlSpawnIcon:SetMouseInputEnabled(false)
-                    elseif type(ITEM.Model) == "string" and file.Exists(ITEM.Model, "GAME") then
-                        local pnlSpawnIcon = gui.Create("SpawnIcon", pnlItem, {dock_fill = true})
-                        pnlSpawnIcon:SetModel(Model(ITEM.Model))
-                        pnlSpawnIcon:SetMouseInputEnabled(false)
+                    local pnlSpawnInfo = CreateItemSpawnIcon(ITEM)
+                    if pnlSpawnInfo != nil and IsValid(pnlSpawnInfo) then
+                        pnlSpawnInfo:SetParent(pnlItem)
+                        pnlSpawnInfo:SetSize(200, 200)
+                        pnlSpawnInfo:Dock(FILL)
+                        pnlSpawnInfo:InvalidateParent(true)
+                        pnlSpawnInfo:SetMouseInputEnabled(false)
                     end
                 end
             end
@@ -505,7 +578,9 @@ function PANEL:LoadWorkspaceVehicle(WORKSPACE)
 
                 WORKSPACE.pnlTreeContent.pnlLayout = gui.Create("zpanelbase", WORKSPACE.pnlTreeContent)
                 WORKSPACE.pnlTreeContent.pnlLayout:SDock(FILL)
-                WORKSPACE.pnlTreeContent.pnlLayout:SetLayoutScheme(true, 25, 2, 2, true)
+                local Wide = WORKSPACE.pnlTreeContent.pnlLayout:GetSize()
+                local amount = math.Round(Wide/5)
+                WORKSPACE.pnlTreeContent.pnlLayout:SetLayoutScheme(true, amount, 2, 2, true)
 
                 for _, ITEM in pairs(item_list) do
                     local pnlItem = gui.Create("zbutton", WORKSPACE.pnlTreeContent.pnlLayout)
@@ -524,37 +599,15 @@ function PANEL:LoadWorkspaceVehicle(WORKSPACE)
                         RunConsoleCommand("gm_spawnvehicle", ITEM._KEY)
                     end
 
-                    pnlItem:SetSize(150, 150)
+                    pnlItem:SetSize(200, 200)
 
-                    local path = string.format("materials/entities/%s.png", ITEM.Name)
-                    local path2 = string.format("materials/entities/%s.png", ITEM._KEY)
-
-                    if file.Exists(path, "GAME") then
-                        local mat_icon = Material(path)
-                        local pnlSpawnIcon = gui.Create("DImage", pnlItem, {dock_fill = true})
-                        pnlSpawnIcon:SetMaterial(mat_icon)
-                        pnlSpawnIcon:SetMouseInputEnabled(false)
-                    elseif file.Exists(path2, "GAME") then
-                        local mat_icon = Material(path2)
-                        local pnlSpawnIcon = gui.Create("DImage", pnlItem, {dock_fill = true})
-                        pnlSpawnIcon:SetMaterial(mat_icon)
-                        pnlSpawnIcon:SetMouseInputEnabled(false)
-                    elseif (ITEM.IconOverride and ITEM.IconOverride != "") then
-                        local pnlSpawnIcon = gui.Create("DImage", pnlItem, {dock_fill = true})
-                        pnlSpawnIcon:SetIcon(ITEM.IconOverride)
-                        pnlSpawnIcon:SetMouseInputEnabled(false)
-                    elseif (ITEM.Icon and ITEM.Icon != "") then
-                        local pnlSpawnIcon = gui.Create("DImage", pnlItem, {dock_fill = true})
-                        pnlSpawnIcon:SetIcon(ITEM.Icon)
-                        pnlSpawnIcon:SetMouseInputEnabled(false)
-                    elseif type(ITEM.WorldModel) == "string" and file.Exists(ITEM.WorldModel, "GAME") then
-                        local pnlSpawnIcon = gui.Create("SpawnIcon", pnlItem, {dock_fill = true})
-                        pnlSpawnIcon:SetModel(Model(ITEM.WorldModel))
-                        pnlSpawnIcon:SetMouseInputEnabled(false)
-                    elseif type(ITEM.Model) == "string" and file.Exists(ITEM.Model, "GAME") then
-                        local pnlSpawnIcon = gui.Create("SpawnIcon", pnlItem, {dock_fill = true})
-                        pnlSpawnIcon:SetModel(Model(ITEM.Model))
-                        pnlSpawnIcon:SetMouseInputEnabled(false)
+                    local pnlSpawnInfo = CreateItemSpawnIcon(ITEM)
+                    if pnlSpawnInfo != nil and IsValid(pnlSpawnInfo) then
+                        pnlSpawnInfo:SetParent(pnlItem)
+                        pnlSpawnInfo:SetSize(200, 200)
+                        pnlSpawnInfo:Dock(FILL)
+                        pnlSpawnInfo:InvalidateParent(true)
+                        pnlSpawnInfo:SetMouseInputEnabled(false)
                     end
                 end
             end

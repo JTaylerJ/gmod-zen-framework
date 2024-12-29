@@ -46,7 +46,7 @@ meta_network.mi_NetworkObjectCounter = meta_network.mi_NetworkObjectCounter or 0
 ---@class zen.META_NETWORK
 ---@field t_Keys table<any, number> -- <key, index>
 ---@field t_KeysIndexes table<number, any> -- <index, key>
----@field t_Values table<any, any> -- <key, value>
+---@field t_Values table<number, any> -- <key, value>
 ---@field IndexCounter number
 ---@field IndexBits number
 ---@field NetworkID number
@@ -70,9 +70,10 @@ local function countBits(n)
     return bits
 end
 
-meta_network.NetworkCountBits = countBits(meta_network.mi_NetworkObjectCounter)
+meta_network.NetworkCountBits = meta_network.NetworkCountBits or countBits(meta_network.mi_NetworkObjectCounter)
 
 local function maxValue(bits)
+    if bits == 0 then return 0 end
     if bits < 1 then return 1 end
 
     return (2 ^ bits) - 1
@@ -101,10 +102,12 @@ local CODES = {
     UPDATE_VARIABLE                = 4,
     EMPTY_VARIABLE                 = 5,
     PING_VARIBLE                   = 6,
+    UPDATE_INDEX_BETS              = 7,
 
-    CL_VAR_CHANGE_REQUEST          = 7,
-    PULL_VARIABLES                 = 8,
-    FULL_SYNC                      = 9,
+    CL_VAR_CHANGE_REQUEST          = 8,
+    PULL_VARIABLES                 = 9,
+    FULL_SYNC                      = 10,
+    NEW_INDEX                      = 11,
 }
 
 ---@type table<number, zen.meta_network.code>
@@ -240,10 +243,9 @@ Receive("zen.meta_network.networks", function(_, ply)
             local networkID = ReadUInt(meta_network.NetworkCountBits)
             local uniqueID = ReadString()
 
-            meta_network.GetNetworkObject(uniqueID)
+            meta_network.AssignNetworkID(uniqueID, networkID, true)
         elseif code_name == "NETWORK_BITS" then
-            local networkBits = ReadUInt(32)
-            meta_network.NetworkCountBits = networkBits
+            meta_network.NetworkCountBits = ReadUInt(32)
         end
     end
 end)
@@ -297,18 +299,25 @@ end
 
 ---@private
 function META:__newindex(key, value)
+    assert(SERVER, "This is only server-side controlled")
     assert( rawget(META, key) == nil, "You can't assing `" .. tostring(key) .. "` this is meta-reserved")
 
     local IndexID = self:GetIndexID(key)
 
-    self.t_Values[IndexID] = value
+    local OldValue = self.t_Values[IndexID]
 
-    if SERVER then
-        self:SendNetwork(function()
-            WriteCode("UPDATE_VARIABLE")
-            self:WriteKey(IndexID)
-            WriteType(value)
-        end)
+    if OldValue != value then
+        self.t_Values[IndexID] = value
+
+        if SERVER then
+            self:SendNetwork(function()
+                WriteCode("UPDATE_VARIABLE")
+                self:WriteKey(IndexID)
+                WriteType(value)
+            end)
+        end
+
+        self:OnVariableChanged(key, OldValue, value)
     end
 end
 
@@ -327,23 +336,19 @@ function META:GetIndexID(any)
         if IndexCounter > maxValue(self.IndexBits) then
             local IndexBits = countBits(IndexCounter)
 
-            /*
-            self:SendNetworkSchema(function()
-                WriteCodeSchema("INDEX_BITS")
+            self:SendNetwork(function()
+                WriteCode("UPDATE_INDEX_BETS")
                 WriteUInt(IndexBits, 32)
             end)
-            */
 
             rawset(self, "IndexBits", IndexBits)
         end
 
-        /*
-        self:SendNetworkSchema(function()
-            WriteCodeSchema("NEW_INDEX")
-            WriteUInt(IndexCounter, self.IndexBits)
+        self:SendNetwork(function()
+            WriteCode("NEW_INDEX")
+            self:WriteKey(IndexCounter)
             WriteType(any)
         end)
-        */
 
         self.t_Keys[any] = IndexCounter
         self.t_KeysIndexes[IndexCounter] = any
@@ -402,6 +407,7 @@ function META:Sync(target)
     if SERVER then
         self:SendNetwork(function(self)
             WriteCode("FULL_SYNC")
+            WriteUInt(meta_network.NetworkCountBits, 32)
             WriteUInt(self.IndexBits, 32)
 
             local ValueAmount = table.Count(self.t_Keys)
@@ -434,6 +440,13 @@ function META:Ping()
     end)
 end
 
+---@param Key any
+---@param OldValue any?
+---@param NewValue any
+function META:OnVariableChanged(Key, OldValue, NewValue)
+
+end
+
 ---@param CODE zen.meta_network.code
 ---@param who Player|nil|`NULL`
 ---@param len number
@@ -445,18 +458,36 @@ function META:OnMessage(CODE, who, len)
 
         if CODE == "PING" then
             self:Ping()
+        elseif CODE == "UPDATE_INDEX_BETS" then
+            rawset(self, "IndexBits", ReadUInt(32))
+        elseif CODE == "NEW_INDEX" then
+            local IndexID = self:ReadKey()
+            local Key = ReadType()
+
+            assert(Key != nil, "Key can't be nil in Client-side NEW_INDEX")
+
+            self.t_Keys[Key] = IndexID
+            self.t_KeysIndexes[IndexID] = Key
+        elseif CODE == "PING_VARIBLE" then
+            local IndexID = self:ReadKey()
+
+            local Key = self.t_KeysIndexes[IndexID]
+            local Value = self.t_Values[IndexID]
+
+            -- assert(Key != nil, "Client-side network `" .. tostring(self.uniqueID) .. "` don't have key for Index `" .. tostring(IndexID) .. "`")
         elseif CODE == "UPDATE_VARIABLE" then
             local IndexID = self:ReadKey()
             local Value = ReadType()
 
-            local Key = self.t_Keys[IndexID]
-
+            local Key = self.t_KeysIndexes[IndexID]
             assert(Key != nil, "Client-side network `" .. tostring(self.uniqueID) .. "` don't have key for Index `" .. tostring(IndexID) .. "`")
 
-            self.t_Values[Key] = Value
+            self.t_Values[IndexID] = Value
 
             print("GetVariable ", IndexID, " ", Key, " ", Value)
         elseif CODE == "FULL_SYNC" then
+            meta_network.NetworkCountBits = ReadUInt(32)
+
             rawset(self, "IndexBits", ReadUInt(32))
 
             local ValueAmount = ReadUInt(32)
@@ -466,12 +497,13 @@ function META:OnMessage(CODE, who, len)
                 local Key = ReadType()
                 local Value = ReadType()
 
+                assert(IndexID != nil, "IndexID can't be nil in Client-side FULL_SYNC")
                 assert(Key != nil, "Key can't be nil in Client-side FULL_SYNC")
+                assert(Value != nil, "Value can't be nil in Client-side FULL_SYNC")
 
                 self.t_Keys[Key] = IndexID
                 self.t_KeysIndexes[IndexID] = Key
-
-                self.t_Values[Key] = Value
+                self.t_Values[IndexID] = Value
             end
         end
     end
@@ -588,7 +620,6 @@ end
 
 if CLIENT then
     -- if meta_network.bNetworkReady then return end
-    meta_network.InitClient()
 end
 
 hook.Add("InitPostEntity", "meta_network", function()
@@ -609,17 +640,58 @@ meta_network.GetNetworkObject("Network08")
 meta_network.GetNetworkObject("Network09")
 local SOME_OBJECT = meta_network.GetNetworkObject("Network09")
 if SERVER then
-    SOME_OBJECT.Var01 = "var01"
-    SOME_OBJECT.Var02 = "var02"
-    SOME_OBJECT.Var03 = "var03"
-    SOME_OBJECT.Var04 = "var04"
-    SOME_OBJECT.Var05 = "var05"
+    SOME_OBJECT.Var01 = "10001"
+    SOME_OBJECT.Var02 = "10002"
+    SOME_OBJECT.Var03 = "10003"
+    SOME_OBJECT.Var04 = "10004"
+    SOME_OBJECT.Var05 = "10005"
+    SOME_OBJECT.Var06 = "10006"
+    SOME_OBJECT.Var07 = "10007"
+    SOME_OBJECT.Var08 = "10008"
+end
+local SM2 = meta_network.GetNetworkObject("Network10")
+if SERVER then
+    SM2.Test = 3
+end
+local SM3 = meta_network.GetNetworkObject("Network11")
+local SM3 = meta_network.GetNetworkObject("Network12")
+if SERVER then
+    SM3.Vartiable = "Fafafa"
+end
+local SM3 = meta_network.GetNetworkObject("Network13")
+if SERVER then
+    SM3.Vartiable2 = "Fafafa2"
+
+    for k = 1, 100 do
+        SM3[k] = 10
+
+    end
+end
+
+local SM3 = meta_network.GetNetworkObject("Network14")
+if SERVER then
+    SM3.Vartiable3 = "Fafafa3"
+
+    for k = 1, 1000 do
+        SM3[k] = 30
+
+    end
+end
+
+local SM3 = meta_network.GetNetworkObject("Network15")
+if SERVER then
+    SM3.Vartiable4 = "Fafafa4"
+
+    for k = 1, 300 do
+        SM3[k] = 500
+
+    end
 end
 
 -- PrintTable(SOME_OBJECT)
 
 concommand.Add("test_network", function()
-    PrintTable(meta_network.mt_ListObjects)
+    PrintTable(meta_network)
 end)
 
 concommand.Add("test_network_sync", function()
@@ -627,3 +699,10 @@ concommand.Add("test_network_sync", function()
         NETWORK:Sync()
     end
 end)
+
+if CLIENT then
+    concommand.Add("test_network_init", function()
+        meta_network.InitClient()
+    end)
+end
+

@@ -1122,9 +1122,9 @@ local NiceStorage = module.CreateStorage("mysqloo", "db_test", {
         {name = "description", type = "TEXT", notNull = true},
     }
 }, {
-    host = "localhost",
-    username = "root",
-    password = "root",
+    host = "127.0.0.1", -- Don't use `localhost
+    username = "admin",
+    password = "",
     database = "gmod",
     port = 3306
 })

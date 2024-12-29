@@ -214,7 +214,7 @@ Receive("zen.meta_network.networks", function(_, ply)
                 end
             Send(ply)
         elseif code_name == "DATAVAR_LIST" then
-            for NetworkID, NETWORK_DATA in pairs(meta_network.mt_ListObjectsIndex) do
+            for NetworkID, NETWORK_DATA in pairs(meta_network.mt_ListObjects) do
                 NETWORK_DATA:Sync(ply)
             end
         end
@@ -311,6 +311,9 @@ function META:__newindex(key, value)
     end)
 end
 
+---Get numeric index from AnyKey
+---@param any any
+---@return number
 function META:GetIndexID(any)
     local IndexID = self.t_Keys[any]
 
@@ -346,6 +349,8 @@ function META:GetIndexID(any)
 
         return IndexCounter
     end
+
+    assert(IndexID != nil and type(IndexID) == "number", "Cant assign / get Index for `" .. tostring(any) .. "` ")
 
     return IndexID
 end

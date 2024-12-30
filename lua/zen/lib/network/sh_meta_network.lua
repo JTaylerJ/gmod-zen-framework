@@ -13,8 +13,6 @@ module("zen")
 --- FreeIndexes should give next free index for link to entity
 
 
--- TODO: Cache MaxValue, and reduce bits when variable deleted
-
 -- TODO: Rename SET_VAR to SET_VARIABLE and DEL_VARIABLE and etc. more human-readable
 
 -- TODO: Create signals.
@@ -344,10 +342,37 @@ function META:__index(key)
     end
 end
 
+---@param NewIndexBits number
+function META:SetCurrentIndexBits(NewIndexBits)
+    local OldBits = self.IndexBits
+    rawset(self, "IndexBits", NewIndexBits)
+
+    if SERVER then
+        self:SendNetwork(function()
+            WriteCode("UPDATE_INDEX_BETS")
+            WriteUInt(NewIndexBits, 32)
+        end)
+
+        if NewIndexBits < OldBits then
+            local NewIndexCounter = table.maxn(self.t_KeysIndexes)
+
+            rawset(self, "IndexCounter", NewIndexCounter)
+
+            for k, v in pairs(self.t_FreeIndexes) do
+                if v > NewIndexCounter then
+                    -- table.remove(self.t_FreeIndexes, k)
+                    self.t_FreeIndexes[k] = nil
+                end
+            end
+        end
+    end
+end
+
 ---@private
 function META:__newindex(key, value)
     assert(SERVER, "This is only server-side controlled")
     assert( rawget(META, key) == nil, "You can't assing `" .. tostring(key) .. "` this is meta-reserved")
+    assert( rawget(self, key) == nil, "You can't assing `" .. tostring(key) .. "` this is self-reserved")
 
     local IndexID = self.t_Keys[key]
 
@@ -381,6 +406,10 @@ function META:__newindex(key, value)
             self.t_KeysIndexes[IndexID] = nil
 
             table.insert(self.t_FreeIndexes, IndexID)
+
+            if self.IndexCounter == IndexID then
+                self:SetCurrentIndexBits( countBits( table.maxn(self.t_KeysIndexes) ) )
+            end
         end
 
         self:OnVariableChanged(key, OldValue, value)
@@ -403,14 +432,7 @@ function META:GetIndexID(any)
             rawset(self, "IndexCounter", IndexCounter)
 
             if IndexCounter > maxValue(self.IndexBits) then
-                local IndexBits = countBits(IndexCounter)
-
-                self:SendNetwork(function()
-                    WriteCode("UPDATE_INDEX_BETS")
-                    WriteUInt(IndexBits, 32)
-                end)
-
-                rawset(self, "IndexBits", IndexBits)
+                self:SetCurrentIndexBits( countBits(IndexCounter) )
             end
 
             NewIndexID = IndexCounter
@@ -534,7 +556,7 @@ function META:OnMessage(CODE, who, len)
         if CODE == "PING" then
             self:Ping()
         elseif CODE == "UPDATE_INDEX_BETS" then
-            rawset(self, "IndexBits", ReadUInt(32))
+            self:SetCurrentIndexBits(ReadUInt(32))
         elseif CODE == "NEW_INDEX" then
             local IndexID = self:ReadKey()
             local Key = ReadType()
@@ -574,7 +596,7 @@ function META:OnMessage(CODE, who, len)
         elseif CODE == "FULL_SYNC" then
             meta_network.NetworkCountBits = ReadUInt(32)
 
-            rawset(self, "IndexBits", ReadUInt(32))
+            self:SetCurrentIndexBits(ReadUInt(32))
 
             local ValueAmount = ReadUInt(32)
 
@@ -713,13 +735,18 @@ end
 
 
 
--- /*
+/*
 
 local SM = meta_network.GetNetworkObject("Network01")
 if SERVER then
-    SM.Admin = true
-    SM.Admin5 = true
+    SM.Admin = "admin"
+    SM.Admin5 = nil
     SM.Admin3 = true
+
+    for k = 1, 32 do
+        SM[k] = nil
+        SM[k+50] = nil
+    end
 end
 
 
@@ -740,5 +767,5 @@ if CLIENT then
     end)
 end
 
--- */
+*/
 

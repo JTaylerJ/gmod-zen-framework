@@ -12,7 +12,8 @@ module("zen")
 --- Also should garbage network after EntityRemove
 --- FreeIndexes should give next free index for link to entity
 
--- TODO: Create free index table
+
+-- TODO: Cache MaxValue, and reduce bits when variable deleted
 
 -- TODO: Rename SET_VAR to SET_VARIABLE and DEL_VARIABLE and etc. more human-readable
 
@@ -88,6 +89,7 @@ meta_network.mi_NetworkObjectCounter = meta_network.mi_NetworkObjectCounter or 0
 ---@field t_Keys table<any, number> -- <key, index>
 ---@field t_KeysIndexes table<number, any> -- <index, key>
 ---@field t_Values table<number, any> -- <key, value>
+---@field t_FreeIndexes table<number, number> -- <number, number> Free Indexes after DEL_VAR
 ---@field IndexCounter number
 ---@field IndexBits number
 ---@field NetworkID number
@@ -377,6 +379,8 @@ function META:__newindex(key, value)
 
             self.t_Keys[key] = nil
             self.t_KeysIndexes[IndexID] = nil
+
+            table.insert(self.t_FreeIndexes, IndexID)
         end
 
         self:OnVariableChanged(key, OldValue, value)
@@ -390,32 +394,40 @@ function META:GetIndexID(any)
     local IndexID = self.t_Keys[any]
 
     if IndexID == nil then
-        local IndexCounter = rawget(self, "IndexCounter")
+        local ID_TODEL, NewIndexID = next(self.t_FreeIndexes)
 
-        IndexCounter = IndexCounter + 1
-        rawset(self, "IndexCounter", IndexCounter)
+        if NewIndexID == nil then
 
-        if IndexCounter > maxValue(self.IndexBits) then
-            local IndexBits = countBits(IndexCounter)
+            local IndexCounter = rawget(self, "IndexCounter")
+            IndexCounter = IndexCounter + 1
+            rawset(self, "IndexCounter", IndexCounter)
 
-            self:SendNetwork(function()
-                WriteCode("UPDATE_INDEX_BETS")
-                WriteUInt(IndexBits, 32)
-            end)
+            if IndexCounter > maxValue(self.IndexBits) then
+                local IndexBits = countBits(IndexCounter)
 
-            rawset(self, "IndexBits", IndexBits)
+                self:SendNetwork(function()
+                    WriteCode("UPDATE_INDEX_BETS")
+                    WriteUInt(IndexBits, 32)
+                end)
+
+                rawset(self, "IndexBits", IndexBits)
+            end
+
+            NewIndexID = IndexCounter
+        else
+            table.remove(self.t_FreeIndexes, ID_TODEL)
         end
 
         self:SendNetwork(function()
             WriteCode("NEW_INDEX")
-            self:WriteKey(IndexCounter)
+            self:WriteKey(NewIndexID)
             WriteType(any)
         end)
 
-        self.t_Keys[any] = IndexCounter
-        self.t_KeysIndexes[IndexCounter] = any
+        self.t_Keys[any] = NewIndexID
+        self.t_KeysIndexes[NewIndexID] = any
 
-        return IndexCounter
+        return NewIndexID
     end
 
     assert(IndexID != nil and type(IndexID) == "number", "Cant assign / get Index for `" .. tostring(any) .. "` ")
@@ -655,6 +667,7 @@ function meta_network.GetNetworkObject(uniqueID)
             t_Keys = {},
             t_KeysIndexes = {},
             t_Values = {},
+            t_FreeIndexes = {},
             NetworkID = -1,
             IndexCounter = 0,
             IndexBits = 0,
@@ -678,6 +691,8 @@ function meta_network.GetNetworkObject(uniqueID)
 end
 
 function meta_network.InitClient()
+    if meta_network.bNetworkReady then return end
+
     Start("zen.meta_network.networks")
         WriteCodeNetwork("NETWORK_LIST")
         WriteBool(false)
@@ -702,7 +717,9 @@ end
 
 local SM = meta_network.GetNetworkObject("Network01")
 if SERVER then
-    SM.Admin = nil
+    SM.Admin = true
+    SM.Admin5 = true
+    SM.Admin3 = true
 end
 
 

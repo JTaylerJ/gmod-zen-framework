@@ -12,6 +12,7 @@ module("zen")
 --- Also should garbage network after EntityRemove
 --- FreeIndexes should give next free index for link to entity
 
+--- TODO: Add support for sub-tables
 
 -- TODO: Rename SET_VAR to SET_VARIABLE and DEL_VARIABLE and etc. more human-readable
 
@@ -68,7 +69,7 @@ if SERVER then
 end
 
 ---@class zen.meta_network
-meta_network = _GET("meta_network")
+meta_network = (_GET and _GET("meta_network") or meta_network) or {}
 
 if CLIENT then
     meta_network.bNetworkReady = meta_network.bNetworkReady or false
@@ -93,6 +94,8 @@ meta_network.mi_NetworkObjectCounter = meta_network.mi_NetworkObjectCounter or 0
 ---@field NetworkID number
 ---@field uniqueID string
 local META = {}
+META.NAME = "[zen] Meta Network"
+META.META_NETWORK = true
 
 local bit_rshift = bit.rshift
 local function countBits(n)
@@ -156,7 +159,21 @@ local CODES_INDEX = {}
 for k, v in pairs(CODES) do CODES_INDEX[v] = k end
 
 --- REAL-TIME CODE BITS
-CODES_BITS = countBits(table.Count(CODES))
+CODES_BITS = countBits(#(CODES))
+
+---@enum (key) zen.meta_network.code_sub_table
+local CODES_SUB_TABLE = {
+    SET_SUB_TABLE                  = 1,
+    DEL_SUB_TABLE                  = 2,
+    SET_SUB_TABLE_KEY              = 3,
+    DEL_SUB_TABLE_KEY              = 4,
+}
+
+---@type table<number, zen.meta_network.code_sub_table>
+local CODES_SUB_TABLE_INDEX = {}
+for k, v in pairs(CODES_SUB_TABLE) do CODES_SUB_TABLE_INDEX[v] = k end
+
+CODES_SUB_TABLE_BITS = countBits(#(CODES_SUB_TABLE))
 
 
 ---@param code_name zen.meta_network.code
@@ -373,6 +390,15 @@ function META:__newindex(Key, value)
     assert(SERVER, "This is only server-side controlled")
     assert( rawget(META, Key) == nil, "You can't assing `" .. tostring(Key) .. "` this is meta-reserved")
     assert( rawget(self, Key) == nil, "You can't assing `" .. tostring(Key) .. "` this is self-reserved")
+
+    // Check meta-table
+    if type(value) == "table" then
+        local MM = getmetatable(value)
+
+        if MM then
+            if rawget(MM, "META_NETWORK") != true then error("Table with key `" .. tostring(Key) .. "` already has key, and it's not meta_table") end
+        end
+    end
 
     local IndexID = self.t_Keys[Key]
 
@@ -689,6 +715,7 @@ function meta_network.GetNetworkObject(uniqueID)
             t_Keys = {},
             t_KeysIndexes = {},
             t_Values = {},
+            t_SubTables = {},
             t_FreeIndexes = {},
             NetworkID = -1,
             IndexCounter = 0,
@@ -735,7 +762,7 @@ end
 
 
 
-/*
+-- /*
 
 local SM = meta_network.GetNetworkObject("Network01")
 if SERVER then
@@ -767,5 +794,4 @@ if CLIENT then
     end)
 end
 
-*/
-
+-- */

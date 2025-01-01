@@ -86,7 +86,7 @@ meta_network.mi_NetworkObjectCounter = meta_network.mi_NetworkObjectCounter or 0
 ---@class zen.META_NETWORK
 ---@field t_Keys table<any, number> -- <key, index>
 ---@field t_KeysIndexes table<number, any> -- <index, key>
----@field t_Values table<number, any> -- <key, value>
+---@field t_Values table<any, any> -- <key, value>
 ---@field t_FreeIndexes table<number, number> -- <number, number> Free Indexes after DEL_VAR
 ---@field IndexCounter number
 ---@field IndexBits number
@@ -385,10 +385,10 @@ function META:__newindex(key, value)
 
     ---@cast IndexID number
 
-    local OldValue = self.t_Values[IndexID]
+    local OldValue = self.t_Values[key]
 
     if OldValue != value then
-        self.t_Values[IndexID] = value
+        self.t_Values[key] = value
 
         if value != nil then
             self:SendNetwork(function()
@@ -512,7 +512,7 @@ function META:Sync(target)
             WriteUInt(ValueAmount, 32)
 
             for Key, IndexID in pairs(self.t_Keys) do
-                local Value = self.t_Values[IndexID]
+                local Value = self.t_Values[Key]
 
                 assert(Key != nil, "Server-side network `" .. tostring(self.uniqueID) .. "` don't have value for Index `" .. tostring(IndexID) .. "` in FULL_SYNC")
 
@@ -569,7 +569,7 @@ function META:OnMessage(CODE, who, len)
             local IndexID = self:ReadKey()
 
             local Key = self.t_KeysIndexes[IndexID]
-            local Value = self.t_Values[IndexID]
+            local Value = self.t_Values[Key]
 
             -- assert(Key != nil, "Client-side network `" .. tostring(self.uniqueID) .. "` don't have key for Index `" .. tostring(IndexID) .. "`")
         elseif CODE == "SET_VAR" then
@@ -579,7 +579,7 @@ function META:OnMessage(CODE, who, len)
             local Key = self.t_KeysIndexes[IndexID]
             assert(Key != nil, "Client-side network `" .. tostring(self.uniqueID) .. "` don't have key for Index `" .. tostring(IndexID) .. "`")
 
-            self.t_Values[IndexID] = Value
+            self.t_Values[Key] = Value
 
             print("GetVariable ", IndexID, " ", Key, " ", Value)
         elseif CODE == "DEL_VAR" then
@@ -588,7 +588,7 @@ function META:OnMessage(CODE, who, len)
             local Key = self.t_KeysIndexes[IndexID]
             assert(Key != nil, "Client-side network `" .. tostring(self.uniqueID) .. "` don't have key for Index `" .. tostring(IndexID) .. "`")
 
-            self.t_Values[IndexID] = nil
+            self.t_Values[Key] = nil
             self.t_Keys[Key] = nil
             self.t_KeysIndexes[IndexID] = nil
 
@@ -611,7 +611,7 @@ function META:OnMessage(CODE, who, len)
 
                 self.t_Keys[Key] = IndexID
                 self.t_KeysIndexes[IndexID] = Key
-                self.t_Values[IndexID] = Value
+                self.t_Values[Key] = Value
             end
         end
     end

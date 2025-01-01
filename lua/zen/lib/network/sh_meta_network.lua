@@ -328,17 +328,17 @@ function META:ReadKey()
 end
 
 ---@private
-function META:__index(key)
-    local M = rawget(META, key)
+function META:__index(Key)
+    local M = rawget(META, Key)
     if M != nil then
         return M
     end
 
-    local VALUE = rawget(self, key)
+    local VALUE = rawget(self, Key)
     if VALUE != nil then
         return VALUE
     else
-        return rawget(rawget(self, "ValueVariables"), key)
+        return rawget(rawget(self, "ValueVariables"), Key)
     end
 end
 
@@ -369,26 +369,26 @@ function META:SetCurrentIndexBits(NewIndexBits)
 end
 
 ---@private
-function META:__newindex(key, value)
+function META:__newindex(Key, value)
     assert(SERVER, "This is only server-side controlled")
-    assert( rawget(META, key) == nil, "You can't assing `" .. tostring(key) .. "` this is meta-reserved")
-    assert( rawget(self, key) == nil, "You can't assing `" .. tostring(key) .. "` this is self-reserved")
+    assert( rawget(META, Key) == nil, "You can't assing `" .. tostring(Key) .. "` this is meta-reserved")
+    assert( rawget(self, Key) == nil, "You can't assing `" .. tostring(Key) .. "` this is self-reserved")
 
-    local IndexID = self.t_Keys[key]
+    local IndexID = self.t_Keys[Key]
 
     -- Ignore new key with value NIL
     if IndexID == nil then
         if value == nil then return end
 
-        IndexID = self:GetIndexID(key)
+        IndexID = self:GetIndexID(Key)
     end
 
     ---@cast IndexID number
 
-    local OldValue = self.t_Values[key]
+    local OldValue = self.t_Values[Key]
 
     if OldValue != value then
-        self.t_Values[key] = value
+        self.t_Values[Key] = value
 
         if value != nil then
             self:SendNetwork(function()
@@ -402,7 +402,7 @@ function META:__newindex(key, value)
                 self:WriteKey(IndexID)
             end)
 
-            self.t_Keys[key] = nil
+            self.t_Keys[Key] = nil
             self.t_KeysIndexes[IndexID] = nil
 
             table.insert(self.t_FreeIndexes, IndexID)
@@ -412,7 +412,7 @@ function META:__newindex(key, value)
             end
         end
 
-        self:OnVariableChanged(key, OldValue, value)
+        self:OnVariableChanged(Key, OldValue, value)
     end
 end
 
@@ -457,12 +457,12 @@ function META:GetIndexID(any)
     return IndexID
 end
 
-function META:RawSet(key, value)
-    rawset(self, key, value)
+function META:RawSet(Key, value)
+    rawset(self, Key, value)
 end
 
-function META:RawGet(key)
-    return rawget(self, key)
+function META:RawGet(Key)
+    return rawget(self, Key)
 end
 
 

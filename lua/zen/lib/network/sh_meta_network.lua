@@ -142,17 +142,13 @@ end
 ---@enum (key) zen.meta_network.code
 local CODES = {
     PING                           = 1,
-    PUSH_TABLE                     = 2,
-    CLEAR_TABLE                    = 3,
-    SET_VAR                        = 4,
-    DEL_VAR                        = 5,
-    PING_VARIBLE                   = 6,
-    UPDATE_INDEX_BETS              = 7,
+    SET_VAR                        = 2,
+    DEL_VAR                        = 3,
+    PING_VARIBLE                   = 4,
+    UPDATE_INDEX_BETS              = 5,
 
-    CL_VAR_CHANGE_REQUEST          = 8,
-    PULL_VARIABLES                 = 9,
-    FULL_SYNC                      = 10,
-    NEW_INDEX                      = 11,
+    FULL_SYNC                      = 6,
+    NEW_INDEX                      = 7,
 }
 
 ---@type table<number, zen.meta_network.code>
@@ -160,7 +156,7 @@ local CODES_INDEX = {}
 for k, v in pairs(CODES) do CODES_INDEX[v] = k end
 
 --- REAL-TIME CODE BITS
-CODES_BITS = countBits(#(CODES))
+CODES_BITS = countBits(table.Count(CODES))
 
 ---@param code_name zen.meta_network.code
 local function WriteCode(code_name)
@@ -322,7 +318,7 @@ local CODES_SUB_TABLE = {
 local CODES_SUB_TABLE_INDEX = {}
 for k, v in pairs(CODES_SUB_TABLE) do CODES_SUB_TABLE_INDEX[v] = k end
 
-CODES_SUB_TABLE_BITS = countBits(#(CODES_SUB_TABLE))
+CODES_SUB_TABLE_BITS = countBits(table.Count(CODES_SUB_TABLE))
 
 ---@param code_name zen.meta_network.code_sub_table
 local function WriteCodeSubTable(code_name)
@@ -415,7 +411,7 @@ function META:SetCurrentIndexBits(NewIndexBits)
         end)
 
         if NewIndexBits < OldBits then
-            local NewIndexCounter = table.maxn(self.t_KeysIndexes)
+            local NewIndexCounter = table.Count(self.t_KeysIndexes)
 
             rawset(self, "IndexCounter", NewIndexCounter)
 
@@ -478,7 +474,7 @@ function META:__newindex(Key, value)
             table.insert(self.t_FreeIndexes, IndexID)
 
             if self.IndexCounter == IndexID then
-                self:SetCurrentIndexBits( countBits( table.maxn(self.t_KeysIndexes) ) )
+                self:SetCurrentIndexBits( countBits( table.Count(self.t_KeysIndexes) ) )
             end
         end
 

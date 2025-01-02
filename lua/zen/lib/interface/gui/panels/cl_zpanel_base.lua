@@ -704,14 +704,14 @@ function PANEL:PerformLayout(w, h)
             elseif self.bAutoResizeToChildrenHeight then
                 self:SetTall(ch)
             end
-
-            if self.bAutoLayoutScheme == true then
-                self:RefreshAutoLayout()
-            end
         end
 
 
         self:_SizeChanged(w, h)
+    end
+
+    if self.bAutoLayoutScheme == true then
+        self:RefreshAutoLayout()
     end
 end
 

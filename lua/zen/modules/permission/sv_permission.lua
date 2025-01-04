@@ -64,6 +64,8 @@ function iperm.DB:GivePermission(playerID, perm_name, allowed, target_flags, uni
             ${auto:6}
         )
     ]], playerID, perm_name, allowed, target_flags, unique_flags, extra)
+
+    iperm.DB:LoadPlayerPermissions(playerID)    
 end
 
 ---@class zen.iperm.perm_info
@@ -151,4 +153,19 @@ function(who, sid64, perm_name, allowed)
 
     iperm.DB:GivePermission(sid64, perm_name, allowed)
     iperm.DB:LoadPlayerPermissions(sid64)
+end)
+
+concommand.Add("zen_root", function(ply, args, cmd, argStr)
+    if IsValid(ply) then return end
+
+    local findPly = util.FindPlayerEntity(argStr)
+    
+    if IsValid(findPly) then
+        print("Give root to player `", findPly:Nick(), "` (", findPly:SteamID(), ")")
+
+
+        iperm.DB:GivePermission(findPly:SteamID64(), "ROOT", true)
+    else
+        print("Player not founded `", argStr , "`")
+    end
 end)

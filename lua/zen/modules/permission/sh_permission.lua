@@ -151,6 +151,7 @@ function iperm.PlayerHasPermission(sid64, perm_name, target, isSilent)
 
     if perm_name == "public" then goto success end
     if _CFG.Admins[sid64] then goto success end
+    if iperm.PlayerGetPermission(sid64, "ROOT") then goto success end
 
     do -- Advanced Check
         local tPlayerPerm = iperm.PlayerGetPermission(sid64, perm_name)

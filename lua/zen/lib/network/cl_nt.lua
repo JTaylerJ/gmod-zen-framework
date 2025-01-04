@@ -50,7 +50,7 @@ net.Receive(nt.channels.pullChannels, function(len, ply)
 
 end)
 
-ihook.Listen("InitPostEntity", "nt.ReadyForNetwork", function()
+local function RequestInit()
     if !zen.SERVER_SIDE_ACTIVATED then
         print("Network not will be initialized. All next request will be ignored (use 'zen_developer 1' to see logs)")
         return
@@ -59,7 +59,9 @@ ihook.Listen("InitPostEntity", "nt.ReadyForNetwork", function()
     ihook.Run("ReadyForNetwork")
     net.Start(nt.channels.clientReady)
     net.SendToServer()
-end)
+end
+if IsValid( LocalPlayer() ) then RequestInit() end
+ihook.Listen("InitPostEntity", "nt.ReadyForNetwork", RequestInit)
 
 ihook.Listen("nt.Receive", "zen.Channels", function(channel_name, ply, v1, v2)
     if channel_name == "channels" then

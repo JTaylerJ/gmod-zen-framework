@@ -139,6 +139,26 @@ material_cache.iMatCounter = material_cache.iMatCounter or 0
     end)
 */
 
+material_cache.mt_GeneratedTextures = material_cache.mt_GeneratedTextures or {}
+local GENERATED_TEXTURES = material_cache.mt_GeneratedTextures
+
+material_cache.mt_GeneratedMaterials = material_cache.mt_GeneratedMaterials or {}
+local GENERATED_MATERIALS = material_cache.mt_GeneratedMaterials
+
+local assert = assert
+local type = type
+local GetRenderTargetEx = GetRenderTargetEx
+local render_PushRenderTarget = render.PushRenderTarget
+local render_Clear = render.Clear
+local cam_Start2D = cam.Start2D
+local stencil_cut_StartStencil = stencil_cut.StartStencil
+local stencil_cut_FilterStencil = stencil_cut.FilterStencil
+local stencil_cut_EndStencil = stencil_cut.EndStencil
+local cam_End2D = cam.End2D
+local render_Capture = render.Capture
+local render_PopRenderTarget = render.PopRenderTarget
+local CreateMaterial = CreateMaterial
+
 function material_cache.Generate2DMaterial(width, height, draw_func, mask_func, bCapturePNG, texture_name)
     assert(type(texture_name) == "string" or texture_name == nil, "texture_name not is string")
 
@@ -147,9 +167,7 @@ function material_cache.Generate2DMaterial(width, height, draw_func, mask_func, 
         texture_name = "material_cache/auto_generated/" .. material_cache.iMatCounter
     end
 
-    -- local texture = GetRenderTarget(texture_name, width, height)
-    -- local texture = GetRenderTargetEx(texture_name, width, height, RT_SIZE_LITERAL, MATERIAL_RT_DEPTH_NONE, 1 + 256, 0, IMAGE_FORMAT_BGRA8888)
-    local texture = GetRenderTargetEx(texture_name,
+    local texture = GENERATED_TEXTURES[texture_name] or GetRenderTargetEx(texture_name,
         width, height,
         RT_SIZE_NO_CHANGE, -- Just no touch anything
         MATERIAL_RT_DEPTH_SHARED, -- Alpha use multiply alpha object. If any bags then change to --> MATERIAL_RT_DEPTH_SEPARATE --> MATERIAL_RT_DEPTH_ONLY
@@ -158,27 +176,27 @@ function material_cache.Generate2DMaterial(width, height, draw_func, mask_func, 
         IMAGE_FORMAT_RGBA16161616 -- Allow use more colors in game. Default game colors is restricted!
     )
 
-    render.PushRenderTarget(texture)
+    render_PushRenderTarget(texture)
 
-    render.Clear(0, 0, 0, 0, true, true)
-        cam.Start2D()
+    render_Clear(0, 0, 0, 0, true, true)
+        cam_Start2D()
 
 
             if mask_func then
-                stencil_cut.StartStencil()
-                stencil_cut.FilterStencil(mask_func, width, height)
+                stencil_cut_StartStencil()
+                stencil_cut_FilterStencil(mask_func, width, height)
             end
             draw_func(width, height)
 
             if mask_func then
-                stencil_cut.EndStencil()
+                stencil_cut_EndStencil()
             end
-        cam.End2D()
+        cam_End2D()
 
 
         local PNG
         if bCapturePNG then
-            PNG = render.Capture{
+            PNG = render_Capture{
                 format = "png",
                 w = width,
                 h = height,
@@ -188,9 +206,9 @@ function material_cache.Generate2DMaterial(width, height, draw_func, mask_func, 
             }
         end
 
-    render.PopRenderTarget()
+    render_PopRenderTarget()
 
-	local result_material = CreateMaterial(texture_name, "UnlitGeneric", {
+	local result_material = GENERATED_MATERIALS[texture_name] or CreateMaterial(texture_name, "UnlitGeneric", {
         ["$basetexture"] = texture_name,
         ["$translucent"] = 1,        // Set to "1" if you want it to be translucent
         ["$vertexcolor"] = 1,        // Use vertex colors if needed
@@ -202,6 +220,8 @@ function material_cache.Generate2DMaterial(width, height, draw_func, mask_func, 
         -- ["$nocull"] = 1,
         -- ["$model"] = 1,
 	})
+
+    GENERATED_MATERIALS[texture_name] = result_material
 
     return result_material, PNG, width, height
 end

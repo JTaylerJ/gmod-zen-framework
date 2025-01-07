@@ -25,7 +25,7 @@ function PANEL:OpenSelectBox()
     self.pnlSelect:SetDrawOnTop(true)
 
     function self.pnlSelect:PaintOnce(w, h)
-        draw.BoxRounded(5 ,0, 0, w, h, "181818")
+        draw.BoxRounded(5 ,0, 0, w, h, "191919")
     end
 
 

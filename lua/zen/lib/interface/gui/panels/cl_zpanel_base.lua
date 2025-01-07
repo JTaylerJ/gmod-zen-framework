@@ -57,28 +57,28 @@ zen.iCounter_ZPanelBase = zen.iCounter_ZPanelBase or 0
 ---@class zen.panel.zpanelbase: Panel
 ---@field uniquePanelID string Unique ID for panel, memoryID or string with panel_num_id
 ---@field uniqueNumID number Unique Number ID for ZPanelBase panels
----@field OnMouseLeftPress? fun(self) Called when pressed MOUSE_LEFT
----@field OnMouseRightPress? fun(self) Called when pressed MOUSE_RIGHT
----@field OnMouseMiddlePress? fun(self) Called when pressed MOUSE_MIDDLE
----@field OnMouse4Press? fun(self) Called when pressed MOUSE_4
----@field OnMouse5Press? fun(self) Called when pressed MOUSE_5
----@field DoClick? fun(self) Called when release MOUSE_LEFT
----@field DoRightClick? fun(self) Called when release MOUSE_RIGHT
----@field OnMouseLeftRelease? fun(self, delta:number) Called when Release MOUSE_LEFT, delta - time left from presse
----@field OnMouseRightRelease? fun(self, delta:number) Called when Release MOUSE_RIGHT, delta - time left from presse
----@field OnMouseMiddleRelease? fun(self, delta:number) Called when Release MOUSE_MIDDLE, delta - time left from presse
----@field OnMouse4Release? fun(self, delta:number) Called when Release MOUSE_4, delta - time left from presse
----@field OnMouse5Release? fun(self, delta:number) Called when Release MOUSE_5, delta - time left from presse
----@field Draw? fun(self, w:number, h:number) Alias to default Paint
----@field DrawOver? fun(self, w:number, h:number) Alias to default PaintOver
----@field OnSizeChanged? fun(self, w:number, h:number)
----@field OnCursorJoin fun(self) Called when cursor joined to Panel
----@field OnCursorExit fun(self) Called when cursor exited after exit Panel
----@field PaintMask fun(self, w:number, h:number) -- Mask for PaintOnce
----@field PaintOnce fun(self, w:number, h:number) -- Paint which called when panel: ChangeSize. (Un)Hovered. (De)Enable. (De)Blocked
----@field PaintOnceBG fun(self, w:number, h:number) -- Works only with PaintOnce. Paint which called when panel: ChangeSize. (Un)Hovered. (De)Enable. (De)Blocked
----@field PaintOnceOver fun(self, w:number, h:number) -- Works only with PaintOnce. Paint which called when panel: ChangeSize. (Un)Hovered. (De)Enable. (De)Blocked
----@field PostRemove fun(self) -- Alias for OnRemove
+---@field OnMouseLeftPress? fun(this:self) Called when pressed MOUSE_LEFT
+---@field OnMouseRightPress? fun(this:self) Called when pressed MOUSE_RIGHT
+---@field OnMouseMiddlePress? fun(this:self) Called when pressed MOUSE_MIDDLE
+---@field OnMouse4Press? fun(this:self) Called when pressed MOUSE_4
+---@field OnMouse5Press? fun(this:self) Called when pressed MOUSE_5
+---@field DoClick? fun(this:self) Called when release MOUSE_LEFT
+---@field DoRightClick? fun(this:self) Called when release MOUSE_RIGHT
+---@field OnMouseLeftRelease? fun(this:self, delta:number) Called when Release MOUSE_LEFT, delta - time left from presse
+---@field OnMouseRightRelease? fun(this:self, delta:number) Called when Release MOUSE_RIGHT, delta - time left from presse
+---@field OnMouseMiddleRelease? fun(this:self, delta:number) Called when Release MOUSE_MIDDLE, delta - time left from presse
+---@field OnMouse4Release? fun(this:self, delta:number) Called when Release MOUSE_4, delta - time left from presse
+---@field OnMouse5Release? fun(this:self, delta:number) Called when Release MOUSE_5, delta - time left from presse
+---@field Draw? fun(this:self, w:number, h:number) Alias to default Paint
+---@field DrawOver? fun(this:self, w:number, h:number) Alias to default PaintOver
+---@field OnSizeChanged? fun(this:self, w:number, h:number)
+---@field OnCursorJoin fun(this:self) Called when cursor joined to Panel
+---@field OnCursorExit fun(this:self) Called when cursor exited after exit Panel
+---@field PaintMask fun(this:self, w:number, h:number) -- Mask for PaintOnce
+---@field PaintOnce fun(this:self, w:number, h:number) -- Paint which called when panel: ChangeSize. (Un)Hovered. (De)Enable. (De)Blocked
+---@field PaintOnceBG fun(this:self, w:number, h:number) -- Works only with PaintOnce. Paint which called when panel: ChangeSize. (Un)Hovered. (De)Enable. (De)Blocked
+---@field PaintOnceOver fun(this:self, w:number, h:number) -- Works only with PaintOnce. Paint which called when panel: ChangeSize. (Un)Hovered. (De)Enable. (De)Blocked
+---@field PostRemove fun(this:self) -- Alias for OnRemove
 local PANEL = {}
 
 function PANEL:InternalInit()
@@ -92,10 +92,10 @@ function PANEL:InternalInit()
     self.bAutoDeleteTimerEnabled = false
     self.iAutoDeleteTimer = 10 -- Seconds
 
-    ---@type table<number|string, fun(w:number, h:number)>
+    ---@type table<number|string, fun(this:self, w:number, h:number)>
     self.tPaintOncePre = {}
 
-    ---@type table<number|string, fun(w:number, h:number)>
+    ---@type table<number|string, fun(this:self, w:number, h:number)>
     self.tPaintOncePost = {}
 
     ---@type table<number, Panel>
@@ -192,7 +192,7 @@ function PANEL:GetUniqueID() return self.uniquePanelID end
 function PANEL:GetSubUniqueID(...) return string.format("%s-%s", self.uniquePanelID, table.concat({...}, "-")) end
 
 ---@param seconds number
----@param onFinish fun(self: zen.panel.zpanelbase)
+---@param onFinish fun(this:self: zen.panel.zpanelbase)
 function PANEL:SimpleTimer(seconds, onFinish)
     local timer_name = self:GetSubUniqueID("simple_timer", seconds)
 
@@ -209,7 +209,7 @@ end
 ---@param uniqueID string
 ---@param seconds number
 ---@param reps number
----@param callback fun(self: zen.panel.zpanelbase): boolean?
+---@param callback fun(this:self: zen.panel.zpanelbase): boolean?
 function PANEL:Timer(uniqueID, seconds, reps, callback)
     local timer_name = self:GetSubUniqueID("adv_timer", uniqueID)
 
@@ -468,18 +468,18 @@ end
 ---@param w number
 ---@param h number
 function PANEL:_PaintOnceFunction(w, h)
-    for k, v in pairs(self.tPaintOncePre) do v(w, h) end
+    for k, v in pairs(self.tPaintOncePre) do v(self, w, h) end
 
     if type(self.PaintOnceBG) == "function" then self:PaintOnceBG(w, h) end
     self:PaintOnce(w, h)
     if type(self.PaintOnceOver) == "function" then self:PaintOnceOver(w, h) end
 
-    for k, v in pairs(self.tPaintOncePost) do v(w, h) end
+    for k, v in pairs(self.tPaintOncePost) do v(self, w, h) end
 end
 
 
 ---Add draw function to call before PaintOnce
----@param callback fun(w:number, h:number)
+---@param callback fun(this:self, w:number, h:number)
 ---@param uniqueID string?
 function PANEL:AddPaintOncePreFunction(callback, uniqueID)
     if uniqueID then
@@ -490,7 +490,7 @@ function PANEL:AddPaintOncePreFunction(callback, uniqueID)
 end
 
 ---Add draw function to call after PaintOnce
----@param callback fun(w:number, h:number)
+---@param callback fun(this:self, w:number, h:number)
 ---@param uniqueID string?
 function PANEL:AddPaintOncePostFunction(callback, uniqueID)
     if uniqueID then

@@ -136,19 +136,31 @@ function PANEL:LoadLeftMenu()
         draw.BoxRounded(8, 0, 0, w, h, "202020ff")
     end
     self.LeftMenuHeader:SDock(TOP, 25)
+    self.LeftMenuHeader:SetAutoReSizeToChildrenHeight(true)
+    self.LeftMenuHeader:SetLayoutScheme(false)
 
 
     self.LeftMenuContent = gui.Create("zpanelbase", self.LeftMenu, {dock = FILL})
 
     local function AddHeaderButton(headerName, doClick)
         local pnlButton = gui.Create("zlabel", self.LeftMenuHeader)
-        pnlButton:SDock(LEFT, 120)
+        -- pnlButton:SDock(LEFT, 120)
+        -- pnlButton:SetTall(25)
         pnlButton:SetText(headerName)
         pnlButton:SetFont("14:DejaVu Sans")
         pnlButton:SetCursor("hand")
         pnlButton.DoClick = doClick
-        -- pnlButton:SizeToContentsX(true)
+        pnlButton:SizeToContents(10, 10)
         -- pnlButton:SetAutoReSizeToChildrenWidth(true)
+
+        pnlButton:AddPaintOncePreFunction(function (self, w, h)
+            draw.Box(0,0,w,h,"323232")
+
+            if self:IsHovered() then
+                draw.Box(0,0,w,h,"606060")
+            end
+        end)
+
         return pnlButton
     end
 

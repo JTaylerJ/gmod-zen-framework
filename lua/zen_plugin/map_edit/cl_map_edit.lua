@@ -250,9 +250,10 @@ function map_edit.CreateWorkspace(workspacename, data)
 
 		for k, MOD in pairs(MOD_LIST) do
 			local pnlText = gui.Create("zlabel", pnlContent)
-			pnlText:SetSize(100, 30)
+			pnlText:SetSize(200, 30)
 			pnlText:SetText(MOD.name or MOD.iden)
 			pnlText:SetFont(ui.ffont("20:DejaVu Sans"))
+			pnlText:SizeToContentsX(25)
 
 			function pnlText:DoClick()
 				WORKSPACE:SetMod(MOD)

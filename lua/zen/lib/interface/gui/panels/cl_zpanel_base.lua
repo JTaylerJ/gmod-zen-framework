@@ -764,19 +764,20 @@ function PANEL:PerformLayout(w, h)
         self.LastPerformW = w
         self.LastPerformH = h
 
-        do -- Childrens
-            local cw, ch = self:ChildrenSize()
-            if self.bAutoResizeToChildrenWidth and self.bAutoResizeToChildrenHeight then
-                self:SetSize(cw, ch)
-            elseif self.bAutoResizeToChildrenWidth then
-                self:SetWide(cw)
-            elseif self.bAutoResizeToChildrenHeight then
-                self:SetTall(ch)
-            end
-        end
-
-
         self:_SizeChanged(w, h)
+    end
+
+    do -- Childrens
+        if self.bAutoResizeToChildrenWidth and self.bAutoResizeToChildrenHeight then
+            local cw, ch = self:ChildrenSize()
+            self:SetSize(cw, ch)
+        elseif self.bAutoResizeToChildrenWidth then
+            local cw, ch = self:ChildrenSize()
+            self:SetWide(cw)
+        elseif self.bAutoResizeToChildrenHeight then
+            local cw, ch = self:ChildrenSize()
+            self:SetTall(ch)
+        end
     end
 
     if self.bAutoLayoutScheme == true then

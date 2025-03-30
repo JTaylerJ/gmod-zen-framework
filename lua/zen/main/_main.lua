@@ -15,7 +15,7 @@ end)
 zen.bAutoRunEnabled = type(Autorun) == "table" and type(Autorun.require) == "function"
 
 zen.SEND_CLIENT_FILES = true
-zen.SERVER_SIDE_ACTIVATED = false
+zen.SERVER_SIDE_ACTIVATED = true
 
 if zen.bAutoRunEnabled then
     zen.SERVER_SIDE_ACTIVATED = false

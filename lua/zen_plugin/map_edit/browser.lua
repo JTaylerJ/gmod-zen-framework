@@ -2,12 +2,12 @@ module("zen")
 
 zen.IncludeCL("zen_plugin/map_edit/lib/cl_vector.lua")
 
-zen.IncludeSH("zen_plugin/map_edit/lib/map_reader/cl_reader.lua")
-zen.IncludeSH("zen_plugin/map_edit/lib/map_reader/cl_reader_api.lua")
-zen.IncludeSH("zen_plugin/map_edit/lib/map_reader/cl_lump_list.lua")
+zen.IncludeSH("zen_plugin/map_edit/lib/map_reader/sh_reader.lua")
+zen.IncludeSH("zen_plugin/map_edit/lib/map_reader/sh_reader_api.lua")
+zen.IncludeSH("zen_plugin/map_edit/lib/map_reader/sh_lump_list.lua")
 zen.IncludeSH("zen_plugin/map_edit/lib/map_reader/lamps/LUMP_ENTITIES.lua")
 zen.IncludeSH("zen_plugin/map_edit/lib/map_reader/lamps/LUMP_GAME_LUMP.lua")
-zen.IncludeSH("zen_plugin/map_edit/lib/map_reader/structure/cl_bspinfo.lua")
+zen.IncludeSH("zen_plugin/map_edit/lib/map_reader/structure/sh_bspinfo.lua")
 
 zen.IncludeCL("zen_plugin/map_edit/lib/cl_mdl_export.lua")
 

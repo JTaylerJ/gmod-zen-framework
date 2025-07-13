@@ -1,5 +1,9 @@
 module("zen")
 
+
+---@meta
+
+---@class zen.nt
 nt = _GET("nt")
 nt.t_ChannelFlags = {}
 nt.t_ChannelFlags.SIMPLE_NETWORK        = 0
@@ -151,6 +155,18 @@ function nt.RegisterChannel(channel_name, flags, data)
     end
 
     return channel_id, tChannel
+end
+
+---@param channel_name string
+---@param types string[]
+---@param callback fun(ply:Player?, ...)
+function nt.SimpleChannel(channel_name, types, callback)
+    nt.RegisterChannel(channel_name, nil, {
+        types = types,
+        OnRead = function(self, ply, ...)
+            if callback then callback(ply, ...) end
+        end
+    })
 end
 
 function nt.SendToChannel(channel_name, target, ...)

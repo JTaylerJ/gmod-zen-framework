@@ -630,16 +630,18 @@ local function export_model(model)
         local sFoundedEXT = ""
 
         for k, possible_path in pairs(pathes) do
-            local SearchPath = _CPaths("materials", possible_path, material_name .. ".*")
-            local FilesFounded = FileSearch(SearchPath)
+            local FilesFounded = {}
 
-            for k, file_path in pairs(FilesFounded) do
-                local ext = get_ext(file_path)
+            if next(FilesFounded) == nil then
+                for ext in pairs(MaterialsEXT) do
+                    local single_path = _CPaths("materials", possible_path, lower(material_name) .. ext)
+                    if FileExists( single_path ) then
+                        ins(FilesFounded, single_path)
 
-                if MaterialsEXT[ext] then
-                    bFounded = true
-                    sFoundedPath = file_path
-                    sFoundedEXT = ext
+                        bFounded = true
+                        sFoundedPath = single_path
+                        sFoundedEXT = ext
+                    end
                 end
             end
         end

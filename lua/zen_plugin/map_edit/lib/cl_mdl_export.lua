@@ -18,7 +18,7 @@
 
 
 local PACKAGE_NAME    = "MDL Exporter"
-local PACKAGE_VERSION = "1.1.3"
+local PACKAGE_VERSION = "1.1.4"
 
 
 /*
@@ -153,6 +153,47 @@ local function readMdl(filePath)
         end
 
         return tbl
+    end
+
+    local function readArrayFunc(amount, func)
+        local tbl = {}
+
+        for k = 1, amount do
+            tbl[k] = func()
+        end
+
+        return tbl
+    end
+
+
+    local function read_mstudiomodel_t()
+        local model = {}
+
+        model.name = readString(64)
+        model.type = readInt()
+        model.boundingradius = readFloat()
+
+        model.nummeshes = readInt()
+        model.meshindex = readInt()
+
+        model.numvertices = readInt()
+        model.vertexindex = readInt()
+        model.tangentsindex = readInt()
+
+        model.numattachments = readInt()
+        model.attachmentindex = readInt()
+
+        model.numeyeballs = readInt()
+        model.eyeballindex = readInt()
+
+        -- Check gmod x64 or x86
+        if jit.arch == "x64" then
+            model.unused = readIntArray(6)
+        else
+            model.unused = readIntArray(8)
+        end
+
+        return model
     end
 
 
@@ -404,7 +445,7 @@ local function readMdl(filePath)
             mdlTable.localanims = {}
 
             DECLARE_BYTESWAP_DATADESC(function()
-                
+
                 for k = 1, mdlTable.localanim_count do
                     local current = fl:Tell()
 
@@ -444,9 +485,9 @@ local function readMdl(filePath)
 
                     mdlTable.localanims[k] = anim
                 end
-            
-            
-            
+
+
+
             end, mdlTable.localanim_offset)
         end
 
@@ -587,6 +628,45 @@ local function readMdl(filePath)
                     mdlTable.bones[k] = bone
                 end
             end, mdlTable.bone_offset)
+
+        end
+
+
+        if mdlTable.bodypart_count > 0 then
+            mdlTable.bodyparts = {}
+
+            DECLARE_BYTESWAP_DATADESC(function()
+                for k = 1, mdlTable.bodypart_count do
+                    local current = fl:Tell()
+
+                    local bodypart = {}
+
+                    bodypart.sznameindex = readInt()
+
+                    DECLARE_BYTESWAP_DATADESC(function()
+                        bodypart.name = readAutoString()
+                    end, current + bodypart.sznameindex)
+
+                    bodypart.nummodels = readInt()
+                    bodypart.base = readInt() // Placeholder for mstudiomodel_t*
+                    bodypart.modelindex = readInt()
+
+                    if bodypart.nummodels > 0 then
+                        DECLARE_BYTESWAP_DATADESC(function()
+
+                            bodypart.models = readArrayFunc(bodypart.nummodels, read_mstudiomodel_t)
+
+                            -- for i = 1, bodypart.nummodels do
+                            --     bodypart.models[i] = read_mstudiomodel_t()
+                            -- end
+                        end, current + bodypart.modelindex)
+                    end
+
+                    mdlTable.bodyparts[k] = bodypart
+                end
+            end, mdlTable.bodypart_offset)
+
+
 
         end
     end
@@ -1331,7 +1411,7 @@ concommand.Add("export_model_anims", function(ply, cmd, args)
 
     local mdl_table = readMdl(model)
     PrintTable(mdl_table)
-    
+
 end, nil, "Export model by path. Usage: export_model_anims <model_path>")
 
 return {

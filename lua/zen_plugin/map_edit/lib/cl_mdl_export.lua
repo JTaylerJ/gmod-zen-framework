@@ -165,6 +165,18 @@ local function readMdl(filePath)
         return tbl
     end
 
+    local function readSwapArrayFunc(offset, amount, func)
+        local currentTell = fl:Tell()
+
+        fl:Seek(offset)
+
+        local tbl = readArrayFunc(amount, func)
+
+        fl:Seek(currentTell)
+
+        return tbl
+    end
+
 
     local function read_mstudiomodel_t()
         local model = {}
@@ -652,14 +664,7 @@ local function readMdl(filePath)
                     bodypart.modelindex = readInt()
 
                     if bodypart.nummodels > 0 then
-                        DECLARE_BYTESWAP_DATADESC(function()
-
-                            bodypart.models = readArrayFunc(bodypart.nummodels, read_mstudiomodel_t)
-
-                            -- for i = 1, bodypart.nummodels do
-                            --     bodypart.models[i] = read_mstudiomodel_t()
-                            -- end
-                        end, current + bodypart.modelindex)
+                        bodypart.models = readSwapArrayFunc(current + bodypart.modelindex, bodypart.nummodels, read_mstudiomodel_t)
                     end
 
                     mdlTable.bodyparts[k] = bodypart

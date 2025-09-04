@@ -18,7 +18,7 @@
 
 
 local PACKAGE_NAME    = "MDL Exporter"
-local PACKAGE_VERSION = "1.1.2"
+local PACKAGE_VERSION = "1.1.3"
 
 
 /*
@@ -194,9 +194,9 @@ local function readMdl(filePath)
     mdlTable.texturedir_offset = readInt();
 
     // Each skin-family assigns a texture-id to a skin location
-    mdlTable.skinreference_count = readInt();
-    mdlTable.skinrfamily_count = readInt();
-    mdlTable.skinreference_index = readInt();
+    mdlTable.numskinref = readInt();
+    mdlTable.numskinfamilies = readInt();
+    mdlTable.skinindex = readInt();
 
     // mstudiobodyparts_t
     mdlTable.bodypart_count = readInt();
@@ -333,6 +333,8 @@ local function readMdl(filePath)
             mdlTable.textures = {}
 
             for i = 0, mdlTable.texture_count - 1 do
+                local current = fl:Tell()
+
                 local texture = {}
 
                 texture.name_offset = readInt(); // Offset for null-terminated string
@@ -356,7 +358,7 @@ local function readMdl(filePath)
 
                 DECLARE_BYTESWAP_DATADESC(function()
                     texture.name = readAutoString():gsub("%z", "")
-                end, mdlTable.texture_offset + texture.name_offset + i * 64)
+                end, mdlTable.texture_offset + texture.name_offset + current)
 
 
                 mdlTable.textures[i] = texture
@@ -515,6 +517,18 @@ local function readMdl(filePath)
                 end
             end, mdlTable.localseq_offset)
 
+        end
+
+        if mdlTable.numskinref > 0 then
+            mdlTable.skinreferences = {}
+
+            DECLARE_BYTESWAP_DATADESC(function()
+                for k = 1, mdlTable.numskinref do
+                    mdlTable.skinreferences[k] = readShort()
+
+
+                end
+            end, mdlTable.skinindex)
         end
     end
 

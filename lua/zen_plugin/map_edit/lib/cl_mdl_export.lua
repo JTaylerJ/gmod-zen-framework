@@ -18,7 +18,7 @@
 
 
 local PACKAGE_NAME    = "MDL Exporter"
-local PACKAGE_VERSION = "1.1"
+local PACKAGE_VERSION = "1.1.1"
 
 
 /*
@@ -86,6 +86,7 @@ local function readMdl(filePath)
 
     local function readBool() return tonumber(fl:Read(1)) == 1 end
     local function readInt() return fl:ReadLong() end
+    local function readShort() return fl:ReadShort() end
     local function readFloat() return fl:ReadFloat() end
     local function readString(amount) return fl:Read(amount) end
     local function readStringSeparate(start, len)
@@ -116,6 +117,16 @@ local function readMdl(filePath)
         end
 
         return table.concat(tbl)
+    end
+
+    local function readIntArray(amount)
+        local tbl = {}
+
+        for k = 1, amount do
+            table.insert(tbl, readInt())
+        end
+
+        return tbl
     end
 
 
@@ -359,6 +370,56 @@ local function readMdl(filePath)
             end, mdlTable.texturedir_offset)
 
 
+        end
+
+        if mdlTable.localanim_count > 0 then
+            mdlTable.localanims = {}
+
+            DECLARE_BYTESWAP_DATADESC(function()
+                
+                for k = 1, mdlTable.localanim_count do
+                    local current = fl:Tell()
+
+                    local anim = {}
+
+                    anim.baseptr = readInt();      // Placeholder for mstudioanim_t*
+                    anim.sznameindex = readInt()
+                    anim.fps = readFloat()
+                    anim.flags = readInt()
+                    anim.numframes = readInt()
+                    anim.nummovements = readInt()
+                    anim.movementindex = readInt()
+
+                    anim.unused = readIntArray(6)
+
+                    anim.animblock = readInt()
+                    anim.animindex = readInt()
+
+                    anim.numikrules = readInt()
+                    anim.ikruleindex = readInt()
+                    anim.animblockikruleindex = readInt()
+
+                    anim.numlocalhierarchy = readInt()
+                    anim.localhierarchyindex = readInt()
+
+                    anim.sectionindex = readInt()
+                    anim.sectionframes = readInt()
+
+                    anim.zeroframespan = readShort()
+                    anim.zeroframecount = readShort()
+                    anim.zeroframeindex = readInt()
+                    anim.zeroframestalltime = readFloat()
+
+                    DECLARE_BYTESWAP_DATADESC(function()
+                        anim.name = readAutoString()
+                    end, anim.sznameindex + current)
+
+                    mdlTable.localanims[k] = anim
+                end
+            
+            
+            
+            end, mdlTable.localanim_offset)
         end
     end
 
@@ -1091,6 +1152,19 @@ concommand.Add("export_thismodel", function(ply, cmd, args)
     export_model(model)
 end, nil, "Export entity model which you looking at")
 
+-- Concommand to test export animations
+concommand.Add("export_model_anims", function(ply, cmd, args)
+    local model = args[1]
+
+    if !model or model == "" then
+        log("Usage: export_model_anims <model_path>")
+        return
+    end
+
+    local mdl_table = readMdl(model)
+    PrintTable(mdl_table)
+    
+end, nil, "Export model by path. Usage: export_model_anims <model_path>")
 
 return {
     PACKAGE_NAME = PACKAGE_NAME,

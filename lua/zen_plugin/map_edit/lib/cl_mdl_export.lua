@@ -18,7 +18,7 @@
 
 
 local PACKAGE_NAME    = "MDL Exporter"
-local PACKAGE_VERSION = "1.1.1"
+local PACKAGE_VERSION = "1.1.2"
 
 
 /*
@@ -124,6 +124,16 @@ local function readMdl(filePath)
 
         for k = 1, amount do
             table.insert(tbl, readInt())
+        end
+
+        return tbl
+    end
+
+    local function readFloatArray(amount)
+        local tbl = {}
+
+        for k = 1, amount do
+            table.insert(tbl, readFloat())
         end
 
         return tbl
@@ -411,7 +421,7 @@ local function readMdl(filePath)
                     anim.zeroframestalltime = readFloat()
 
                     DECLARE_BYTESWAP_DATADESC(function()
-                        anim.name = readAutoString()
+                        anim.label = readAutoString()
                     end, anim.sznameindex + current)
 
                     mdlTable.localanims[k] = anim
@@ -420,6 +430,91 @@ local function readMdl(filePath)
             
             
             end, mdlTable.localanim_offset)
+        end
+
+        if mdlTable.localseq_count > 0 then
+            mdlTable.localseqs = {}
+
+            DECLARE_BYTESWAP_DATADESC(function()
+
+                for k = 1, mdlTable.localseq_count do
+                    local current = fl:Tell()
+
+                    local seq = {}
+                    seq.baseptr = readInt();      // Placeholder for mstudioseqdesc_t*
+                    seq.szlabelindex = readInt()
+
+                    DECLARE_BYTESWAP_DATADESC(function()
+                        seq.label = readAutoString()
+                    end, current + seq.szlabelindex)
+
+                    seq.szactivitynameindex = readInt()
+
+                    DECLARE_BYTESWAP_DATADESC(function()
+                        seq.activityname = readAutoString()
+                    end, current + seq.szactivitynameindex)
+
+                    seq.flags = readInt()
+                    seq.activity = readInt()
+                    seq.actweight = readInt()
+                    seq.numevents = readInt()
+                    seq.eventindex = readInt()
+
+                    seq.bbmin = readVector()
+                    seq.bbmax = readVector()
+
+                    seq.numblends = readInt()
+                    seq.animindexindex = readInt()
+
+                    seq.movementindex = readInt()
+                    seq.groupsize = readIntArray(2)
+                    seq.paramindex = readIntArray(2)
+                    seq.paramstart = readFloatArray(2)
+                    seq.paramend = readFloatArray(2)
+                    seq.paramparent = readInt()
+
+                    seq.fadeintime = readFloat()
+                    seq.fadeouttime = readFloat()
+
+                    seq.localentrynode = readInt()
+                    seq.localexitnode = readInt()
+                    seq.nodeflags = readInt()
+
+                    seq.entryphase = readFloat()
+                    seq.exitphase = readFloat()
+
+                    seq.lastframe = readFloat()
+
+                    seq.nextseq = readInt()
+                    seq.post = readInt()
+
+                    seq.numikrules = readInt()
+
+                    seq.numautolayers = readInt()
+                    seq.autolayerindex = readInt()
+
+                    seq.weightlistindex = readInt()
+
+                    seq.posekeyindex = readInt()
+
+                    seq.numiklocks = readInt()
+                    seq.iklockindex = readInt()
+
+                    seq.keyvalueindex = readInt()
+                    seq.keyvaluesize = readInt()
+
+                    seq.cycleposeindex = readInt()
+
+                    seq.activitymodifierindex = readInt()
+                    seq.numactivitymodifiers = readInt()
+
+                    seq.unused = readIntArray(5)
+
+
+                    mdlTable.localseqs[k] = seq
+                end
+            end, mdlTable.localseq_offset)
+
         end
     end
 

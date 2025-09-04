@@ -103,6 +103,22 @@ local function readMdl(filePath)
     local function readVector()
         return Vector(readFloat(),readFloat(),readFloat())
     end
+    local function readQuaternion()
+        return {readFloat(),readFloat(),readFloat(),readFloat()}
+    end
+    local function readRadianEuler()
+        return {readFloat(),readFloat(),readFloat()}
+    end
+    local function readMatrix3x4_t()
+        local m = {}
+        for i = 1, 3 do
+            m[i] = {}
+            for j = 1, 4 do
+                m[i][j] = readFloat()
+            end
+        end
+        return m
+    end
     local function readAutoString()
         local tbl = {}
 
@@ -158,8 +174,8 @@ local function readMdl(filePath)
     mdlTable.flags = readInt()
 
     // mstudiobone_t
-    mdlTable.bone_count = readInt();    // Number of data sections (of type mstudiobone_t)
-    mdlTable.bone_offset = readInt();   // Offset of first data section
+    mdlTable.bone_count = readInt();    // Number of data sections (of type mstudiobone_t) numbones
+    mdlTable.bone_offset = readInt();   // Offset of first data section boneindex
 
     // mstudiobonecontroller_t
     mdlTable.bonecontroller_count = readInt();
@@ -529,6 +545,49 @@ local function readMdl(filePath)
 
                 end
             end, mdlTable.skinindex)
+        end
+
+        if mdlTable.bone_count > 0 then
+            mdlTable.bones = {}
+
+            DECLARE_BYTESWAP_DATADESC(function()
+                for k = 1, mdlTable.bone_count do
+                    local current = fl:Tell()
+
+                    local bone = {}
+
+                    bone.sznameindex = readInt()
+
+                    DECLARE_BYTESWAP_DATADESC(function()
+                        bone.name = readAutoString()
+                    end, current + bone.sznameindex)
+
+
+                    bone.parent = readInt()
+                    bone.bonecontroller = readIntArray(6)
+
+                    bone.pos = readVector()
+                    bone.quat = readQuaternion()
+                    bone.rot = readRadianEuler()
+
+                    bone.posscale = readVector()
+                    bone.rotscale = readVector()
+
+                    bone.poseToBone = readMatrix3x4_t()
+                    bone.qAlignment = readQuaternion()
+
+                    bone.flags = readInt()
+                    bone.proctype = readInt()
+                    bone.procindex = readInt()
+                    bone.physicsbone = readInt()
+                    bone.surfacepropidx = readInt()
+                    bone.contents = readInt()
+                    bone.unused = readIntArray(8)
+
+                    mdlTable.bones[k] = bone
+                end
+            end, mdlTable.bone_offset)
+
         end
     end
 

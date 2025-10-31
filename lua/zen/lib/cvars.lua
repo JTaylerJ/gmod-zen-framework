@@ -1,8 +1,7 @@
 module("zen")
 
-CVARS_VALUES = _L.CVARS_VALUES or {}
-
-CVARS = _L.CVARS or {}
+CVARS_VALUES = _GET("cvars_values")
+CVARS = _GET("cvars_meta")
 
 ---@class zen.cvars
 cvars = _GET("cvars", cvars)

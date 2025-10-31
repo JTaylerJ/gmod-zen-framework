@@ -12,7 +12,7 @@ do
 
         i = 0
 
-        MsgC(_COLOR.main, "z", COLOR.BLUE, " LOG> ", color_warn)
+        MsgC(COLOR.main, "z", COLOR.BLUE, " LOG> ", color_warn)
         if count > 0 then
             while i < count do
                 i = i + 1
@@ -45,7 +45,7 @@ do
 
         i = 0
 
-        MsgC(_COLOR.main, "z", COLOR.WARN, " WARN> ", color_warn)
+        MsgC(COLOR.main, "z", COLOR.WARN, " WARN> ", color_warn)
         if count > 0 then
             while i < count do
                 i = i + 1
@@ -76,7 +76,7 @@ do
 
         i = 0
 
-        MsgC(_COLOR.main, "z", COLOR.ERROR, " ERROR> ")
+        MsgC(COLOR.main, "z", COLOR.ERROR, " ERROR> ")
         if count > 0 then
             while i < count do
                 i = i + 1
@@ -103,10 +103,22 @@ if CLIENT then
     function(cvar_name, old_value, new_value)
         if (isnumber(new_value) and new_value > 0) then
             _CFG.bZen_Developer = true
-            print("Developer mode is ", COLOR.GREEN, "enabled")
+            print("Framework version ", COLOR.GREEN, MODULE.version, " (developer)")
         else
             _CFG.bZen_Developer = false
-            print("Developer mode is ", COLOR.RED ,"disabled")
+            print("Framework version ", COLOR.WARN, MODULE.version, " (production)")
+        end
+    end)
+else
+    cvars.Register("zen_developer", 0, FCVAR_ARCHIVE + FCVAR_UNLOGGED + FCVAR_SERVER_CAN_EXECUTE + FCVAR_DONTRECORD + FCVAR_CLIENTCMD_CAN_EXECUTE,
+    TYPE.NUMBER,
+    function(cvar_name, old_value, new_value)
+        if (isnumber(new_value) and new_value > 0) then
+            _CFG.bZen_Developer = true
+            print("Framework version ", COLOR.GREEN, MODULE.version, " (developer)")
+        else
+            _CFG.bZen_Developer = false
+            print("Framework version ", COLOR.WARN, MODULE.version, " (production)")
         end
     end)
 end

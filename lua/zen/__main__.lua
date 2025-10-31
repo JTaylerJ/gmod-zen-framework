@@ -6,6 +6,7 @@ module("zen", function(MODULE)
     MODULE._L = MODULE
     MODULE.zen = MODULE
     MODULE.MODULE = MODULE
+    MODULE.version = "1.1"
 
     --- Setup main metatable
     setmetatable(MODULE, {
@@ -88,7 +89,6 @@ do -- Includes functions
 
     ---@param plugin_name string
     function zen.IncludePlugin(plugin_name)
-        print("include plugin: ", plugin_name)
         return zen.IncludeSH("zen_plugin/" .. plugin_name .. "/browser.lua")
     end
 

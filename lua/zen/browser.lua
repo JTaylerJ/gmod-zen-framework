@@ -4,78 +4,103 @@ if SERVER then
     resource.AddWorkshop("3273398690") -- zen framework content
 end
 
-print("=== START INCLUDE ===")
+print("Thanks for using Zen Framework! Loading...")
 
 -- Lua include list
-zen.IncludeSH("zen/config.lua")
-zen.IncludeSH("zen/lib/hook.lua")
-zen.IncludeSH("zen/lib/table.lua")
-zen.IncludeSH("zen/lib/language.lua")
-zen.IncludeSH("zen/lib/util.lua")
-zen.IncludeSH("zen/lib/string.lua")
--- zen.IncludeSH("zen/lib/xml.lua")
-zen.IncludeSH("zen/lib/sql.lua")
-zen.IncludeCL("zen/lib/cl_input.lua")
-zen.IncludeCL("zen/lib/cvars.lua")
-zen.IncludeCL("zen/lib/developer.lua")
-zen.IncludeSH("zen/lib/material.lua")
-zen.IncludeSH("zen/lib/player_data.lua")
-zen.IncludeSH("zen/lib/anim.lua")
-zen.IncludeSH("zen/lib/feature.lua")
-zen.IncludeSH("zen/lib/meeting.lua")
-zen.IncludeSV("zen/lib/db/db.lua")
+zen.IncludeSH(
+    "zen/config.lua"
+)
 
-zen.IncludeSH("zen/lib/network/sh_meta_network.lua")
-zen.IncludeSH("zen/lib/network/sh_nt.lua")
-zen.IncludeSH("zen/lib/network/sh_new.lua")
-zen.IncludeSV("zen/lib/network/sv_nt.lua")
-zen.IncludeCL("zen/lib/network/cl_nt.lua")
+-- Libraries include
+zen.IncludeSH({
+    "zen/lib/hook.lua",
+    "zen/lib/table.lua",
+    "zen/lib/language.lua",
+    "zen/lib/util.lua",
+    "zen/lib/string.lua",
+    -- "zen/lib/xml.lua",
+    "zen/lib/sql.lua",
+    "zen/lib/material.lua",
+    "zen/lib/player_data.lua",
+    "zen/lib/anim.lua",
+    "zen/lib/feature.lua",
+    "zen/lib/meeting.lua",
+    "zen/lib/cvars.lua",
+    "zen/lib/developer.lua",
+})
 
-zen.IncludeSH("zen/lib/network/channels/sh_channel_lua.lua")
-zen.IncludeSH("zen/lib/network/channels/sh_string_id.lua")
-zen.IncludeSH("zen/lib/network/channels/sh_entity_vars.lua")
-zen.IncludeSH("zen/lib/network/channels/sh_table_edit.lua")
-zen.IncludeSH("zen/lib/network/channels/sh_shared_hooks.lua")
-zen.IncludeSH("zen/lib/network/channels/sh_message.lua")
-zen.IncludeSH("zen/lib/network/channels/sh_auto.lua")
+zen.IncludeCL({
+    "zen/lib/cl_input.lua",
+})
 
-zen.IncludeCL("zen/lib/interface/ui/cl_fonts.lua")
-zen.IncludeCL("zen/lib/interface/ui/cl_widget.lua")
-zen.IncludeCL("zen/lib/interface/ui/cl_debug.lua")
-zen.IncludeCL("zen/lib/interface/ui/cl_stencil_cut.lua")
-zen.IncludeCL("zen/lib/interface/ui/cl_material_cache.lua")
-zen.IncludeCL("zen/lib/interface/draw/cl_draw.lua")
-zen.IncludeCL("zen/lib/interface/draw/cl_draw_3d.lua")
-zen.IncludeCL("zen/lib/interface/draw/cl_draw_3d2d.lua")
-zen.IncludeCL("zen/lib/interface/gui/cl_gui.lua")
-zen.IncludeCL("zen/lib/interface/gui/cl_skin.lua")
-zen.IncludeCL("zen/lib/interface/gui/cl_params.lua")
-zen.IncludeCL("zen/lib/interface/gui/cl_presets.lua")
-zen.IncludeCL("zen/lib/interface/gui/cl_panels.lua")
+zen.IncludeSV({
+    "zen/lib/db/db.lua"
+})
 
-zen.IncludeCL("zen/lib/interface/gui/skin/cl_main.lua")
+-- Network include
+zen.IncludeSH({
+    "zen/lib/network/sh_meta_network.lua",
+    "zen/lib/network/sh_nt.lua",
+    "zen/lib/network/sh_new.lua",
+    "zen/lib/network/channels/sh_channel_lua.lua",
+    "zen/lib/network/channels/sh_string_id.lua",
+    "zen/lib/network/channels/sh_entity_vars.lua",
+    "zen/lib/network/channels/sh_table_edit.lua",
+    "zen/lib/network/channels/sh_shared_hooks.lua",
+    "zen/lib/network/channels/sh_message.lua",
+    "zen/lib/network/channels/sh_auto.lua",
+    "zen/lib/network/channels/sh_util.lua",
+})
 
-zen.IncludeCL("zen/lib/interface/gui/panels/cl_zpanel_base.lua")
-zen.IncludeCL("zen/lib/interface/gui/panels/cl_zdrop_select.lua")
-zen.IncludeCL("zen/lib/interface/gui/panels/cl_zlabel.lua")
-zen.IncludeCL("zen/lib/interface/gui/panels/cl_zbutton.lua")
-zen.IncludeCL("zen/lib/interface/gui/panels/cl_button.lua")
-zen.IncludeCL("zen/lib/interface/gui/panels/cl_frame.lua")
-zen.IncludeCL("zen/lib/interface/gui/panels/cl_input.lua")
-zen.IncludeCL("zen/lib/interface/gui/panels/cl_autosave.lua")
-zen.IncludeCL("zen/lib/interface/gui/panels/cl_help.lua")
-zen.IncludeCL("zen/lib/interface/gui/panels/cl_layout.lua")
-zen.IncludeCL("zen/lib/interface/gui/panels/cl_html_material.lua")
-zen.IncludeCL("zen/lib/interface/gui/panels/cl_html_button.lua")
-zen.IncludeCL("zen/lib/interface/gui/panels/cl_spawn_icon.lua")
-zen.IncludeCL("zen/lib/interface/gui/panels/cl_image.lua")
-zen.IncludeCL("zen/lib/interface/gui/panels/cl_scroll_list.lua")
-zen.IncludeCL("zen/lib/interface/gui/panels/cl_scroll_vbar.lua")
-zen.IncludeCL("zen/lib/interface/gui/panels/cl_content.lua")
-zen.IncludeCL("zen/lib/interface/gui/panels/cl_check_box.lua")
-zen.IncludeCL("zen/lib/interface/gui/panels/cl_check_box_label.lua")
-zen.IncludeCL("zen/lib/interface/gui/panels/cl_free.lua")
-zen.IncludeCL("zen/lib/interface/gui/panels/cl_text_button.lua")
+zen.IncludeSV({
+    "zen/lib/network/sv_nt.lua"
+})
+
+zen.IncludeCL({
+    "zen/lib/network/cl_nt.lua"
+})
+
+-- Interface include
+zen.IncludeCL({
+    "zen/lib/interface/ui/cl_fonts.lua",
+    "zen/lib/interface/ui/cl_widget.lua",
+    "zen/lib/interface/ui/cl_debug.lua",
+    "zen/lib/interface/ui/cl_stencil_cut.lua",
+    "zen/lib/interface/ui/cl_material_cache.lua",
+    "zen/lib/interface/draw/cl_draw.lua",
+    "zen/lib/interface/draw/cl_draw_3d.lua",
+    "zen/lib/interface/draw/cl_draw_3d2d.lua",
+    "zen/lib/interface/gui/cl_gui.lua",
+    "zen/lib/interface/gui/cl_skin.lua",
+    "zen/lib/interface/gui/cl_params.lua",
+    "zen/lib/interface/gui/cl_presets.lua",
+    "zen/lib/interface/gui/cl_panels.lua",
+
+    "zen/lib/interface/gui/skin/cl_main.lua",
+
+    "zen/lib/interface/gui/panels/cl_zpanel_base.lua",
+    "zen/lib/interface/gui/panels/cl_zdrop_select.lua",
+    "zen/lib/interface/gui/panels/cl_zlabel.lua",
+    "zen/lib/interface/gui/panels/cl_zbutton.lua",
+    "zen/lib/interface/gui/panels/cl_button.lua",
+    "zen/lib/interface/gui/panels/cl_frame.lua",
+    "zen/lib/interface/gui/panels/cl_input.lua",
+    "zen/lib/interface/gui/panels/cl_autosave.lua",
+    "zen/lib/interface/gui/panels/cl_help.lua",
+    "zen/lib/interface/gui/panels/cl_layout.lua",
+    "zen/lib/interface/gui/panels/cl_html_material.lua",
+    "zen/lib/interface/gui/panels/cl_html_button.lua",
+    "zen/lib/interface/gui/panels/cl_spawn_icon.lua",
+    "zen/lib/interface/gui/panels/cl_image.lua",
+    "zen/lib/interface/gui/panels/cl_scroll_list.lua",
+    "zen/lib/interface/gui/panels/cl_scroll_vbar.lua",
+    "zen/lib/interface/gui/panels/cl_content.lua",
+    "zen/lib/interface/gui/panels/cl_check_box.lua",
+    "zen/lib/interface/gui/panels/cl_check_box_label.lua",
+    "zen/lib/interface/gui/panels/cl_free.lua",
+    "zen/lib/interface/gui/panels/cl_text_button.lua",
+})
+
 
 zen.IncludeSH("zen/modules/save/sh_base.lua")
 zen.IncludeSH("zen/modules/save/sh_player.lua")
@@ -119,7 +144,3 @@ zen.IncludePlugin("map_edit")
 zen.IncludePlugin("panel_manager")
 zen.IncludePlugin("server_model_viewer")
 -- zen.IncludePlugin("fun") // To Fix
-
-
-
-print("=== FINISH INCLUDE ===")

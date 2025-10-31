@@ -1,7 +1,7 @@
 module("zen")
 
 
-local PANEL = {}
+local PANEL = {} --[[@class zen.panel.html_button: EditablePanel]]
 
 function PANEL:Init()
     self:SetMouseInputEnabled(true)

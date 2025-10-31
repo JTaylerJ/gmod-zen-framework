@@ -1,7 +1,7 @@
 module("zen")
 
----@class zen.panel.zlabel: zen.panel.zpanelbase
-local PANEL = {}
+
+local PANEL = {} --[[@class zen.panel.zlabel: zen.panel.zpanelbase]]
 
 function PANEL:Init()
     self.sText = "ExampleText"

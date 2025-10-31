@@ -1,7 +1,7 @@
 module("zen")
 
----@class zen.panel.zdrop_select: zen.panel.zpanelbase
-local PANEL = {}
+
+local PANEL = {} --[[@class zen.panel.zdrop_select: zen.panel.zpanelbase]]
 
 function PANEL:Init()
     self:SetCursor("hand")

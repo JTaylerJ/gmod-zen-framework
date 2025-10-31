@@ -79,7 +79,7 @@ zen.iCounter_ZPanelBase = zen.iCounter_ZPanelBase or 0
 ---@field PaintOnceBG fun(this:self, w:number, h:number) -- Works only with PaintOnce. Paint which called when panel: ChangeSize. (Un)Hovered. (De)Enable. (De)Blocked
 ---@field PaintOnceOver fun(this:self, w:number, h:number) -- Works only with PaintOnce. Paint which called when panel: ChangeSize. (Un)Hovered. (De)Enable. (De)Blocked
 ---@field PostRemove fun(this:self) -- Alias for OnRemove
-local PANEL = {}
+local PANEL = {} --[[@class zen.panel.zpanelbase: EditablePanel]]
 
 function PANEL:InternalInit()
     self.bPaintOnceEnabled = true

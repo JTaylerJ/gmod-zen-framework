@@ -27,7 +27,7 @@ surface.CreateFont("zen.gui.free.Title", {
     weight = 300,
 })
 
-local PANEL = {}
+local PANEL = {} --[[@class zen.panel.free: EditablePanel]]
 
 function PANEL:Init()
     -- self.pnlClose = gui.CreateStyled("button", self)

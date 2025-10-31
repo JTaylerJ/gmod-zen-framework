@@ -1,6 +1,6 @@
 module("zen")
 
-local PANEL = {}
+local PANEL = {} --[[@class zen.panel.scroll_vbar: EditablePanel]]
 
 function PANEL:Init()
     self:SetZPos(32767)

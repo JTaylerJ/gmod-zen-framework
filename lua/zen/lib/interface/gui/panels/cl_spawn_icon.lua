@@ -2,7 +2,7 @@ module("zen")
 
 
 
-local PANEL = {}
+local PANEL = {} --[[@class zen.panel.spawn_icon: EditablePanel]]
 
 
 function PANEL:Init()

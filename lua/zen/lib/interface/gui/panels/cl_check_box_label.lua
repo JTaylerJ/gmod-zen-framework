@@ -1,7 +1,6 @@
 module("zen")
 
----@class zen.panel.check_box_label: Panel
-local PANEL = {}
+local PANEL = {} --[[@class zen.panel.check_box_label: EditablePanel]]
 
 function PANEL:Init()
     self.colorBG = Color(40,40,40,255)

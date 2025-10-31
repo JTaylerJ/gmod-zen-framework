@@ -1,6 +1,6 @@
 module("zen")
 
-local PANEL = {}
+local PANEL = {} --[[@class zen.panel.scroll_list: DScrollPanel]]
 
 function PANEL:Init()
     self.pnlFather = self:GetParent()

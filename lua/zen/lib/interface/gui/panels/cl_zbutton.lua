@@ -1,7 +1,6 @@
 module("zen")
 
----@class zen.panel.zbutton: zen.panel.zpanelbase
-local PANEL = {}
+local PANEL = {} --[[@class zen.panel.zbutton: zen.panel.zlabel]]
 
 function PANEL:Init()
     self.sFont = "Roboto"

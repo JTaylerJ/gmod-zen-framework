@@ -1,7 +1,6 @@
 module("zen")
 
----@class zen.panel.check_box: Panel
-local PANEL = {}
+local PANEL = {} --[[@class zen.panel.check_box: EditablePanel]]
 
 function PANEL:Init()
     self:SetMouseInputEnabled(true)

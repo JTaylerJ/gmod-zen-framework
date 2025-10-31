@@ -6,7 +6,7 @@ surface.CreateFont("zen.gui.text_button.Main", {
     weight = 300,
 })
 
-local PANEL = {}
+local PANEL = {} --[[@class zen.panel.text_button: EditablePanel]]
 
 
 function PANEL:Init()

@@ -1,6 +1,6 @@
 module("zen")
 
-local PANEL = {}
+local PANEL = {} --[[@class zen.panel.content: EditablePanel]]
 
 local _SizeToChildren = META.PANEL.SizeToChildren
 

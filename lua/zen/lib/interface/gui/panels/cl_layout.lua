@@ -1,5 +1,5 @@
 module("zen")
 
-local PANEL = {}
+local PANEL = {} --[[@class zen.panel.layout: DIconLayout]]
 
 gui.RegisterStylePanel("layout", PANEL, "DIconLayout")

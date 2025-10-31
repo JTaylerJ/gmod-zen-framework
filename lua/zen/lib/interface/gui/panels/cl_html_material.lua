@@ -1,7 +1,7 @@
 module("zen")
 
 
-local PANEL = {}
+local PANEL = {} --[[@class zen.panel.html_material: EditablePanel]]
 
 
 function PANEL:Init()

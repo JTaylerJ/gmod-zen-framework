@@ -1,6 +1,6 @@
 module("zen")
 
-local PANEL = {}
+local PANEL = {} --[[@class zen.panel.button: EditablePanel]]
 
 function PANEL:Init()
     self.buttonBGColor = self:zen_GetSkinColor("buttonBGColor")

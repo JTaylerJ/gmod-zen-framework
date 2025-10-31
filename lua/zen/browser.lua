@@ -99,6 +99,7 @@ zen.IncludeCL({
     "zen/lib/interface/gui/panels/cl_check_box_label.lua",
     "zen/lib/interface/gui/panels/cl_free.lua",
     "zen/lib/interface/gui/panels/cl_text_button.lua",
+    "zen/lib/interface/gui/panels/cl_nav_page.lua",
 })
 
 

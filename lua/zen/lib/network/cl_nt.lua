@@ -51,11 +51,6 @@ net.Receive(nt.channels.pullChannels, function(len, ply)
 end)
 
 local function RequestInit()
-    if !zen.SERVER_SIDE_ACTIVATED then
-        print("Network not will be initialized. All next request will be ignored (use 'zen_developer 1' to see logs)")
-        return
-    end
-
     ihook.Run("ReadyForNetwork")
     net.Start(nt.channels.clientReady)
     net.SendToServer()

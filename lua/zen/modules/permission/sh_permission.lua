@@ -336,7 +336,6 @@ end
 
 function META.PLAYER:zen_HasPerm(perm, target, noCheckAuth)
     if game.SinglePlayer() then return true end // Force-Allow single-player
-    if zen.SERVER_SIDE_ACTIVATED == false then return true end // Give you full access, if server hasn't ZEN
     if perm == "public" then return true end
     if SERVER and not self:IsFullyAuthenticated() then return false, "You are not fully authenticated" end
     if !noCheckAuth and self:zen_GetVar("auth") != true then return false, "You are not login as admin (auth)" end

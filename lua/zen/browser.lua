@@ -136,7 +136,10 @@ zen.IncludeSH("zen/modules/zone/sh_base.lua")
 zen.IncludeSH("zen/modules/zone/sh_player.lua")
 
 
-zen.IncludeCL("zen/menu/permission/cl_menu.lua")
+zen.IncludeCL({
+    "zen/menu/main/cl_menu.lua",
+    "zen/menu/permission/cl_menu.lua",
+})
 
 --== PLUGINS ==--
 

@@ -427,12 +427,13 @@ function gui.CreateFrame(uniqueName, beautifulName, extraData)
     return pnlFrame
 end
 
----@param styleName string
+---@generic T
+---@param styleName zen.panel.`T`
 ---@param pnlParent Panel?
 ---@param extraData table?
 ---@param extraPresets table?
 ---@param isAdd boolean?
----@return Panel
+---@return zen.panel.`T`
 function gui.CreateStyled(styleName, pnlParent, extraData, extraPresets, isAdd)
     assertStringNice(styleName, "styleName")
     local tStylePanel = gui.t_StylePanels[styleName]

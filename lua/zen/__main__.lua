@@ -173,7 +173,7 @@ end
 _CFG.OfficialPlugins = {
     "fun",
     "map_edit",
-    "panel_manager",
+    "developer_kit",
     "server_model_viewer",
     "permaprops"
 }

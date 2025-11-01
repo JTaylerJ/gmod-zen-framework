@@ -1,3 +1,8 @@
+name: Workshop upload
+
+on:
+  push:
+
 jobs:
   workshopUpload:
     runs-on: ubuntu-latest

@@ -1,9 +1,4 @@
 {
-	"title": "[zen-plugin] Fun mode content",
-	"type": "ServerContent",
-	"ignore"	:
-	[
-		"*.lua"
-	]
-
+	"title": "Zen Framework",
+	"type": "ServerContent"
 }

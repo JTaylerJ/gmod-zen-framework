@@ -1,22 +1,24 @@
-name: Workshop upload
+name: Upload workshop
 
 on:
   push:
 
 jobs:
-  workshopUpload:
+  updateWorkshop:
     runs-on: ubuntu-latest
+    container:
+      image: jtaylerj/gmod-workshop-deploy:latest
+      volumes:
+        - ${{ github.workspace }}:/server
+      env:
+        STEAM_MAFILE: ${{ secrets.STEAM_MAFILE }}
+        STEAM_USERNAME: ${{ secrets.STEAM_USERNAME }}
+        STEAM_PASSWORD: ${{ secrets.STEAM_PASSWORD }}
+        STEAM_WORKSHOPID: ${{ secrets.STEAM_WORKSHOPID }}
     steps:
-      - uses: CyberAndrii/steam-totp@v1
-        name: Generate TOTP
-        id: steam-totp
-        with:
-          shared_secret: ${{ secrets.STEAM_SHARED_SECRET }}
-      - uses: m00nl1ght-dev/steam-workshop-deploy@v4
-        with:
-          username: ${{ secrets.STEAM_USERNAME }}
-          password: ${{ secrets.STEAM_PASSWORD }}
-          totp: ${{ steps.steam-totp.outputs.code }}
-          path: .
-          appId: 4000
-          publishedFileId: 3596528689
+      - name: Check out the repo
+        uses: actions/checkout@v3
+      - name: LS
+        run: ls -la /server
+      - name: Uploading stuff
+        run: /app/push.sh

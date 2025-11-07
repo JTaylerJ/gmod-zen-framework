@@ -36,6 +36,7 @@ local TEXTURE_PATTERN = "png_generation_texture/%s_%d_%d_%d_%d_%d_%d_%d"
 local TEXTURE_MATERIAL_PATTERN = "png_generation_materials/%s"
 
 local TEXTURE_FLAGS = bit.bor(4, 8, 16, 32, 512, 8192, 32768)
+local TEXTURE_FLAGS_MASK = bit.bor(4, 8, 16, 32, 512, 8192, 32768, 8388608)
 local IMAGE_FORMAT = bit.bor(IMAGE_FORMAT_RGBA8888)
 
 local SIZE_MODE = RT_SIZE_NO_CHANGE
@@ -44,9 +45,9 @@ local TEXTURE_FLAGS = TEXTURE_FLAGS
 local RT_FLAGS = 0
 local IMAGE_FORMAT = IMAGE_FORMAT
 
-local function GetTextureRT(textureID, width, height)
+local function GetTextureRT(textureID, width, height, size_mode, depth_mode, texture_flags, rt_flags, image_format)
 
-    local full_textureID = format(TEXTURE_PATTERN, textureID, width, height, SIZE_MODE, DEPTH_MODE, TEXTURE_FLAGS, RT_FLAGS, IMAGE_FORMAT)
+    local full_textureID = format(TEXTURE_PATTERN, textureID, width, height, size_mode or SIZE_MODE, depth_mode or DEPTH_MODE, texture_flags or TEXTURE_FLAGS, rt_flags or RT_FLAGS, image_format or IMAGE_FORMAT)
 
     local texture = GetRenderTargetEx(full_textureID,
         width, height,
@@ -61,8 +62,8 @@ local function GetTextureRT(textureID, width, height)
 end
 
 
-local function GetTextureMaterial(textureID, width, height)
-    local texture = GetTextureRT(textureID, width, height)
+local function GetTextureMaterial(textureID, width, height, size_mode, depth_mode, texture_flags, rt_flags, image_format)
+    local texture = GetTextureRT(textureID, width, height, size_mode, depth_mode, texture_flags, rt_flags, image_format)
 
     local MaterialName = format(TEXTURE_MATERIAL_PATTERN, textureID)
 
@@ -79,7 +80,6 @@ end
 
 
 -- Create translucent material with translucent mask, example usage below
--- ! WARNING ! Use only single paint operation with full width and height (mean single material, or single box/poly)
 ---@param textureID string -- Just unique name for RenderTarget
 ---@param width number
 ---@param height number
@@ -131,6 +131,18 @@ end)
 ```
 */
 function render.CreateTranslucentMaterialWithMask(textureID, width, height, bSaveDrawTexture, draw_func, mask_func)
+    local textureID_mask, materialRT_mask = GetTextureMaterial(textureID .. "_mask", width, height, nil, nil, TEXTURE_FLAGS_MASK, nil, nil)
+    render_PushRenderTarget( textureID_mask )
+    cam_Start2D()
+        render_Clear( 0, 0, 0, 0 )
+        render_ClearDepth( true )
+
+        mask_func(width, height)
+    cam_End2D()
+    render_PopRenderTarget()
+
+
+
     local textureRT, materialRT = GetTextureMaterial(textureID, width, height)
 
     render_PushRenderTarget( textureRT )
@@ -144,7 +156,9 @@ function render.CreateTranslucentMaterialWithMask(textureID, width, height, bSav
         render_SetWriteDepthToDestAlpha( false )
             local blendfunc = bSaveDrawTexture and BLENDFUNC_MIN or BLENDFUNC_ADD
             render_OverrideBlend( true, BLEND_SRC_COLOR, BLEND_SRC_ALPHA, blendfunc )
-                mask_func(width, height)
+                surface_SetMaterial(materialRT_mask)
+                surface_SetDrawColor(255,255,255,255)
+                surface_DrawTexturedRect(0,0,width, height)
             render_OverrideBlend( false )
         render_SetWriteDepthToDestAlpha( true )
 
@@ -155,9 +169,10 @@ function render.CreateTranslucentMaterialWithMask(textureID, width, height, bSav
 end
 local _CreateTranslucentMaterialWithMask = render.CreateTranslucentMaterialWithMask
 
--- Draw some material with depth alpha mask
--- ! WARNING ! Use only single paint operation with full width and height (mean single material, or single box/poly)
+-- Draw with mask_func
 ---@param textureID string -- Just unique name for RenderTarget
+---@param x number
+---@param y number
 ---@param width number
 ---@param height number
 ---@param bSaveDrawTexture boolean -- Set true to use texture from draw_func, false for colors
@@ -185,7 +200,7 @@ end)
 */
 function render.DrawTrasparentMaterialWithMask(textureID, x, y, width, height, bSaveDrawTexture, draw_func, mask_func)
 
-    local textureRT, materialRT = _CreateTranslucentMaterialWithMask("Example7", width, height, bSaveDrawTexture, function ()
+    local _, materialRT = _CreateTranslucentMaterialWithMask(textureID, width, height, bSaveDrawTexture, function ()
         draw_func(width, height)
     end, function ()
         mask_func(width, height)

@@ -333,3 +333,175 @@ concommand.Add("example_translucent_mask", function()
 
     end)
 end)
+
+
+do -- Blur stuff
+    -- Cache render functions
+    local render_SetStencilEnable = render.SetStencilEnable
+    local render_ClearStencil = render.ClearStencil
+    local render_SetStencilTestMask = render.SetStencilTestMask
+    local render_SetStencilWriteMask = render.SetStencilWriteMask
+    local render_SetStencilPassOperation = render.SetStencilPassOperation
+    local render_SetStencilZFailOperation = render.SetStencilZFailOperation
+    local render_SetStencilCompareFunction = render.SetStencilCompareFunction
+    local render_SetStencilReferenceValue = render.SetStencilReferenceValue
+    local render_SetStencilFailOperation = render.SetStencilFailOperation
+
+    local blurMat = Material("pp/blurscreen")
+
+    local surface_SetDrawColor = surface.SetDrawColor
+    local surface_DrawRect = surface.DrawRect
+    local surface_SetMaterial = surface.SetMaterial
+    local surface_DrawTexturedRect = surface.DrawTexturedRect
+
+    local IMaterial = FindMetaTable("IMaterial") --[[@class IMaterial]]
+
+    local IMaterial_SetFloat = IMaterial.SetFloat
+    local IMaterial_Recompute = IMaterial.Recompute
+
+    local Panel = FindMetaTable("Panel") --[[@class Panel]]
+    local Panel_LocalToScreen = Panel.LocalToScreen
+
+    local render_UpdateScreenEffectTexture = render.UpdateScreenEffectTexture
+
+    local ScreenWidth, ScreenHeight = ScrW(), ScrH()
+
+    hook.Add("OnScreenSizeChanged", "render.DrawBlurRect.ScreenSizeUpdate", function ()
+        ScreenWidth, ScreenHeight = ScrW(), ScrH()
+    end)
+
+
+    ---@param x number
+    ---@param y number
+    ---@param w number
+    ---@param h number
+    ---@param alpha number?
+    ---@param layers number?
+    ---@param density number?
+    function render.DrawBlurRect(x, y, w, h, alpha, layers, density)
+        alpha = alpha or 255
+        layers = layers or 1
+        density = density or 3
+
+        render_SetStencilEnable(true)
+        render_ClearStencil()
+        render_SetStencilTestMask(255)
+        render_SetStencilWriteMask(255)
+        render_SetStencilPassOperation(STENCILOPERATION_KEEP)
+        render_SetStencilZFailOperation(STENCILOPERATION_KEEP)
+        render_SetStencilCompareFunction(STENCILCOMPARISONFUNCTION_NEVER)
+        render_SetStencilReferenceValue(9)
+        render_SetStencilFailOperation(STENCILOPERATION_REPLACE)
+
+        surface_SetDrawColor(255,255,255)
+        surface_DrawRect(x, y, w, h)
+
+        render_SetStencilFailOperation(STENCILOPERATION_KEEP)
+        render_SetStencilCompareFunction(STENCILCOMPARISONFUNCTION_EQUAL)
+
+        surface_SetDrawColor(255, 255, 255, alpha or 255)
+        surface_SetMaterial(blurMat)
+        for i = 1, layers do
+            IMaterial_SetFloat(blurMat, "$blur", (i / layers) * density)
+            surface_DrawTexturedRect(0, 0, ScreenWidth, ScreenHeight)
+            render_UpdateScreenEffectTexture()
+        end
+        IMaterial_Recompute(blurMat)
+
+        render_ClearStencil()
+        render_SetStencilPassOperation(STENCILOPERATION_KEEP)
+        render_SetStencilZFailOperation(STENCILOPERATION_KEEP)
+        render_SetStencilCompareFunction(STENCILCOMPARISONFUNCTION_ALWAYS)
+        render_SetStencilReferenceValue(0)
+        render_SetStencilFailOperation(STENCILOPERATION_KEEP)
+        render_SetStencilEnable(false)
+    end
+
+    ---@param panel Panel
+    ---@param x number
+    ---@param y number
+    ---@param w number
+    ---@param h number
+    ---@param alpha number?
+    ---@param layers number?
+    ---@param density number?
+    function render.DrawBlurRectInPanel(panel, x, y, w, h, alpha, layers, density)
+        alpha = alpha or 255
+        layers = layers or 1
+        density = density or 3
+
+        local panelX, panelY = Panel_LocalToScreen(panel, 0, 0)
+
+        render_SetStencilEnable(true)
+        render_ClearStencil()
+        render_SetStencilTestMask(255)
+        render_SetStencilWriteMask(255)
+        render_SetStencilPassOperation(STENCILOPERATION_KEEP)
+        render_SetStencilZFailOperation(STENCILOPERATION_KEEP)
+        render_SetStencilCompareFunction(STENCILCOMPARISONFUNCTION_NEVER)
+        render_SetStencilReferenceValue(9)
+        render_SetStencilFailOperation(STENCILOPERATION_REPLACE)
+
+        surface_SetDrawColor(255,255,255)
+        surface_DrawRect(x, y, w, h)
+
+        render_SetStencilFailOperation(STENCILOPERATION_KEEP)
+        render_SetStencilCompareFunction(STENCILCOMPARISONFUNCTION_EQUAL)
+
+        surface_SetDrawColor(255, 255, 255, alpha or 255)
+        surface_SetMaterial(blurMat)
+        for i = 1, layers do
+            IMaterial_SetFloat(blurMat, "$blur", (i / layers) * density)
+            surface_DrawTexturedRect(panelX*-1, panelY*-1, ScreenWidth, ScreenHeight)
+            render_UpdateScreenEffectTexture()
+        end
+        IMaterial_Recompute(blurMat)
+
+        render_ClearStencil()
+        render_SetStencilPassOperation(STENCILOPERATION_KEEP)
+        render_SetStencilZFailOperation(STENCILOPERATION_KEEP)
+        render_SetStencilCompareFunction(STENCILCOMPARISONFUNCTION_ALWAYS)
+        render_SetStencilReferenceValue(0)
+        render_SetStencilFailOperation(STENCILOPERATION_KEEP)
+        render_SetStencilEnable(false)
+    end
+
+
+    concommand.Add("example_blur_rect", function (ply, cmd, args, argStr)
+        if render.bEnabledBlurRenderTarget then
+            if IsValid(render.pnlBlurRectExample) then render.pnlBlurRectExample:Remove() end
+            hook.Remove("HUDPaint", "example_blur_rect")
+
+            render.bEnabledBlurRenderTarget = nil
+            return
+        end
+
+        render.bEnabledBlurRenderTarget = true
+
+
+        hook.Add("HUDPaint", "example_blur_rect", function()
+            local x, y, w, h = 100, 300, 300, 300
+
+            render.DrawBlurRect(x, y, w, h, 255, 3, 10)
+
+            surface.SetDrawColor(255,255,255)
+            surface.DrawOutlinedRect(x, y, w, h)
+        end)
+
+        if IsValid(render.pnlBlurRectExample) then
+            render.pnlBlurRectExample:Remove()
+        end
+
+        render.pnlBlurRectExample = vgui.Create("DFrame")
+        render.pnlBlurRectExample:SetSize(300, 300)
+        render.pnlBlurRectExample:MakePopup()
+        render.pnlBlurRectExample:Center()
+        render.pnlBlurRectExample.Paint = function(s, w, h)
+            render.DrawBlurRectInPanel(s, 0, 0, w, h, 255, 3, 10)
+
+            surface.SetDrawColor(255,255,255)
+            surface.DrawOutlinedRect(0, 0, w, h)
+        end
+
+    end)
+end

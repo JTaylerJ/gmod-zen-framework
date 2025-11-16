@@ -27,6 +27,7 @@ zen.IncludeSH({
     "zen/lib/meeting.lua",
     "zen/lib/cvars.lua",
     "zen/lib/developer.lua",
+    "zen/lib/steam.lua",
 })
 
 zen.IncludeCL({

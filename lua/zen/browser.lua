@@ -40,9 +40,7 @@ zen.IncludeSV({
 
 -- Network include
 zen.IncludeSH({
-    "zen/lib/network/sh_meta_network.lua",
     "zen/lib/network/sh_nt.lua",
-    "zen/lib/network/sh_new.lua",
     "zen/lib/network/channels/sh_channel_lua.lua",
     "zen/lib/network/channels/sh_string_id.lua",
     "zen/lib/network/channels/sh_entity_vars.lua",

@@ -39,6 +39,18 @@ nt.mt_ChannelsNames = nt.mt_ChannelsNames or {}
 
 nt.mt_ChannelsPublic = nt.mt_ChannelsPublic or {}
 nt.mt_ChannelsPublicPriority = nt.mt_ChannelsPublicPriority or {}
+
+
+---@class nt.ChannelRegisterData
+---@field id? number
+---@field priority? number
+---@field types string[]?
+---@field name string
+
+
+---@param channel_name string
+---@param flags number?
+---@param data nt.ChannelRegisterData
 function nt.RegisterChannel(channel_name, flags, data)
     local flags = flags or nt.t_ChannelFlags.SIMPLE_NETWORK
     assertString(channel_name, "channel_name")
@@ -169,6 +181,9 @@ function nt.SimpleChannel(channel_name, types, callback)
     })
 end
 
+---@param channel_name string
+---@param target Player|Player[]|CRecipientFilter?
+---@param ... any
 function nt.SendToChannel(channel_name, target, ...)
     local tChannel = nt.mt_Channels[channel_name]
     assert(tChannel, "channel not exists \"" .. channel_name .. "\"")
@@ -226,6 +241,8 @@ function nt.SendToChannel(channel_name, target, ...)
     end
 end
 
+---@param channel_name string
+---@return number channel_id
 function nt.GetChannelID(channel_name)
     if SERVER then
         if not nt.mt_ChannelsIDS[channel_name] then
@@ -235,6 +252,8 @@ function nt.GetChannelID(channel_name)
     return nt.mt_ChannelsIDS[channel_name]
 end
 
+---@param channel_id number
+---@return string channel_name
 function nt.GetChannelName(channel_id)
     return nt.mt_ChannelsNames[channel_id]
 end
@@ -243,6 +262,7 @@ local _I = table.concat
 local FromSID64 = util.SteamIDFrom64
 local ToSID64 = util.SteamIDTo64
 
+---@enum nt.TypeReader
 nt.mt_listReader = {}
 nt.mt_listReader["angle"] = function() return net.ReadAngle() end
 nt.mt_listReader["bit"] = function() return net.ReadBit() end
@@ -250,6 +270,7 @@ nt.mt_listReader["boolean"] = function() return net.ReadBool() end
 nt.mt_listReader["bool"] = nt.mt_listReader["boolean"]
 nt.mt_listReader["color"] = function() return net.ReadColor() end
 nt.mt_listReader["data"] = function() return net.ReadData() end
+nt.mt_listReader["float"] = function() return net.ReadFloat() end
 nt.mt_listReader["double"] = function() return net.ReadDouble() end
 nt.mt_listReader["entity"] = function() return net.ReadEntity() end
 nt.mt_listReader["player"] = nt.mt_listReader["entity"]
@@ -321,8 +342,12 @@ function nt.GetTypeReaderFunc(type_name)
                     error("GetTypReader defReader not exists #2: " .. tostring(type_name))
                 elseif not specReader and defReader then
                     error("GetTypReader specReader not exists #3: " .. tostring(specialID))
+                else
+                    error("GetTypReader both not exists #4: " .. tostring(specialID) .. " | " .. tostring(type_name))
                 end
             end
+        else
+            error("GetTypReader: " .. tostring(type_name) .. " don't exists")
         end
     end
 end
@@ -334,6 +359,7 @@ nt.mt_listWriter["boolean"] = function(var) return net.WriteBool(var) end
 nt.mt_listWriter["bool"] = nt.mt_listWriter["boolean"]
 nt.mt_listWriter["color"] = function(var) return net.WriteColor(var) end
 nt.mt_listWriter["data"] = function(var) return net.WriteData(var) end
+nt.mt_listWriter["float"] = function(var) return net.WriteFloat(var) end
 nt.mt_listWriter["double"] = function(var) return net.WriteDouble(var) end
 nt.mt_listWriter["entity"] = function(var) return net.WriteEntity(var) end
 nt.mt_listWriter["player"] = nt.mt_listWriter["entity"]
@@ -479,6 +505,9 @@ function nt.Read(types)
     return unpack(args)
 end
 
+---@param channel_name string
+---@param types string[]
+---@param callback fun(ply:Player?, ...)
 function nt.Receive(channel_name, types, callback)
     nt.RegisterChannel(channel_name, nt.t_ChannelFlags.SIMPLE_NETWORK, {
         types = types,
@@ -488,6 +517,9 @@ function nt.Receive(channel_name, types, callback)
     })
 end
 
+---@param channel_name string
+---@param types string[]
+---@param data any[]
 function nt.Send(channel_name, types, data, target)
     assertString(channel_name, "channel_name")
     types = types or {}

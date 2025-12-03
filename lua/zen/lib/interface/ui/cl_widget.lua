@@ -293,14 +293,19 @@ function widget.DrawTextScaledLimitInPanel(panel, text, font, x, y, w, h, color,
 	local y_scale = (th > h) and (h / th) or 1
 
 	if new_line then
-		local lines = string_Explode("\n", text)
-		local line_height = th / #lines
-		for i, line in ipairs(lines) do
-			local line_y = y + (i - 1) * line_height * y_scale
-			if line_y + line_height * y_scale > y + h then
-				break
+		local lines_array = string_Explode("\n", text)
+		local lines_amount = #lines_array
+
+		if lines_amount <= 1 then
+			DrawTextScaledInPanel(panel, text, font, x, y, color, xalign, yalign, color_bg, x_scale, y_scale, disable_clipping, stenctil_cut_panel)
+		else
+			local single_line_step = h/lines_amount
+
+			local lineY = y - h/2 + single_line_step
+			for i, line in ipairs(lines_array) do
+				DrawTextScaledInPanel(panel, line, font, x, lineY, color, xalign, yalign, color_bg, x_scale, y_scale, disable_clipping, stenctil_cut_panel)
+				lineY = lineY + single_line_step
 			end
-			DrawTextScaledInPanel(panel, line, font, x, line_y, color, xalign, yalign, color_bg, x_scale, y_scale, disable_clipping, stenctil_cut_panel)
 		end
 	else
 		DrawTextScaledInPanel(panel, text, font, x, y, color, xalign, yalign, color_bg, x_scale, y_scale, disable_clipping, stenctil_cut_panel)
@@ -331,7 +336,6 @@ function widget.DrawTextScaledSmartLimitInPanel(panel, text, font, x, y, w, h, c
 
 	local scale = GetBestScale(tw, th, w, h)
 
-
 	if DEBUGING then
 		local ex, ey = x, y
 
@@ -356,14 +360,20 @@ function widget.DrawTextScaledSmartLimitInPanel(panel, text, font, x, y, w, h, c
 	end
 
 	if new_line then
-		local lines = string_Explode("\n", text)
-		local line_height = th / #lines
-		for i, line in ipairs(lines) do
-			local line_y = y + (i - 1) * line_height * scale
-			if line_y + line_height * scale > y + h then
-				break
+		local lines_array = string_Explode("\n", text)
+		local lines_amount = #lines_array
+
+		if lines_amount <= 1 then
+			DrawTextScaledInPanel(panel, text, font, x, y, color, xalign, yalign, color_bg, scale, scale, disable_clipping, stenctil_cut_panel)
+		else
+			local single_line_step = h/lines_amount
+
+
+			local lineY = y - h/2 + single_line_step
+			for i, line in ipairs(lines_array) do
+				DrawTextScaledInPanel(panel, line, font, x, lineY, color, xalign, yalign, color_bg, scale, scale, disable_clipping, stenctil_cut_panel)
+				lineY = lineY + single_line_step
 			end
-			DrawTextScaledInPanel(panel, line, font, x, line_y, color, xalign, yalign, color_bg, scale, scale, disable_clipping, stenctil_cut_panel)
 		end
 	else
 		DrawTextScaledInPanel(panel, text, font, x, y, color, xalign, yalign, color_bg, scale, scale, disable_clipping, stenctil_cut_panel)
@@ -431,14 +441,19 @@ function widget.DrawTextScaledSmart(text, font, x, y, w, h, color, xalign, yalig
 	end
 
 	if new_line then
-		local lines = string_Explode("\n", text)
-		local line_height = th / #lines
-		for i, line in ipairs(lines) do
-			local line_y = y + (i - 1) * line_height * y_scale
-			if line_y + line_height * y_scale > y + h then
-				break
+		local lines_array = string_Explode("\n", text)
+		local lines_amount = #lines_array
+
+		if lines_amount <= 1 then
+			_DrawTextScaled(nil, text, font, x, y, color, xalign, yalign, color_bg, x_scale, y_scale, disable_clipping)
+		else
+			local single_line_step = h/lines_amount
+
+			local lineY = y - h/2 + single_line_step
+			for i, line in ipairs(lines_array) do
+				_DrawTextScaled(nil, line, font, x, lineY, color, xalign, yalign, color_bg, x_scale, y_scale, disable_clipping)
+				lineY = lineY + single_line_step
 			end
-			_DrawTextScaled( nil, line, font, x , line_y, color, xalign, yalign, color_bg, x_scale, y_scale, disable_clipping)
 		end
 	else
 		_DrawTextScaled( nil, text, font, x, y, color, xalign, yalign, color_bg, x_scale, y_scale, disable_clipping)

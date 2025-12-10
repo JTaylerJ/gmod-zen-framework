@@ -33,6 +33,8 @@ function PANEL:UpdateMaterial()
         lookAt = self.lookAt,
         CamaraPosition = self.camPos,
         FOV = self.FOV,
+        width = self:GetWide(),
+        height = self:GetTall(),
     }, function (succ, renderTexture, renderMaterial)
         if !succ then
             self.renderMaterial = nil
